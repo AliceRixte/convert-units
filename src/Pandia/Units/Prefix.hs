@@ -70,8 +70,8 @@ import Data.Kind
 ----------------------------------- Milli ------------------------------------
 
 newtype Milli (f :: Type -> Type) a = Milli (f a)
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
-
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 milli :: forall f a. MilliClass a => Convertor f a -> Convertor (Milli f) a
 milli f _ = milliFun (f (Proxy :: Proxy f) :: a -> a)
 {-# INLINE milli #-}
@@ -100,11 +100,45 @@ instance Fractional a => MilliClass (Per (To a)) where
   milliFun f = (/ 1000) . f
   {-# INLINE milliFun #-}
 
+----------------------------------- Deca ------------------------------------
+
+newtype Deca (f :: Type -> Type) a = Deca (f a)
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+
+deca :: forall f a. DecaClass a => Convertor f a -> Convertor (Deca f) a
+deca f _ = decaFun (f (Proxy :: Proxy f) :: a -> a)
+{-# INLINE deca #-}
+
+instance (Num a, ConvertorClass f a, DecaClass a)
+  => ConvertorClass (Deca f) a where
+  convertor _ = decaFun (convertor (Proxy :: Proxy f))
+  {-# INLINE convertor #-}
+
+class DecaClass a where
+  decaFun :: (a -> a) -> a -> a
+
+instance Num a => DecaClass (From a) where
+  decaFun f = (* 10) . f
+  {-# INLINE decaFun #-}
+
+instance Fractional a => DecaClass (Per (From a)) where
+  decaFun f = (/ 10) . f
+  {-# INLINE decaFun #-}
+
+instance Fractional a => DecaClass (To a) where
+  decaFun f = (/ 10) . f
+  {-# INLINE decaFun #-}
+
+instance Num a => DecaClass (Per (To a)) where
+  decaFun f = (* 10) . f
+  {-# INLINE decaFun #-}
 
 ------------------------------------ Kilo ------------------------------------
 
 newtype Kilo (f :: Type -> Type) a = Kilo (f a)
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
 kilo :: forall f a. KiloClass a => Convertor f a -> Convertor (Kilo f) a
 kilo f _ = kiloFun (f (Proxy :: Proxy f) :: a -> a)

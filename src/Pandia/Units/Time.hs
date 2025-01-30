@@ -6,45 +6,51 @@ module Pandia.Units.Time
 import Pandia.Units.Convertor
 
 
-newtype Second a = Second a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
+-- newtype Second a = Second a
+--   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+--           , Bounded, Enum, Semigroup, Monoid)
 
-second :: Convertor Second a
-second = convertor
+-- second :: Convertor Second a
+-- second = convertor
 
-seconds :: Convertor Second a
-seconds = convertor
+-- seconds :: Convertor Second a
+-- seconds = convertor
 
-instance ConvertorClass Second a where
-  convertor _ = id
-  {-# INLINE convertor #-}
+-- instance ConvertorClass Second a where
+--   convertor _ = id
+--   {-# INLINE convertor #-}
 
-newtype Hour a = Hour a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
 
-hour :: ConvertorClass Hour a => Convertor Hour a
-hour = convertor
+-- type Hertz = NoUnit -/- Second
 
-hours :: ConvertorClass Hour a => Convertor Hour a
-hours = convertor
+-- hertz :: Num a => Convertor Hertz a
+-- hertz = nounit -/- second
 
-instance Num a => ConvertorClass Hour (From a) where
-  convertor _ x = x * 3600
-  {-# INLINE convertor #-}
+-- newtype Hour a = Hour a
+--   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+--           , Bounded, Enum, Semigroup, Monoid)
 
-instance Fractional a => ConvertorClass Hour (To a) where
-  convertor _ x = x / 3600
-  {-# INLINE convertor #-}
+-- hour :: ConvertorClass Hour a => Convertor Hour a
+-- hour = convertor
 
-instance Fractional a => ConvertorClass Hour (Per (From a)) where
-  convertor _ x = x / 3600
-  {-# INLINE convertor #-}
+-- hours :: ConvertorClass Hour a => Convertor Hour a
+-- hours = convertor
 
-instance Num a => ConvertorClass Hour (Per (To a)) where
-  convertor _ x = x * 3600
-  {-# INLINE convertor #-}
+-- instance Num a => ConvertorClass Hour (From a) where
+--   convertor _ x = x * 3600
+--   {-# INLINE convertor #-}
+
+-- instance Fractional a => ConvertorClass Hour (To a) where
+--   convertor _ x = x / 3600
+--   {-# INLINE convertor #-}
+
+-- instance Fractional a => ConvertorClass Hour (Per (From a)) where
+--   convertor _ x = x / 3600
+--   {-# INLINE convertor #-}
+
+-- instance Num a => ConvertorClass Hour (Per (To a)) where
+--   convertor _ x = x * 3600
+--   {-# INLINE convertor #-}
 
 
 

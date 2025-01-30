@@ -28,6 +28,7 @@ library
   exposed-modules:
       Pandia.Units
       Pandia.Units.Convertor
+      Pandia.Units.International
       Pandia.Units.Length
       Pandia.Units.Prefix
       Pandia.Units.Temperature

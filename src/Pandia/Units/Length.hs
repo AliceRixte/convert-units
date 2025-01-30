@@ -5,16 +5,22 @@ module Pandia.Units.Length
 import Pandia.Units.Convertor
 
 
-newtype Meter a = Meter a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
+-- newtype Meter a = Meter a
+--   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+--           , Bounded, Enum, Semigroup, Monoid)
 
-meter :: Convertor Meter a
-meter = convertor
+-- instance ConvertorClass Meter a
 
-meters :: Convertor Meter a
-meters = convertor
+-- meter :: Convertor Meter a
+-- meter = convertor
 
-instance ConvertorClass Meter a where
-  convertor _ = id
-  {-# INLINE convertor #-}
+
+-- newtype Second a = Second a
+--   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+--           , Bounded, Enum, Semigroup, Monoid)
+
+-- instance ConvertorClass Meter a
+
+-- second :: Convertor Second a
+-- second = convertor
+
