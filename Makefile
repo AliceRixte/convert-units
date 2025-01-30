@@ -39,7 +39,7 @@ doc :
 	$(stack) haddock --no-haddock-deps
 
 bench:
-	[[ -d $(make-work) ]] || mkdir $(make-work)
+# [[ -d $(make-work) ]] || mkdir $(make-work)
 	$(stack) bench $(pkg):bench:$(bch) --ba "--output $(make-work)/$(bch).html"
 
 test:

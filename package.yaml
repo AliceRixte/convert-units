@@ -62,3 +62,16 @@ tests:
     - -O0
     - -rtsopts
     - -with-rtsopts=-N
+
+
+benchmarks:
+  pandia-units-bench:
+    main: Main.hs
+    dependencies:
+      - pandia-units
+      - criterion >= 1.6
+    source-dirs: benchmark
+    ghc-options:
+      - -O2
+      - -rtsopts
+      - -with-rtsopts=-N
