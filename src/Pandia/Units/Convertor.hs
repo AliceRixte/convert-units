@@ -11,6 +11,8 @@ import Data.Kind
 
 import GHC.TypeLits
 
+
+
 type Convertor (f :: Type -> Type) a = Proxy f -> a -> a
 
 newtype From a = From a
@@ -49,13 +51,13 @@ instance (ConvertorClass f a, ConvertorClass g (Per a), Num a)
 
 instance (ConvertorClass f a, ConvertorClass g a, Num a)
   => ConvertorClass ( f -*- g) a where
-  convertor _ =
-    convertor (Proxy :: Proxy f) -*- convertor (Proxy :: Proxy g)
+  convertor =
+    (convertor :: Convertor f a) -*- (convertor :: Convertor g a)
 
-instance (ConvertorClass f a, Num a, KnownNat n)
+instance (PowDimClass f n a, ConvertorClass f a, KnownNat n)
   => ConvertorClass ( f -^- n) a where
-  convertor _ =
-    convertor (Proxy :: Proxy f) -^- fromInteger (natVal (Proxy :: Proxy n))
+  convertor =
+    (convertor :: Convertor f a) -^- fromInteger (natVal (Proxy :: Proxy n))
 
 
 per :: forall f g a. Num a
@@ -69,17 +71,28 @@ infix 6 `per`
 (f -/- g) a = per f g a
 {-# INLINE (-/-) #-}
 
-(-*-) :: forall a. Num a => (a -> a) -> (a -> a) -> (a -> a)
-(f -*- g) a = f a * g a
+(-*-) :: forall f g a. Num a =>
+  Convertor f a -> Convertor g a -> Convertor (f -*- g) a
+(f -*- g) _ a = f (Proxy :: Proxy f) a * g (Proxy :: Proxy g) a
 {-# INLINE (-*-) #-}
 
 
-(-^-) :: forall a. Num a => (a -> a) -> Int -> (a -> a)
-f -^- n | n < 0 = coerce $ (coerce f :: Per a -> Per a) -^- (-n)
-        | n == 0 = id
-        | n == 1 = f
-        | otherwise = f -*- (f -^- (n - 1))
-{-# INLINE (-^-) #-}
+class PowDimClass (f :: Type -> Type) (n::Nat) a where
+  powDim :: Convertor f a -> Int -> Convertor (f -^- n) a
+
+instance PowDimClass f 1 a where
+  powDim f n | n == 1 = coerce f
+  powDim _ _ = error "This is impossible. Pleas report this as a bug."
+
+instance (PowDimClass f n a, np1 ~ n + 1, Num a) => PowDimClass f np1 a where
+  powDim f n _ a = f (Proxy :: Proxy f) a
+                * powDim f (n - 1) (Proxy :: Proxy (f -^- n)) a
+  {-# INLINE powDim #-}
+
+
+(-^-) :: forall f n a.  PowDimClass f n a
+  => Convertor f a -> Int -> Convertor (f -^- n) a
+(-^-) = powDim
 
 
 

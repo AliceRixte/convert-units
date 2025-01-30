@@ -74,6 +74,7 @@ newtype Milli (f :: Type -> Type) a = Milli (f a)
 
 milli :: forall f a. MilliClass a => Convertor f a -> Convertor (Milli f) a
 milli f _ = milliFun (f (Proxy :: Proxy f) :: a -> a)
+{-# INLINE milli #-}
 
 instance (Num a, ConvertorClass f a, MilliClass a)
   => ConvertorClass (Milli f) a where
@@ -107,6 +108,7 @@ newtype Kilo (f :: Type -> Type) a = Kilo (f a)
 
 kilo :: forall f a. KiloClass a => Convertor f a -> Convertor (Kilo f) a
 kilo f _ = kiloFun (f (Proxy :: Proxy f) :: a -> a)
+{-# INLINE kilo #-}
 
 instance (Num a, ConvertorClass f a, KiloClass a)
   => ConvertorClass (Kilo f) a where
