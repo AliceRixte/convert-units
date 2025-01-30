@@ -12,6 +12,8 @@ import Data.Functor
 
 import GHC.TypeLits
 
+type Convertor (f :: Type -> Type) a = Proxy f -> a -> a
+
 newtype From a = From a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
           , RealFrac, RealFloat, Bounded)
@@ -39,40 +41,40 @@ infixl 8 -^-
 
 
 class ConvertType (f :: Type -> Type) a where
-  convertType :: Proxy f -> a -> a
+  convertor :: Convertor f a
 
 instance (ConvertType f a, ConvertType g (Per a), Num a)
   => ConvertType ( f -/- g) a where
-  convertType _ =
-    convertType (Proxy :: Proxy f) -/- convertType (Proxy :: Proxy g)
+  convertor =
+    (convertor :: Convertor f a) -/- (convertor :: Convertor g (Per a))
 
 instance (ConvertType f a, ConvertType g a, Num a)
   => ConvertType ( f -*- g) a where
-  convertType _ =
-    convertType (Proxy :: Proxy f) -*- convertType (Proxy :: Proxy g)
+  convertor _ =
+    convertor (Proxy :: Proxy f) -*- convertor (Proxy :: Proxy g)
 
 instance (ConvertType f a, Num a, KnownNat n)
   => ConvertType ( f -^- n) a where
-  convertType _ =
-    convertType (Proxy :: Proxy f) -^- fromInteger (natVal (Proxy :: Proxy n))
+  convertor _ =
+    convertor (Proxy :: Proxy f) -^- fromInteger (natVal (Proxy :: Proxy n))
 
-convert :: forall f g a.
-  ( Coercible (f a) a, Coercible a (g a)
-  , ConvertType f (From a), ConvertType g (To a))
-  => f a -> g a
-convert fa = coerce $
-  fromTo ( convertType (Proxy :: Proxy f) :: From a -> From a )
-         ( convertType (Proxy :: Proxy g) :: To a -> To a )
-         ( coerce fa :: a )
+-- -- convert :: forall f g a.
+--   ( Coercible (f a) a, Coercible a (g a)
+--   , ConvertType f (From a), ConvertType g (To a))
+--   => f a -> g a
+-- convert fa = coerce $
+--   fromTo ( convertType (Proxy :: Proxy f) :: From a -> From a )
+--          ( convertType (Proxy :: Proxy g) :: To a -> To a )
+--          ( coerce fa :: a )
 
-per :: forall a. Num a =>  (a -> a) -> (Per a -> Per a)-> (a -> a)
-per f g a = f a * (coerce g :: a -> a) 1
+per :: forall f g a. Num a
+  =>  Convertor f a -> Convertor g (Per a) -> Convertor (f -/- g) a
+per f g _ a = f (Proxy :: Proxy f) a *
+              (coerce (g (Proxy :: Proxy g)) :: a -> a) 1
 infix 6 `per`
 
-times :: forall f g a. Num a => Proxy (f -*- g) -> (Proxy f -> a -> a) -> (Proxy g -> a -> a) -> (a -> a)
-times _ f g a = f (Proxy  :: Proxy f) a * g (Proxy :: Proxy g) a
-
-(-/-) :: forall a. Num a => (a -> a) -> (Per a -> Per a) -> (a -> a)
+(-/-) :: forall f g a. Num a
+  =>  Convertor f a -> Convertor g (Per a) -> Convertor (f -/- g) a
 (f -/- g) a = per f g a
 {-# INLINE (-/-) #-}
 
@@ -90,29 +92,39 @@ f -^- n | n < 0 = coerce $ (coerce f :: Per a -> Per a) -^- (-n)
 
 
 
-fromTo :: forall a. (From a -> From a) -> (To a -> To a) -> a -> a
-fromTo f t = (coerce t :: a -> a) . (coerce f :: a -> a)
+fromTo :: forall f g a. Coercible a (g a)
+   => Convertor f (From a) -> Convertor g (To a) -> g a -> g a
+fromTo f t = coerce $ (coerce (t (Proxy :: Proxy g)) :: a -> a)
+            . (coerce (f (Proxy :: Proxy f)) :: a -> a)
 {-# INLINE fromTo #-}
 infix 2 `fromTo`
 
 
 
-(~>) :: (From a -> From a) -> (To a -> To a) -> a -> a
+(~>) :: forall f g a. Coercible a (g a)
+  => Convertor f (From a) -> Convertor g (To a) -> g a -> g a
 (~>) = fromTo
 {-# INLINE (~>) #-}
 infix 2 ~>
 
+(~~>) :: forall f g a.
+  Convertor f (From a) -> Convertor g (To a) -> a -> a
+f ~~> t = (coerce (t (Proxy :: Proxy g)) :: a -> a)
+            . (coerce (f (Proxy :: Proxy f)) :: a -> a)
+{-# INLINE (~~>) #-}
+infix 2 ~~>
 
 
-(<&>~) :: forall f g a. (Functor f, ConvertType g (To (g a)))
-  => f (g a)-> (From (g a)->  From (g a)) -> f (g a)
-fa <&>~ f = fa <&>
-  fromTo f (convertType (Proxy :: Proxy g) :: To (g a) -> To (g a))
 
-(*~) :: forall f  a. (ConvertType f (To a), Coercible a (f a))
-  => a -> (From a -> From a) -> f a
-a *~ f = coerce $ fromTo f (convertType (Proxy :: Proxy f) :: To a -> To a) a
-infix 4 *~
+-- (<&>~) :: forall f g a. (Functor f, ConvertType g (To (g a)))
+--   => f (g a)-> (From (g a)->  From (g a)) -> f (g a)
+-- fa <&>~ f = fa <&>
+--   fromTo f (convertType (Proxy :: Proxy g) :: To (g a) -> To (g a))
+
+-- (*~) :: forall f  a. (ConvertType f (To a), Coercible a (f a))
+--   => a -> (From a -> From a) -> f a
+-- a *~ f = coerce $ fromTo f (convertType (Proxy :: Proxy f) :: To a -> To a) a
+-- infix 4 *~
 
 
 

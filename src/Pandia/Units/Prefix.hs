@@ -76,11 +76,9 @@ newtype Kilo (f :: Type -> Type) a = Kilo (f a)
 
 
 
-newtype Meter a = Meter a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
+-- newtype Meter a = Meter a
+--   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
 
-blub :: (Milli Meter -/- Milli Meter) Double
-blub = 1
 
 -- class ConvertPrefixType f a | f -> a where
 --   convertPrefix :: f -> a -> a
@@ -97,19 +95,17 @@ blub = 1
 
 
 
-instance (PrefixConv a, ConvertType f a)
-  => ConvertType (Milli f) a where
-  convertType _ = milli (convertType (Proxy :: Proxy f))
+-- instance (PrefixConv a, ConvertType f a)
+--   => ConvertType (Milli f) a where
+--   convertType _ = milli (convertType (Proxy :: Proxy f))
 
-instance (KiloConv a, ConvertType f a)
-  => ConvertType (Kilo f) a where
-  convertType _ = kilo (convertType (Proxy :: Proxy f))
+-- instance (KiloConv a, ConvertType f a)
+--   => ConvertType (Kilo f) a where
+--   convertType _ = kilo (convertType (Proxy :: Proxy f))
 
-instance ConvertType Meter a where
-  convertType _ = id
+-- instance ConvertType Meter a where
+--   convertType _ = id
 
-
-orf = convertType (Proxy :: Proxy (Milli Meter)) (To 1)
 
 
 
@@ -134,23 +130,30 @@ instance Fractional a => PrefixConv (Per (To a)) where
   {-# INLINE milli #-}
 
 
+kilo :: forall f a. KiloConv a => Convertor f a -> Convertor (Kilo f) a
+kilo f _ = kiloFast (f (Proxy :: Proxy f) :: a -> a)
+
+instance (Num a, ConvertType f (From a)) => ConvertType (Kilo f) (From a) where
+  convertor _ = kiloFast (convertor (Proxy :: Proxy f))
+  {-# INLINE convertor #-}
+
 
 class KiloConv a where
-  kilo :: (a -> a) -> (a -> a)
+  kiloFast :: (a -> a) -> a -> a
 
 instance Num a => KiloConv (From a) where
-  kilo f = (* 1000) . f
-  {-# INLINE kilo #-}
+  kiloFast f = (* 1000) . f
+  {-# INLINE kiloFast #-}
 
 instance Fractional a => KiloConv (Per (From a)) where
-  kilo f = (/ 1000) . f
-  {-# INLINE kilo #-}
+  kiloFast f = (/ 1000) . f
+  {-# INLINE kiloFast #-}
 
 instance Fractional a => KiloConv (To a) where
-  kilo f = (/ 1000) . f
-  {-# INLINE kilo #-}
+  kiloFast f = (/ 1000) . f
+  {-# INLINE kiloFast #-}
 
 instance Num a => KiloConv (Per (To a)) where
-  kilo f = (* 1000) . f
-  {-# INLINE kilo #-}
+  kiloFast f = (* 1000) . f
+  {-# INLINE kiloFast #-}
 

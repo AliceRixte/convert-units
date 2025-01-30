@@ -15,7 +15,7 @@ iterations = [10, 100, 1000]
 
 
 kmphTomps :: Int -> Double
-kmphTomps n =  iterate (kilo meters -/- hour ~> meters -/- second) (5 :: Double) !! n
+kmphTomps n =  iterate (kilo meters -/- hour ~~> meters -/- second) 5 !! n
 
 fasterConv :: Int -> Double
 fasterConv n =  iterate (*3.6) (5 :: Double) !! n
