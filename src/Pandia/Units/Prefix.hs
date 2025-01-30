@@ -1,4 +1,5 @@
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE DeriveFunctor #-}
 
 --------------------------------------------------------------------------------
 -- |
@@ -67,20 +68,18 @@ import Data.Proxy
 import Data.Kind
 
 newtype Milli (f :: Type -> Type) a = Milli (f a)
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat)
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
 
 newtype Kilo (f :: Type -> Type) a = Kilo (f a)
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat)
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
 
-newtype PerT (f :: Type -> Type) (g :: Type -> Type) a = PerT (f (g a))
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat)
 
 
 
 newtype Meter a = Meter a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat)
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
 
-blub :: (Milli Meter `PerT` Milli Meter) Double
+blub :: (Milli Meter -/- Milli Meter) Double
 blub = 1
 
 -- class ConvertPrefixType f a | f -> a where
@@ -97,10 +96,6 @@ blub = 1
 
 
 
-instance (ConvertType f a, ConvertType g (Per a), Num a)
-  => ConvertType (PerT f g) a where
-  convertType _ =
-      convertType (Proxy :: Proxy f) `per` convertType (Proxy :: Proxy g)
 
 instance (PrefixConv a, ConvertType f a)
   => ConvertType (Milli f) a where

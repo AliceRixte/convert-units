@@ -29,6 +29,7 @@ library
       Pandia.Units
       Pandia.Units.Combinators
       Pandia.Units.Convert
+      Pandia.Units.Examples
       Pandia.Units.Length
       Pandia.Units.Prefix
       Pandia.Units.Temperature
