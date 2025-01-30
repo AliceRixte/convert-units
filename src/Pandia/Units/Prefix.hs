@@ -62,7 +62,7 @@ module Pandia.Units.Prefix
   ( module Pandia.Units.Prefix
   ) where
 
-import Pandia.Units.Convert
+import Pandia.Units.Convertor
 
 import Data.Proxy
 import Data.Kind
@@ -70,90 +70,39 @@ import Data.Kind
 newtype Milli (f :: Type -> Type) a = Milli (f a)
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
 
+-- milli :: forall f a. MilliConv a => Convertor f a -> Convertor (Milli f) a
+-- milli f _ = milliFun (f (Proxy :: Proxy f) :: a -> a)
+
+-- instance (Num a, ConvertType f (From a)) => ConvertType (Milli f) (From a) where
+--   convertor _ = milliFun (convertor (Proxy :: Proxy f))
+--   {-# INLINE convertor #-}
+
 newtype Kilo (f :: Type -> Type) a = Kilo (f a)
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
 
-
-
-
--- newtype Meter a = Meter a
---   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
-
-
--- class ConvertPrefixType f a | f -> a where
---   convertPrefix :: f -> a -> a
-
--- class ConvertUnitType f a | f -> a where
---   convertUnit :: f -> a -> a
-
--- instance ConvertUnitType a => ConvertPrefixType Milli a  where
---   convertPrefix (Milli f) = milli (convertUnit f)
-
--- instance ConvertUnitType Meter a where
---   convertUnit (Meter _) = id
-
-
-
-
--- instance (PrefixConv a, ConvertType f a)
---   => ConvertType (Milli f) a where
---   convertType _ = milli (convertType (Proxy :: Proxy f))
-
--- instance (KiloConv a, ConvertType f a)
---   => ConvertType (Kilo f) a where
---   convertType _ = kilo (convertType (Proxy :: Proxy f))
-
--- instance ConvertType Meter a where
---   convertType _ = id
-
-
-
-
-
-class PrefixConv a where
-  milli ::  (a -> a) -> a -> a
-
-instance Fractional a => PrefixConv (From a) where
-  milli f = (/ 1000) . f
-  {-# INLINE milli #-}
-
-instance Num a => PrefixConv (Per (From a)) where
-  milli f = (* 1000) . f
-  {-# INLINE milli #-}
-
-instance Num a => PrefixConv (To a) where
-  milli f =  (* 1000) . f
-  {-# INLINE milli #-}
-
-instance Fractional a => PrefixConv (Per (To a)) where
-  milli f = (/ 1000) . f
-  {-# INLINE milli #-}
-
-
 kilo :: forall f a. KiloConv a => Convertor f a -> Convertor (Kilo f) a
-kilo f _ = kiloFast (f (Proxy :: Proxy f) :: a -> a)
+kilo f _ = kiloFun (f (Proxy :: Proxy f) :: a -> a)
 
 instance (Num a, ConvertType f (From a)) => ConvertType (Kilo f) (From a) where
-  convertor _ = kiloFast (convertor (Proxy :: Proxy f))
+  convertor _ = kiloFun (convertor (Proxy :: Proxy f))
   {-# INLINE convertor #-}
 
-
 class KiloConv a where
-  kiloFast :: (a -> a) -> a -> a
+  kiloFun :: (a -> a) -> a -> a
 
 instance Num a => KiloConv (From a) where
-  kiloFast f = (* 1000) . f
-  {-# INLINE kiloFast #-}
+  kiloFun f = (* 1000) . f
+  {-# INLINE kiloFun #-}
 
 instance Fractional a => KiloConv (Per (From a)) where
-  kiloFast f = (/ 1000) . f
-  {-# INLINE kiloFast #-}
+  kiloFun f = (/ 1000) . f
+  {-# INLINE kiloFun #-}
 
 instance Fractional a => KiloConv (To a) where
-  kiloFast f = (/ 1000) . f
-  {-# INLINE kiloFast #-}
+  kiloFun f = (/ 1000) . f
+  {-# INLINE kiloFun #-}
 
 instance Num a => KiloConv (Per (To a)) where
-  kiloFast f = (* 1000) . f
-  {-# INLINE kiloFast #-}
+  kiloFun f = (* 1000) . f
+  {-# INLINE kiloFun #-}
 

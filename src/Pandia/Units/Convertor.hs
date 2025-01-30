@@ -1,14 +1,13 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE PolyKinds #-}
-module Pandia.Units.Convert
-  ( module Pandia.Units.Convert
+module Pandia.Units.Convertor
+  ( module Pandia.Units.Convertor
   ) where
 
 import Data.Coerce
 import Data.Proxy
 import Data.Kind
-import Data.Functor
 
 import GHC.TypeLits
 
@@ -58,14 +57,6 @@ instance (ConvertType f a, Num a, KnownNat n)
   convertor _ =
     convertor (Proxy :: Proxy f) -^- fromInteger (natVal (Proxy :: Proxy n))
 
--- -- convert :: forall f g a.
---   ( Coercible (f a) a, Coercible a (g a)
---   , ConvertType f (From a), ConvertType g (To a))
---   => f a -> g a
--- convert fa = coerce $
---   fromTo ( convertType (Proxy :: Proxy f) :: From a -> From a )
---          ( convertType (Proxy :: Proxy g) :: To a -> To a )
---          ( coerce fa :: a )
 
 per :: forall f g a. Num a
   =>  Convertor f a -> Convertor g (Per a) -> Convertor (f -/- g) a
@@ -113,18 +104,6 @@ f ~~> t = (coerce (t (Proxy :: Proxy g)) :: a -> a)
             . (coerce (f (Proxy :: Proxy f)) :: a -> a)
 {-# INLINE (~~>) #-}
 infix 2 ~~>
-
-
-
--- (<&>~) :: forall f g a. (Functor f, ConvertType g (To (g a)))
---   => f (g a)-> (From (g a)->  From (g a)) -> f (g a)
--- fa <&>~ f = fa <&>
---   fromTo f (convertType (Proxy :: Proxy g) :: To (g a) -> To (g a))
-
--- (*~) :: forall f  a. (ConvertType f (To a), Coercible a (f a))
---   => a -> (From a -> From a) -> f a
--- a *~ f = coerce $ fromTo f (convertType (Proxy :: Proxy f) :: To a -> To a) a
--- infix 4 *~
 
 
 

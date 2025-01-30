@@ -3,10 +3,7 @@ module Pandia.Units.Time
   ( module Pandia.Units.Time
   ) where
 
-import Data.Kind
-
-
-import Pandia.Units.Convert
+import Pandia.Units.Convertor
 
 
 newtype Second a = Second a

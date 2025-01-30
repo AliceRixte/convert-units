@@ -2,13 +2,8 @@ module Pandia.Units.Length
   ( module Pandia.Units.Length
   ) where
 
-import Pandia.Units.Convert
+import Pandia.Units.Convertor
 
--- meter :: a -> a
--- meter = id
-
--- meters :: a -> a
--- meters = id
 
 newtype Meter a = Meter a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat

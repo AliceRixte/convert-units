@@ -2,7 +2,7 @@ module Pandia.Units.Temperature
   ( module Pandia.Units.Temperature
   ) where
 
-import Pandia.Units.Convert
+import Pandia.Units.Convertor
 
 -- kelvin :: a -> a
 -- kelvin = id
