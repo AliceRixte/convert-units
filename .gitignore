@@ -1,0 +1,10 @@
+.stack-work/
+.stack-work-prof/
+.make-work/
+dist-newstyle
+*~
+.vscode/
+mingw-w64-x86_64-SDL2-2.0.14-2-any.pkg.tar
+*.svg
+.DS_Store
+render-output/

@@ -1,0 +1,64 @@
+name:                pandia-units
+version:             0.1.0.0
+github:              "AliceRixte/pandia/pandia-units"
+license:             LGPL-3
+author:              "Alice Rixte"
+maintainer:          "alice.rixte@u-bordeaux.fr"
+copyright:           "MIT"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            media
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/AliceRixte/pandia/blob/main/pandia-units#readme>
+
+
+dependencies:
+- base >= 4.18 && < 5
+
+ghc-options:
+- -Wall
+- -threaded
+
+library:
+  ghc-options:
+  - -O2 #TODO change
+  default-extensions:
+    - GeneralizedNewtypeDeriving
+    - FunctionalDependencies
+    - MultiParamTypeClasses
+    - FlexibleContexts
+    - FlexibleInstances
+    - StandaloneDeriving
+    - ScopedTypeVariables
+    - UndecidableInstances
+    - MonoLocalBinds
+    - DataKinds
+    - TypeOperators
+    - TypeFamilies
+    - OverloadedLabels
+    - TypeApplications
+    - DerivingVia
+    - DefaultSignatures
+  source-dirs: src
+
+
+tests:
+  pandia-units-test:
+    main:                Spec.hs
+    source-dirs:         test
+    dependencies:
+    - hspec >= 2.11
+    - QuickCheck >= 2.14
+    - pandia-units
+    ghc-options:
+    - -O0
+    - -rtsopts
+    - -with-rtsopts=-N

@@ -1,0 +1,75 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           pandia-units
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/AliceRixte/pandia/blob/main/pandia-units#readme>
+homepage:       https://github.com/AliceRixte/pandia#readme
+bug-reports:    https://github.com/AliceRixte/pandia/issues
+author:         Alice Rixte
+maintainer:     alice.rixte@u-bordeaux.fr
+copyright:      MIT
+license:        LGPL-3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/AliceRixte/pandia
+  subdir: pandia-units
+
+library
+  exposed-modules:
+      Pandia.Units
+      Pandia.Units.Combinators
+      Pandia.Units.Convert
+      Pandia.Units.Length
+      Pandia.Units.Prefix
+      Pandia.Units.Temperature
+      Pandia.Units.Time
+  other-modules:
+      Paths_pandia_units
+  hs-source-dirs:
+      src
+  default-extensions:
+      GeneralizedNewtypeDeriving
+      FunctionalDependencies
+      MultiParamTypeClasses
+      FlexibleContexts
+      FlexibleInstances
+      StandaloneDeriving
+      ScopedTypeVariables
+      UndecidableInstances
+      MonoLocalBinds
+      DataKinds
+      TypeOperators
+      TypeFamilies
+      OverloadedLabels
+      TypeApplications
+      DerivingVia
+      DefaultSignatures
+  ghc-options: -Wall -threaded -O2
+  build-depends:
+      base >=4.18 && <5
+  default-language: Haskell2010
+
+test-suite pandia-units-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_pandia_units
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -threaded -O0 -rtsopts -with-rtsopts=-N
+  build-depends:
+      QuickCheck >=2.14
+    , base >=4.18 && <5
+    , hspec >=2.11
+    , pandia-units
+  default-language: Haskell2010
