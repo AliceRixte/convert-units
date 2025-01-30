@@ -92,7 +92,7 @@ newtype NoUnit a = NoUnit a
 
 -- | A convertor that can convert from and to some unit.
 --
--- Convertors can be combined via 'mul'@, @'per'@, and @'pow'@.
+-- Convertors can be combined via 'mul'@, @'per'@, and @'pow'@ .
 --
 type Convertor (f :: Type -> Type) a = Proxy f -> a -> a
 
@@ -167,6 +167,19 @@ nounit _ = id
 -- >>> (kilo meter `per` hour ~~> meter `per` second ) (5 :: Float)
 -- 1.388889
 -- @
+
+-- Nested convertor division is not supported.
+--
+-- @
+-- >>> (kilo meter -/- (second -/- kilo newton)  ~~> meter -/- second ) (5 :: Float)
+--
+-- <interactive>:73:29: error: [GHC-39999] • No instance for ‘KiloClass (Per
+--     (Per (From Float)))’
+--  @
+--
+-- This feature could be added by adding @('Per' ('Per' a))@ for every instances
+-- of  @'ConvertorClass'@. If you want to contribute, this is fairly simple to
+-- do although very repetitive.
 --
 per :: forall f g a. Num a
   =>  Convertor f a -> Convertor g (Per a) -> Convertor (f -/- g) a
@@ -177,8 +190,7 @@ infix 6 `per`
 -- | Infix synonym for @'per'@
 --
 -- @
--- >>> (kilo meter -/- hour ~~> meter -/- second ) (5 :: Float)
--- 1.388889
+-- >>> (kilo meter -/- hour ~~> meter -/- second ) (5 :: Float) 1.388889 @
 -- @
 --
 (-/-) :: forall f g a. Num a
@@ -187,21 +199,68 @@ infix 6 `per`
 {-# INLINE (-/-) #-}
 
 
--- | Multiplication of convertors
+-- | Multiplication of convertors. / Warning  : Use with caution \
 --
 -- @
--- >>> (newton `mul` kilo meter  ~~> newton `mul` meter ) (5 :: Float)
--- 5000
+-- >>> (newton `mul` kilo meter  ~~> newton `mul` meter ) (5 :: Float) 5000 @
+--
+-- In the previous case it works fine, and as long as you only use international
+-- system units it will work too. However, if you want to use conversions that
+-- have an offset, like Celsius -> Kelvin, there is a problem.
+--
+-- The good news is it rarely (I didn't find a real life example yet) happens in
+-- concrete real life examples.
+--
+-- [What is the problem ?]
+--
+-- To be able to compute the multiplication of two convertors, we rely on the
+-- -- **false** assumption that the composition of two convertors is
+-- commutative.
+--
+-- This is true when all convertors are just a multiplication factor, for
+-- instance when converting between kilometers and meters, or between kilometers
+-- and miles.
+--
+-- The good news is that in most of the cases that makes sense it is the case.
+--
+-- However, everything falls apart as soon as some convertors use an offset,
+-- because as soon as we combine them with multiplicators we do not have
+-- commutativity any more.
+--
+-- Here is a concrete example :
+--
+-- @
+-- >>> kilo meter  -*- celsius ~~> meter -*- kelvin )  1 274150.0 celsius -*-
+-- kilo meter ~~> kelvin -*- meter )  1 1273.15 @
+--
+-- [When to trust convertor multiplication ?]
+--
+-- 1. when using only use standard units and prefixes, as every conversion is
+-- just a multiplication  corresponding to the prefix
+-- 2. when using only convertors that are just a multiplying factor
+--
+-- There might be other cases where it works but in this case you should know
+-- what you are doing.
+--
+-- [Is this fixable ?]
+--
+-- Probably not. There is a possibility to add a @Mul@ newtype just like for
+-- @'Per'@ to be able to know whenever we are in a multiplication, but I don't
+-- see how this information would help, except for a few fringe cases that
+-- probably are not worth the investment.
+--
+-- For now, it will stay like this
+--
 mul :: forall f g a. Num a
   => Convertor f a -> Convertor g a -> Convertor (f -*- g) a
-mul f g _ a = f (Proxy :: Proxy f) a * g (Proxy :: Proxy g) a
+mul f g _ = f (Proxy :: Proxy f) . g (Proxy :: Proxy g)
 {-# INLINE mul #-}
 infixl 7 `mul`
 
 
 (-*-) :: forall f g a. Num a =>
   Convertor f a -> Convertor g a -> Convertor (f -*- g) a
-(f -*- g) _ a = f (Proxy :: Proxy f) a * g (Proxy :: Proxy g) a
+(-*-) =mul
 {-# INLINE (-*-) #-}
 
 
@@ -229,7 +288,21 @@ instance (PowClass f n a, np1 ~ n + 1, Num a) => PowClass f np1 a where
 (-^-) = pow
 
 
+fromStd :: forall f a. Coercible a (f a)
+  => Convertor f (From a) -> a -> f a
+fromStd f a = coerce (f (Proxy :: Proxy f)) a
 
+toStd :: forall f a. Coercible a (f a)
+  => Convertor f (To a) -> a -> f a
+toStd f a = coerce (f (Proxy :: Proxy f)) a
+
+fromStd' :: forall f a. Coercible a (f a)
+  => Convertor f (From a) -> a -> a
+fromStd' f a = coerce (f (Proxy :: Proxy f)) a
+
+toStd' :: forall f a. ConvertorClass f (To a)
+  => Convertor f (To a) -> a -> a
+toStd' f a = coerce (f (Proxy :: Proxy f)) a
 
 
 fromTo :: forall f g a. (Coercible a (g a), Coercible a (f a))
