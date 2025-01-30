@@ -10,17 +10,13 @@ newtype Second a = Second a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
--- instance ConvertType Second a where
---   convertType _ = second
---   {-# INLINE convertType #-}
-
 second :: Convertor Second a
 second = convertor
 
 seconds :: Convertor Second a
 seconds = convertor
 
-instance ConvertType Second a where
+instance ConvertorClass Second a where
   convertor _ = id
   {-# INLINE convertor #-}
 
@@ -28,25 +24,25 @@ newtype Hour a = Hour a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-hour :: ConvertType Hour a => Convertor Hour a
+hour :: ConvertorClass Hour a => Convertor Hour a
 hour = convertor
 
-hours :: ConvertType Hour a => Convertor Hour a
+hours :: ConvertorClass Hour a => Convertor Hour a
 hours = convertor
 
-instance Num a => ConvertType Hour (From a) where
+instance Num a => ConvertorClass Hour (From a) where
   convertor _ x = x * 3600
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertType Hour (To a) where
+instance Fractional a => ConvertorClass Hour (To a) where
   convertor _ x = x / 3600
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertType Hour (Per (From a)) where
+instance Fractional a => ConvertorClass Hour (Per (From a)) where
   convertor _ x = x / 3600
   {-# INLINE convertor #-}
 
-instance Num a => ConvertType Hour (Per (To a)) where
+instance Num a => ConvertorClass Hour (Per (To a)) where
   convertor _ x = x * 3600
   {-# INLINE convertor #-}
 
@@ -56,7 +52,7 @@ instance Num a => ConvertType Hour (Per (To a)) where
 
 
 
--- -- instance ConvHour a => ConvertType Hour a where
+-- -- instance ConvHour a => ConvertorClass Hour a where
 -- --   convertType _ = hour
 
 -- class ConvHour a where
@@ -87,7 +83,7 @@ instance Num a => ConvertType Hour (Per (To a)) where
 --   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
 --           , Bounded, Enum, Semigroup, Monoid)
 
--- -- instance ConvDay a => ConvertType Day a where
+-- -- instance ConvDay a => ConvertorClass Day a where
 -- --   convertType _ = day
 
 -- class ConvDay a where

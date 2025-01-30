@@ -39,21 +39,21 @@ newtype ((f :: Type -> Type) -^- (n :: Nat)) a = PowDim (f a)
 infixl 8 -^-
 
 
-class ConvertType (f :: Type -> Type) a where
+class ConvertorClass (f :: Type -> Type) a where
   convertor :: Convertor f a
 
-instance (ConvertType f a, ConvertType g (Per a), Num a)
-  => ConvertType ( f -/- g) a where
+instance (ConvertorClass f a, ConvertorClass g (Per a), Num a)
+  => ConvertorClass ( f -/- g) a where
   convertor =
     (convertor :: Convertor f a) -/- (convertor :: Convertor g (Per a))
 
-instance (ConvertType f a, ConvertType g a, Num a)
-  => ConvertType ( f -*- g) a where
+instance (ConvertorClass f a, ConvertorClass g a, Num a)
+  => ConvertorClass ( f -*- g) a where
   convertor _ =
     convertor (Proxy :: Proxy f) -*- convertor (Proxy :: Proxy g)
 
-instance (ConvertType f a, Num a, KnownNat n)
-  => ConvertType ( f -^- n) a where
+instance (ConvertorClass f a, Num a, KnownNat n)
+  => ConvertorClass ( f -^- n) a where
   convertor _ =
     convertor (Proxy :: Proxy f) -^- fromInteger (natVal (Proxy :: Proxy n))
 

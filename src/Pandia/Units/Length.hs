@@ -15,6 +15,6 @@ meter = convertor
 meters :: Convertor Meter a
 meters = convertor
 
-instance ConvertType Meter a where
+instance ConvertorClass Meter a where
   convertor _ = id
   {-# INLINE convertor #-}
