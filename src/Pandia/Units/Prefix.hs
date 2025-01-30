@@ -67,42 +67,68 @@ import Pandia.Units.Convertor
 import Data.Proxy
 import Data.Kind
 
+----------------------------------- Milli ------------------------------------
+
 newtype Milli (f :: Type -> Type) a = Milli (f a)
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
 
--- milli :: forall f a. MilliConv a => Convertor f a -> Convertor (Milli f) a
--- milli f _ = milliFun (f (Proxy :: Proxy f) :: a -> a)
+milli :: forall f a. MilliClass a => Convertor f a -> Convertor (Milli f) a
+milli f _ = milliFun (f (Proxy :: Proxy f) :: a -> a)
 
--- instance (Num a, ConvertorClass f (From a)) => ConvertorClass (Milli f) (From a) where
---   convertor _ = milliFun (convertor (Proxy :: Proxy f))
---   {-# INLINE convertor #-}
+instance (Num a, ConvertorClass f a, MilliClass a)
+  => ConvertorClass (Milli f) a where
+  convertor _ = milliFun (convertor (Proxy :: Proxy f))
+  {-# INLINE convertor #-}
+
+class MilliClass a where
+  milliFun :: (a -> a) -> a -> a
+
+instance Fractional a => MilliClass (From a) where
+  milliFun f = (/ 1000) . f
+  {-# INLINE milliFun #-}
+
+instance Num a => MilliClass (Per (From a)) where
+  milliFun f = (* 1000) . f
+  {-# INLINE milliFun #-}
+
+instance Num a => MilliClass (To a) where
+  milliFun f = (* 1000) . f
+  {-# INLINE milliFun #-}
+
+instance Fractional a => MilliClass (Per (To a)) where
+  milliFun f = (/ 1000) . f
+  {-# INLINE milliFun #-}
+
+
+------------------------------------ Kilo ------------------------------------
 
 newtype Kilo (f :: Type -> Type) a = Kilo (f a)
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat, Functor)
 
-kilo :: forall f a. KiloConv a => Convertor f a -> Convertor (Kilo f) a
+kilo :: forall f a. KiloClass a => Convertor f a -> Convertor (Kilo f) a
 kilo f _ = kiloFun (f (Proxy :: Proxy f) :: a -> a)
 
-instance (Num a, ConvertorClass f (From a)) => ConvertorClass (Kilo f) (From a) where
+instance (Num a, ConvertorClass f a, KiloClass a)
+  => ConvertorClass (Kilo f) a where
   convertor _ = kiloFun (convertor (Proxy :: Proxy f))
   {-# INLINE convertor #-}
 
-class KiloConv a where
+class KiloClass a where
   kiloFun :: (a -> a) -> a -> a
 
-instance Num a => KiloConv (From a) where
+instance Num a => KiloClass (From a) where
   kiloFun f = (* 1000) . f
   {-# INLINE kiloFun #-}
 
-instance Fractional a => KiloConv (Per (From a)) where
+instance Fractional a => KiloClass (Per (From a)) where
   kiloFun f = (/ 1000) . f
   {-# INLINE kiloFun #-}
 
-instance Fractional a => KiloConv (To a) where
+instance Fractional a => KiloClass (To a) where
   kiloFun f = (/ 1000) . f
   {-# INLINE kiloFun #-}
 
-instance Num a => KiloConv (Per (To a)) where
+instance Num a => KiloClass (Per (To a)) where
   kiloFun f = (* 1000) . f
   {-# INLINE kiloFun #-}
 
