@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE PolyKinds #-}
 
 module Pandia.Units.Convert
@@ -8,26 +6,43 @@ module Pandia.Units.Convert
 
 import Data.Coerce
 import Data.Proxy
-
+-- import GHC.TypeLits
 
 import Pandia.Units.Dimension
 import Pandia.Units.Convertor
+-- import Pandia.Units.SI
+-- import Pandia.Units.Prefix
+
+-- type family NatToUnit (n :: Nat) :: Unit where
+--   NatToUnit 0 = NoUnit
+--   NatToUnit 1 = Unit
+--   NatToUnit n  | n < 1 = Unit -*- NatToUnit (n - 1)
+
 
 
 fromSI :: forall f a. Coercible a (f a)
-  => Convertor f (From a) -> a -> f a
+  => Convertor f (To a) -> a -> f a
 fromSI f a = coerce (f (Proxy :: Proxy f)) a
 
-toSI :: forall f a. Coercible a (f a)
-  => Convertor f (To a) -> a -> f a
-toSI f a = coerce (f (Proxy :: Proxy f)) a
+
+-- TODO : implement toSI . This can be done by converting Dimension to a Unit (ie a newtype constructor)
+
+-- the following doesn't work and for now I don't know why
+
+-- type family DimToSI (d :: Dimension Nat Nat Nat Nat Nat Nat Nat) :: Unit where
+--   DimToSI ('Dimension l m t i th n j) = (Meter -^- l) -*- (Kilo Gram -^- m) -*- (Ampere -^- t) -*- (Kelvin -^- i) -*- (Mole -^- th) -*- (Candela -^- n)
+
+
+-- toSI :: forall f a. Coercible a ((DimToSI (ToDim f)) a)
+--   => Convertor f (From a) -> a -> (DimToSI (ToDim f)) a
+-- toSI f a = coerce (f (Proxy :: Proxy f)) a
 
 fromSI' :: forall f a. Coercible a (f a)
-  => Convertor f (From a) -> a -> a
+  => Convertor f (To a) -> a -> a
 fromSI' f a = coerce (f (Proxy :: Proxy f)) a
 
 toSI' :: forall f a. ConvertorClass f (To a)
-  => Convertor f (To a) -> a -> a
+  => Convertor f (From a) -> a -> a
 toSI' f a = coerce (f (Proxy :: Proxy f)) a
 
 

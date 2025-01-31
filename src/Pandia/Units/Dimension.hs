@@ -11,6 +11,7 @@ import GHC.TypeLits
 import Pandia.Units.Convertor
 
 
+
 data Dimension l m t i th n j = Dimension l m t i th n j
 
 type family MulDim (d :: Dimension Nat Nat Nat Nat Nat Nat Nat)
@@ -101,8 +102,8 @@ type SameDim f g = DimEq (ToDim f) (ToDim g) ~ 'DimOK
 ------------------------------------------------------------------------------
 
 -- | A container for a quantity whose unit can change but whose dimension is a
--- length. You can only convert to another unit, and the conversion will be the
--- identity function.
+-- length.
+--
 newtype Length a = Length a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
@@ -112,8 +113,29 @@ instance ToDimension Length where
 
 instance ConvertorClass Length (From a)
 
+-- | Convert an unspecified length to some length unit. You can only convert to
+-- that unit and not the other way around.
+--
+-- @
+--  >>> (lengthTo ~> meter) 1 Meter 1
+-- 1.0
+-- >>> (meter ~> lengthTo) 1
+-- <interactive>:9:11: error: [GHC-83865]
+--   • Couldn't match type: From a0
+--                    with: To a
+--     Expected: Convertor Length (To a)
+--       Actual: Convertor Length (From a0)
+-- @
+--
 lengthTo :: Convertor Length (From a)
 lengthTo = convertor
 {-# INLINE lengthTo #-}
 
 
+-- | Convert an unspecified mass to some mass unit. You can only convert to
+-- that unit and not the other way around.
+--
+-- @
+--  >>> (massTo ~> kilo gram) 1
+-- 1.0
+-- >>> (kilo gram ~> massTo) 1
