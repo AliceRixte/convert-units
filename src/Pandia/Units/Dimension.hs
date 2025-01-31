@@ -9,29 +9,64 @@ module Pandia.Units.Dimension
 import GHC.TypeLits
 
 import Pandia.Units.Convertor
-
+import Pandia.Units.Rel
 
 
 data Dimension l m t i th n j = Dimension l m t i th n j
 
-type family MulDim (d :: Dimension Nat Nat Nat Nat Nat Nat Nat)
-                   (d':: Dimension Nat Nat Nat Nat Nat Nat Nat)
-                      :: Dimension Nat Nat Nat Nat Nat Nat Nat where
+type NoDimension =
+  'Dimension (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0)
+
+type DimLength =
+  'Dimension (Pos 1) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0)
+
+type DimMass =
+  'Dimension (Pos 0) (Pos 1) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0)
+
+type DimTime =
+  'Dimension (Pos 0) (Pos 0) (Pos 1) (Pos 0) (Pos 0) (Pos 0) (Pos 0)
+
+type DimCurrent =
+  'Dimension (Pos 0) (Pos 0) (Pos 0) (Pos 1) (Pos 0) (Pos 0) (Pos 0)
+
+type DimTemperature =
+  'Dimension (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 1) (Pos 0) (Pos 0)
+
+type DimAmount =
+  'Dimension (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 1) (Pos 0)
+
+type DimLuminousIntensity =
+  'Dimension (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 1)
+
+type family MulDim (d :: Dimension Rel Rel Rel Rel Rel Rel Rel)
+                   (d':: Dimension Rel Rel Rel Rel Rel Rel Rel)
+                      :: Dimension Rel Rel Rel Rel Rel Rel Rel where
   MulDim ('Dimension l m t i th n j)
          ('Dimension l' m' t'  i' th' n' j') =
-    'Dimension (l + l') (m + m') (t + t') (i + i') (th + th') (n + n') (j + j')
+    'Dimension (l `SumRel` l') (m `SumRel` m') (t `SumRel` t') (i `SumRel` i') (th `SumRel` th') (n `SumRel` n') (j `SumRel` j')
 
-type family DivDim (d :: Dimension Nat Nat Nat Nat Nat Nat Nat)
-                   (d':: Dimension Nat Nat Nat Nat Nat Nat Nat)
-                      :: Dimension Nat Nat Nat Nat Nat Nat Nat where
+
+type family NegateDim (d :: Dimension Rel Rel Rel Rel Rel Rel Rel)
+                      :: Dimension Rel Rel Rel Rel Rel Rel Rel where
+  NegateDim ('Dimension l m t i th n j) =
+    'Dimension (NegateRel l) (NegateRel m) (NegateRel t) (NegateRel i) (NegateRel th) (NegateRel n) (NegateRel j)
+
+type family DivDim (d :: Dimension Rel Rel Rel Rel Rel Rel Rel)
+                   (d':: Dimension Rel Rel Rel Rel Rel Rel Rel)
+                      :: Dimension Rel Rel Rel Rel Rel Rel Rel where
   DivDim ('Dimension l m t i th n j)
          ('Dimension l' m' t'  i' th' n' j') =
-    'Dimension (l - l') (m - m') (t - t') (i - i') (th - th') (n - n') (j - j')
+    'Dimension (l `SubRel` l') (m `SubRel` m') (t `SubRel` t') (i `SubRel` i') (th `SubRel` th') (n `SubRel` n') (j `SubRel` j')
 
-type family PowDim (d :: Dimension Nat Nat Nat Nat Nat Nat Nat) (n :: Nat)
-                      :: Dimension Nat Nat Nat Nat Nat Nat Nat where
+type family PowDim (d :: Dimension Rel Rel Rel Rel Rel Rel Rel) (n :: Rel)
+                      :: Dimension Rel Rel Rel Rel Rel Rel Rel where
   PowDim ('Dimension l m t i th n j) n' =
-    'Dimension (n * n) (m * n') (t * n') (i * n') (th * n') (n * n') (j * n')
+    'Dimension (n `MulRel` n) (m `MulRel` n') (t `MulRel` n') (i `MulRel` n') (th `MulRel` n') (n `MulRel` n') (j `MulRel` n')
+
+type family NormalizeDim (d :: Dimension Rel Rel Rel Rel Rel Rel Rel)
+                      :: Dimension Rel Rel Rel Rel Rel Rel Rel where
+  NormalizeDim ('Dimension l m t i th n j) =
+    'Dimension (NormalizeRel l) (NormalizeRel m) (NormalizeRel t) (NormalizeRel i) (NormalizeRel th) (NormalizeRel n) (NormalizeRel j)
 
 
 -- | Print both dimensions in case of error
@@ -55,27 +90,27 @@ data DimCheck d =
 --                      with: DimOK
 -- @
 type family DimensionError
-  (d1 :: Dimension Nat Nat Nat Nat Nat Nat Nat)
-  (d2 :: Dimension Nat Nat Nat Nat Nat Nat Nat)
-  (d1md2 :: Dimension Nat Nat Nat Nat Nat Nat Nat)
-  :: DimCheck (Dimension Nat Nat Nat Nat Nat Nat Nat) where
+  (d1 :: Dimension Rel Rel Rel Rel Rel Rel Rel)
+  (d2 :: Dimension Rel Rel Rel Rel Rel Rel Rel)
+  (d1md2 :: Dimension Rel Rel Rel Rel Rel Rel Rel)
+  :: DimCheck (Dimension Rel Rel Rel Rel Rel Rel Rel) where
 
-  DimensionError _ _ ('Dimension 0 0 0 0 0 0 0) = 'DimOK
+  DimensionError _ _ ('Dimension (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0)) = 'DimOK
   DimensionError d d' d1md2 = 'DimError d d'
 
 
-type family DimEq (d :: Dimension Nat Nat Nat Nat Nat Nat Nat)
-                  (d' :: Dimension Nat Nat Nat Nat Nat Nat Nat)
-                  :: DimCheck (Dimension Nat Nat Nat Nat Nat Nat Nat) where
+type family DimEq (d :: Dimension Rel Rel Rel Rel Rel Rel Rel)
+                  (d' :: Dimension Rel Rel Rel Rel Rel Rel Rel)
+                  :: DimCheck (Dimension Rel Rel Rel Rel Rel Rel Rel) where
   DimEq d d' = DimensionError d d' (d `DivDim` d')
 
 
 
 class ToDimension (f :: Unit) where
-  type ToDim f :: Dimension Nat Nat Nat Nat Nat Nat Nat
+  type ToDim f :: Dimension Rel Rel Rel Rel Rel Rel Rel
 
 instance ToDimension NoUnit where
-  type ToDim NoUnit = 'Dimension 0 0 0 0 0 0 0
+  type ToDim NoUnit = NoDimension
 
 instance (ToDimension (f :: Unit), ToDimension (g :: Unit))
   => ToDimension (f -*- g) where
@@ -85,7 +120,7 @@ instance (ToDimension (f :: Unit), ToDimension (g :: Unit))
   => ToDimension (f -/- g) where
   type ToDim (f -/- g) = ToDim f `DivDim` ToDim g
 
-instance (ToDimension (f :: Unit), KnownNat n)
+instance (ToDimension (f :: Unit))
   => ToDimension (f -^- n) where
   type ToDim (f -^- n) = ToDim f `PowDim` n
 
@@ -104,7 +139,7 @@ newtype Length a = Length a
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
 instance ToDimension Length where
-  type ToDim Length = 'Dimension 1 0 0 0 0 0 0
+  type ToDim Length =  DimLength
 
 
 

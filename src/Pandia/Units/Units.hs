@@ -15,7 +15,7 @@ newtype Ton a = Ton a
           , Bounded, Enum, Semigroup, Monoid)
 
 instance ToDimension Ton where
-  type ToDim Ton = 'Dimension 0 1 0 0 0 0 0
+  type ToDim Ton = DimMass
 
 ton :: ConvertorClass Ton a => Convertor Ton a
 ton = convertor
@@ -45,7 +45,7 @@ newtype Hour a = Hour a
           , Bounded, Enum, Semigroup, Monoid)
 
 instance ToDimension Hour where
-  type ToDim Hour = 'Dimension 0 0 1 0 0 0 0
+  type ToDim Hour = DimTime
 
 hour :: ConvertorClass Hour a => Convertor Hour a
 hour = convertor

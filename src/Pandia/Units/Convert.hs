@@ -13,6 +13,7 @@ import Pandia.Units.Dimension
 import Pandia.Units.Convertor
 import Pandia.Units.SI
 import Pandia.Units.Prefix
+import Pandia.Units.Rel
 
 -- type family NatToUnit (n :: Nat) :: Unit where
 --   NatToUnit 0 = NoUnit
@@ -30,29 +31,30 @@ fromSI f a = coerce (f (Proxy :: Proxy f)) a
 
 -- but really it does not work because we need Relative type level numbers instead of natural numbers
 
-type family DimToSI (d :: Dimension Nat Nat Nat Nat Nat Nat Nat) :: Unit where
+type family DimToSI (d :: Dimension Rel Rel Rel Rel Rel Rel Rel) :: Unit where
   DimToSI ('Dimension l m t i th n j) =
-      (Meter -^- l)
-      -*- (Kilo Gram -^- m)
-      -*- (Second -^- t)
-      -*- (Ampere -^- i)
-      -*- (Kelvin -^- th)
-      -*- (Mole -^- n)
-      -*- (Candela -^- j)
+          (Meter     -^- l )
+      -*- (Kilo Gram -^- m )
+      -*- (Second    -^- t )
+      -*- (Ampere    -^- i )
+      -*- (Kelvin    -^- th)
+      -*- (Mole      -^- n )
+      -*- (Candela   -^- j )
 
 type family ElimDiv (f :: Unit) :: Unit where
     ElimDiv (f -*- g) = ElimDiv f -*- ElimDiv g
     ElimDiv (f -^- n) = ElimDiv f -^- n
     ElimDiv (f -/- f) = NoUnit
-    ElimDiv (f -/- g) = ElimDiv f -*- ElimDiv g -^- (0-1) -- BAD ! this does not  work, as 0 - 1 has no instance
+    ElimDiv (f -/- g) = ElimDiv f -*- ElimDiv g -^- Neg 1
     ElimDiv f = f
 
 type family ElimPow (f :: Unit) :: Unit where
   ElimPow (f -/- g) = ElimPow f -/- ElimPow g
   ElimPow (f -*- g) = ElimPow f -*- ElimPow g
-  ElimPow (f -^- 0) = NoUnit
-  ElimPow (f -^- 1) = ElimPow f
-  ElimPow ((f -^- n) -^- m) = ElimPow (f -^- (n * m))
+  ElimPow (f -^- Pos 0) = NoUnit
+  ElimPow (f -^- Neg 0) = NoUnit
+  ElimPow (f -^- Pos 1) = ElimPow f
+  ElimPow ((f -^- n) -^- m) = ElimPow (f -^- (n `MulRel` m))
   ElimPow ((f -*- g) -^- n) = ElimPow (f -^- n -*- g -^- n)
   ElimPow f = f
 
@@ -65,7 +67,6 @@ type family ElimNoUnit (f :: Unit) :: Unit where
 type family NormalizeUnit (f :: Unit) :: Unit where
   NormalizeUnit f = ElimNoUnit (ElimPow (ElimDiv f))
 
-data Rel n = Pos n | Neg n
 
 
 type family UnitToSI (f :: Unit) :: Unit where

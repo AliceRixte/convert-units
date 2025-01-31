@@ -5,6 +5,7 @@ module Pandia.Units.SI
 import Pandia.Units.Convertor
 import Pandia.Units.Dimension
 import Pandia.Units.Prefix
+import Pandia.Units.Rel
 
 ----------------------------------- Length -----------------------------------
 
@@ -13,7 +14,7 @@ newtype Meter a = Meter a
           , Bounded, Enum, Semigroup, Monoid)
 
 instance ToDimension Meter where
-  type ToDim Meter = 'Dimension 1 0 0 0 0 0 0
+  type ToDim Meter = DimLength
 
 instance ConvertorClass Meter a
 
@@ -28,7 +29,7 @@ newtype Gram a = Gram a
           , Bounded, Enum, Semigroup, Monoid)
 
 instance ToDimension Gram where
-  type ToDim Gram = 'Dimension 0 1 0 0 0 0 0
+  type ToDim Gram = DimMass
 
 gram :: ConvertorClass Gram a => Convertor Gram a
 gram = convertor
@@ -58,7 +59,7 @@ newtype Second a = Second a
           , Bounded, Enum, Semigroup, Monoid)
 
 instance ToDimension Second where
-  type ToDim Second = 'Dimension 0 0 1 0 0 0 0
+  type ToDim Second = DimTime
 
 instance ConvertorClass Second a
 
@@ -74,7 +75,7 @@ newtype Ampere a = Ampere a
           , Bounded, Enum, Semigroup, Monoid)
 
 instance ToDimension Ampere where
-  type ToDim Ampere = 'Dimension 0 0 0 1 0 0 0
+  type ToDim Ampere = DimCurrent
 
 instance ConvertorClass Ampere a
 
@@ -90,7 +91,7 @@ newtype Kelvin a = Kelvin a
           , Bounded, Enum, Semigroup, Monoid)
 
 instance ToDimension Kelvin where
-  type ToDim Kelvin = 'Dimension 0 0 0 0 1 0 0
+  type ToDim Kelvin = DimTemperature
 
 instance ConvertorClass Kelvin a
 
@@ -106,7 +107,7 @@ newtype Mole a = Mole a
           , Bounded, Enum, Semigroup, Monoid)
 
 instance ToDimension Mole where
-  type ToDim Mole = 'Dimension 0 0 0 0 0 1 0
+  type ToDim Mole = DimAmount
 
 instance ConvertorClass Mole a
 
@@ -121,7 +122,7 @@ newtype Candela a = Candela a
           , Bounded, Enum, Semigroup, Monoid)
 
 instance ToDimension Candela where
-  type ToDim Candela = 'Dimension 0 0 0 0 0 0 1
+  type ToDim Candela = DimLuminousIntensity
 
 instance ConvertorClass Candela a
 
@@ -132,5 +133,5 @@ candela = convertor
 
 ------------------------------- Compound units -------------------------------
 
-type Newton = Kilo Gram -*- Meter -/- Second -^- 2
+type Newton = Kilo Gram -*- Meter -/- Second -^- Pos 2
 

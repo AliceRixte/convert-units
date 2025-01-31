@@ -37,6 +37,8 @@ import Data.Kind
 
 import GHC.TypeLits
 
+import Pandia.Units.Rel
+
 type Unit = Type -> Type
 
 -- | Multiplication of two units.
@@ -74,7 +76,7 @@ infix 6 -/-
 -- type MyAcceleration a = (Meter -/- Second -^- 2) a
 -- @
 --
-newtype ((f :: Unit) -^- (n :: Nat)) a = PowDim (f a)
+newtype ((f :: Unit) -^- (n :: Rel)) a = PowDim (f a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infix 8 -^-
@@ -114,10 +116,10 @@ instance (ConvertorClass f a, ConvertorClass g a, Num a)
     (convertor :: Convertor f a) -*- (convertor :: Convertor g a)
   {-# INLINE convertor #-}
 
-instance (PowClass f n a, ConvertorClass f a, KnownNat n)
+instance (PowClass f n a, ConvertorClass f a, RelVal n)
   => ConvertorClass ( f -^- n) a where
   convertor =
-    (convertor :: Convertor f a) -^- fromInteger (natVal (Proxy :: Proxy n))
+    (convertor :: Convertor f a) -^- fromInteger (relVal (Proxy :: Proxy n))
   {-# INLINE convertor #-}
 
 
@@ -197,6 +199,9 @@ infix 6 `per`
 (f -/- g) a = per f g a
 {-# INLINE (-/-) #-}
 
+invert :: forall f a. Convertor f a -> Convertor f (Per a)
+invert f _ = coerce (f (Proxy :: Proxy f))
+
 
 -- | Multiplication of convertors. / Warning  : Use with caution \
 --
@@ -263,24 +268,48 @@ infixl 7 `mul`
 {-# INLINE (-*-) #-}
 
 
-class PowClass (f :: Unit) (n::Nat) a where
+timesFun  :: Int -> (a -> a) -> a -> a
+timesFun 0 _ = id
+timesFun n f = f . timesFun (n - 1) f
+{-# INLINE timesFun #-}
+
+powConv :: Convertor f a -> Int -> a -> a
+powConv f n | n >= 0  = timesFun n (f (Proxy :: Proxy f))
+            | n < 0   = coerce $ timesFun n (invert f (Proxy :: Proxy f))
+{-# INLINE powConv #-}
+
+-- powNeg :: Convertor f (Per a) -> Int -> a -> a
+-- powNeg f 0 = id
+-- powNeg f 1 = coerce $ f (Proxy :: Proxy f)
+-- powNeg f n = coerce $ f (Proxy :: Proxy f) . powNeg f (n - 1)
+-- {-# INLINE powNeg #-}
+
+class PowClass (f :: Unit) (n::Rel) a where
   pow :: Convertor f a -> Int -> Convertor (f -^- n) a
   infix 8 `pow`
 
-instance PowClass f 0 a where
+instance PowClass f (Pos 0) a where
   pow _ 0 _ = coerce (id :: a -> a)
   pow _ _ _ = error "The exponent doesn't match the dimension"
   {-# INLINE pow #-}
 
-instance PowClass f 1 a where
-  pow f 1 = coerce f
-  pow _ _ = error "The exponent doesn't match the dimension"
-  {-# INLINE pow #-}
 
-instance (PowClass f n a, np1 ~ n + 1, Num a) => PowClass f np1 a where
-  pow f n _ a = f (Proxy :: Proxy f) a
-                * pow f (n - 1) (Proxy :: Proxy (f -^- n)) a
-  {-# INLINE pow #-}
+
+
+-- instance (PowClass f (Pos n) a, np1 ~ n + 1, Num a)
+--   => PowClass f (Pos np1) a where
+--   pow f n _ a = f (Proxy :: Proxy f) a
+--                 * pow f (n - 1) (Proxy :: Proxy (f -^- Pos n)) a
+--   {-# INLINE pow #-}
+
+-- instance PowClass f (Neg 0) a where
+--   pow _ 0 _ = coerce (id :: a -> a)
+--   pow _ _ _ = error "The exponent doesn't match the dimension"
+--   {-# INLINE pow #-}
+
+-- instance PowClass f (Neg 1) a where
+--   pow f (-1) _ a = coerce (f (Proxy :: Proxy f) (Per a))
+
 
 (-^-) :: forall f n a.  PowClass f n a
   => Convertor f a -> Int -> Convertor (f -^- n) a
