@@ -3,11 +3,14 @@ module Pandia.Units.International
   ) where
 
 import Pandia.Units.Convertor
-import Pandia.Units.Prefix
+import Pandia.Units.Dimension
 
 newtype Meter a = Meter a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+instance ToDimension Meter where
+  type ToDim Meter = 'Dimension 1 0 0 0 0 0 0
 
 instance ConvertorClass Meter a
 
@@ -19,6 +22,9 @@ meter = convertor
 newtype Second a = Second a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+instance ToDimension Second where
+  type ToDim Second = 'Dimension 0 1 0 0 0 0 0
 
 instance ConvertorClass Second a
 

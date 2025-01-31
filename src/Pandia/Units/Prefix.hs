@@ -63,6 +63,7 @@ module Pandia.Units.Prefix
   ) where
 
 import Pandia.Units.Convertor
+import Pandia.Units.Dimension
 
 import Data.Proxy
 import Data.Kind
@@ -72,9 +73,15 @@ import Data.Kind
 newtype Milli (f :: Type -> Type) a = Milli (f a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+
+instance ToDimension f => ToDimension (Milli f) where
+  type ToDim (Milli f) = ToDim f
+
 milli :: forall f a. MilliClass a => Convertor f a -> Convertor (Milli f) a
 milli f _ = milliFun (f (Proxy :: Proxy f) :: a -> a)
 {-# INLINE milli #-}
+
+
 
 instance (Num a, ConvertorClass f a, MilliClass a)
   => ConvertorClass (Milli f) a where
@@ -105,6 +112,9 @@ instance Fractional a => MilliClass (Per (To a)) where
 newtype Deca (f :: Type -> Type) a = Deca (f a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
              , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+
+instance ToDimension f => ToDimension (Deca f) where
+  type ToDim (Deca f) = ToDim f
 
 deca :: forall f a. DecaClass a => Convertor f a -> Convertor (Deca f) a
 deca f _ = decaFun (f (Proxy :: Proxy f) :: a -> a)
@@ -139,6 +149,9 @@ instance Num a => DecaClass (Per (To a)) where
 newtype Kilo (f :: Type -> Type) a = Kilo (f a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+
+instance ToDimension f => ToDimension (Kilo f) where
+  type ToDim (Kilo f) = ToDim f
 
 kilo :: forall f a. KiloClass a => Convertor f a -> Convertor (Kilo f) a
 kilo f _ = kiloFun (f (Proxy :: Proxy f) :: a -> a)

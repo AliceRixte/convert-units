@@ -38,6 +38,8 @@ import Data.Functor.Identity
 
 import GHC.TypeLits
 
+type Unit = Type -> Type
+
 -- | Multiplication of two units.
 --
 -- @
