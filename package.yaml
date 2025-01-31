@@ -32,21 +32,16 @@ library:
   - -O2 #TODO change
   default-extensions:
     - GeneralizedNewtypeDeriving
-    - FunctionalDependencies
+    - TypeOperators
+    - PolyKinds
+    - ScopedTypeVariables
+    - DataKinds
+    - TypeFamilies
+    - FlexibleInstances
+    - UndecidableInstances
     - MultiParamTypeClasses
     - FlexibleContexts
-    - FlexibleInstances
-    - StandaloneDeriving
-    - ScopedTypeVariables
-    - UndecidableInstances
-    - MonoLocalBinds
-    - DataKinds
-    - TypeOperators
-    - TypeFamilies
-    - OverloadedLabels
-    - TypeApplications
-    - DerivingVia
-    - DefaultSignatures
+
   source-dirs: src
 
 
