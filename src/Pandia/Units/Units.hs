@@ -1,5 +1,5 @@
-module Pandia.Units.International
-  ( module Pandia.Units.International
+module Pandia.Units.Units
+  ( module Pandia.Units.Units
   ) where
 
 import Pandia.Units.Convertor

@@ -29,11 +29,8 @@ library
       Pandia.Units
       Pandia.Units.Convertor
       Pandia.Units.Dimension
-      Pandia.Units.International
-      Pandia.Units.Length
       Pandia.Units.Prefix
-      Pandia.Units.Temperature
-      Pandia.Units.Time
+      Pandia.Units.Units
   other-modules:
       Paths_pandia_units
   hs-source-dirs:

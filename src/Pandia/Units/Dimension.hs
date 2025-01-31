@@ -1,14 +1,10 @@
 {-# LANGUAGE NoStarIsType #-}
 {-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE PolyKinds #-}
 
 module Pandia.Units.Dimension
   ( module Pandia.Units.Dimension
   ) where
 
-import Data.Proxy
-import Data.Kind
-import Data.Functor.Identity
 import GHC.TypeLits
 import Data.Coerce
 

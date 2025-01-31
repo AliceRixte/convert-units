@@ -34,7 +34,6 @@ module Pandia.Units.Convertor
 import Data.Coerce
 import Data.Proxy
 import Data.Kind
-import Data.Functor.Identity
 
 import GHC.TypeLits
 
