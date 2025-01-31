@@ -32,6 +32,36 @@ second :: Convertor Second a
 second = convertor
 {-# INLINE second #-}
 
+newtype Hour a = Hour a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+instance ToDimension Hour where
+  type ToDim Hour = 'Dimension 0 1 0 0 0 0 0
+
+hour :: ConvertorClass Hour a => Convertor Hour a
+hour = convertor
+{-# INLINE hour #-}
+
+instance Num a => ConvertorClass Hour (From a) where
+  convertor _ x = x * 3600
+  {-# INLINE convertor #-}
+
+instance Fractional a => ConvertorClass Hour (Per (From a)) where
+  convertor _ x = x / 3600
+  {-# INLINE convertor #-}
+
+instance Fractional a => ConvertorClass Hour (To a) where
+  convertor _ x = x / 3600
+  {-# INLINE convertor #-}
+
+instance Num a => ConvertorClass Hour (Per (To a)) where
+  convertor _ x = x * 3600
+  {-# INLINE convertor #-}
+
+
+
+
 
 newtype Newton a = Newton a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat

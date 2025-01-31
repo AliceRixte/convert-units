@@ -15,17 +15,16 @@ iterations = [10, 100, 1000]
 
 
 kmphTomps :: Int -> Double
-kmphTomps n =  iterate (kilo meters -/- hour ~~> meters -/- second) 5 !! n
+kmphTomps n =  iterate (kilo meter -/- hour ~~> meter -/- second) 5 !! n
 
-fasterConv :: Int -> Double
-fasterConv n =  iterate (*3.6) (5 :: Double) !! n
+multConv :: Int -> Double
+multConv n =  iterate (*3.6) (5 :: Double) !! n
 
 main :: IO()
 main = do
-  print  "xouxou"
   defaultMain [
     bgroup "~>" [
         bgroup "kmph ~> mps" (fmap (mkBench kmphTomps) iterations)
-      , bgroup "mult" (fmap (mkBench fasterConv) iterations)
+      , bgroup "mult" (fmap (mkBench multConv) iterations)
       ]
     ]
