@@ -48,6 +48,8 @@ data DimCheck =
 -- | Used for better reading of error messages
 newtype DiffDimIsNotZero d = DiffDimIsNotZero d
 
+
+
 -- | This allows Haskell to print an error message showing the dimension
 -- missmatch
 --
@@ -80,6 +82,7 @@ type family DimEq (d :: Dimension Nat Nat Nat Nat Nat Nat Nat)
   DimEq d d' = DimensionError d d' ('DiffDimIsNotZero (d `DivDim` d'))
 
 
+
 class ToDimension (f :: Unit) where
   type ToDim f :: Dimension Nat Nat Nat Nat Nat Nat Nat
 
@@ -106,6 +109,22 @@ convertCheck :: forall f g a.
   => Convertor f (From a) -> Convertor g (To a) -> f a -> g a
 convertCheck = (~>)
 
+-- | Convert a quantity from one unit to the other, and checks if the unit's
+-- dimensions are compatible
+--
+-- @
+-- >>> x = 4 :: (Kilo Meter -/- Second) Double
+-- >>> asCheck x meter
+-- <interactive>:54:1: error: [GHC-18872]
+--     • Couldn't match type ‘DimensionError
+--                              ('Dimension 1 (0 GHC.TypeNats.- 1) 0 0 0 0 0)
+--                              ('Dimension 1 0 0 0 0 0 0)
+--                              ('DiffDimIsNotZero ('Dimension 0 (0 GHC.TypeNats.- 1) 0 0 0 0 0))’
+--                      with ‘DimOK’
+--         arising from a use of ‘asCheck’
+--     • In the expression: asCheck x meter
+--       In an equation for ‘it’: it = asCheck x meter
+-- @
 asCheck :: forall f g a.
   (Coercible a (f a), Coercible a (g a), ConvertorClass f (From a), SameDim f g)
   => f a -> Convertor g (To a) -> g a
