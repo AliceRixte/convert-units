@@ -45,7 +45,7 @@ type Unit = Type -> Type
 -- type MyForceMoment a = (Newton -*- Meter) a
 -- @
 --
-newtype ((f :: Type -> Type) -*- (g :: Type -> Type)) a = MulDim (f (g a))
+newtype ((f :: Unit) -*- (g :: Unit)) a = MulDim (f (g a))
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infixl 7 -*-
@@ -59,7 +59,7 @@ infixl 7 -*-
 --
 -- Notice that division has priority over division.
 --
-newtype ((f :: Type -> Type) -/- (g :: Type -> Type)) a = PerDim (f (g a))
+newtype ((f :: Unit) -/- (g :: Unit)) a = PerDim (f (g a))
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infix 6 -/-
@@ -73,7 +73,7 @@ infix 6 -/-
 -- type MyAcceleration a = (Meter -/- Second -^- 2) a
 -- @
 --
-newtype ((f :: Type -> Type) -^- (n :: Nat)) a = PowDim (f a)
+newtype ((f :: Unit) -^- (n :: Nat)) a = PowDim (f a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infix 8 -^-
@@ -92,11 +92,11 @@ newtype NoUnit a = NoUnit a
 --
 -- Convertors can be combined via 'mul'@, @'per'@, and @'pow'@ .
 --
-type Convertor (f :: Type -> Type) a = Proxy f -> a -> a
+type Convertor (f :: Unit) a = Proxy f -> a -> a
 
 -- | Create a convertor from a unit newtype
 --
-class ConvertorClass (f :: Type -> Type) a where
+class ConvertorClass (f :: Unit) a where
   convertor :: Convertor f a
   convertor _ = id
   {-# INLINE convertor #-}
@@ -262,7 +262,7 @@ infixl 7 `mul`
 {-# INLINE (-*-) #-}
 
 
-class PowClass (f :: Type -> Type) (n::Nat) a where
+class PowClass (f :: Unit) (n::Nat) a where
   pow :: Convertor f a -> Int -> Convertor (f -^- n) a
   infix 8 `pow`
 
@@ -284,52 +284,4 @@ instance (PowClass f n a, np1 ~ n + 1, Num a) => PowClass f np1 a where
 (-^-) :: forall f n a.  PowClass f n a
   => Convertor f a -> Int -> Convertor (f -^- n) a
 (-^-) = pow
-
-
-fromStd :: forall f a. Coercible a (f a)
-  => Convertor f (From a) -> a -> f a
-fromStd f a = coerce (f (Proxy :: Proxy f)) a
-
-toStd :: forall f a. Coercible a (f a)
-  => Convertor f (To a) -> a -> f a
-toStd f a = coerce (f (Proxy :: Proxy f)) a
-
-fromStd' :: forall f a. Coercible a (f a)
-  => Convertor f (From a) -> a -> a
-fromStd' f a = coerce (f (Proxy :: Proxy f)) a
-
-toStd' :: forall f a. ConvertorClass f (To a)
-  => Convertor f (To a) -> a -> a
-toStd' f a = coerce (f (Proxy :: Proxy f)) a
-
-
-fromTo :: forall f g a. (Coercible a (g a), Coercible a (f a))
-   => Convertor f (From a) -> Convertor g (To a) -> f a -> g a
-fromTo f t a = coerce
-   $ (coerce (t (Proxy :: Proxy g)) :: a -> a)
-   $ (coerce (f (Proxy :: Proxy f)) :: a -> a)
-   $ (coerce a :: a)
-{-# INLINE fromTo #-}
-infix 2 `fromTo`
-
-
-as :: forall f g a.
-  (Coercible a (f a), Coercible a (g a), ConvertorClass f (From a))
-  => f a -> Convertor g (To a) -> g a
-as fa g = fromTo (convertor :: Convertor f (From a)) g fa
-{-# INLINE as #-}
-infix 2 `as`
-
-(~>) :: forall f g a. (Coercible a (g a), Coercible a (f a))
-  => Convertor f (From a) -> Convertor g (To a) -> f a -> g a
-(~>) = fromTo
-{-# INLINE (~>) #-}
-infix 2 ~>
-
-(~~>) :: forall f g a.
-  Convertor f (From a) -> Convertor g (To a) -> a -> a
-f ~~> t = (coerce (t (Proxy :: Proxy g)) :: a -> a)
-            . (coerce (f (Proxy :: Proxy f)) :: a -> a)
-{-# INLINE (~~>) #-}
-infix 2 ~~>
 

@@ -27,6 +27,7 @@ source-repository head
 library
   exposed-modules:
       Pandia.Units
+      Pandia.Units.Convert
       Pandia.Units.Convertor
       Pandia.Units.Dimension
       Pandia.Units.Prefix

@@ -1,12 +1,12 @@
 {-# LANGUAGE NoStarIsType #-}
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DeriveFunctor #-}
 
 module Pandia.Units.Dimension
   ( module Pandia.Units.Dimension
   ) where
 
 import GHC.TypeLits
-import Data.Coerce
 
 import Pandia.Units.Convertor
 
@@ -31,8 +31,6 @@ type family PowDim (d :: Dimension Nat Nat Nat Nat Nat Nat Nat) (n :: Nat)
                       :: Dimension Nat Nat Nat Nat Nat Nat Nat where
   PowDim ('Dimension l m t i th n j) n' =
     'Dimension (n * n) (m * n') (t * n') (i * n') (th * n') (n * n') (j * n')
-
-
 
 
 -- | Are two dimensions equal?
@@ -100,28 +98,22 @@ instance (ToDimension (f :: Unit), KnownNat n)
 
 type SameDim f g = DimEq (ToDim f) (ToDim g) ~ 'DimOK
 
-convertCheck :: forall f g a.
-  (Coercible a (g a), Coercible a (f a), SameDim f g)
-  => Convertor f (From a) -> Convertor g (To a) -> f a -> g a
-convertCheck = (~>)
+------------------------------------------------------------------------------
 
--- | Convert a quantity from one unit to the other, and checks if the unit's
--- dimensions are compatible
---
--- @
--- >>> x = 4 :: (Kilo Meter -/- Second) Double
--- >>> asCheck x meter
--- <interactive>:54:1: error: [GHC-18872]
---     • Couldn't match type ‘DimensionError
---                              ('Dimension 1 (0 GHC.TypeNats.- 1) 0 0 0 0 0)
---                              ('Dimension 1 0 0 0 0 0 0)
---                              ('DiffDimIsNotZero ('Dimension 0 (0 GHC.TypeNats.- 1) 0 0 0 0 0))’
---                      with ‘DimOK’
---         arising from a use of ‘asCheck’
---     • In the expression: asCheck x meter
---       In an equation for ‘it’: it = asCheck x meter
--- @
-asCheck :: forall f g a.
-  (Coercible a (f a), Coercible a (g a), ConvertorClass f (From a), SameDim f g)
-  => f a -> Convertor g (To a) -> g a
-asCheck = as
+-- | A container for a quantity whose unit can change but whose dimension is a
+-- length. You can only convert to another unit, and the conversion will be the
+-- identity function.
+newtype Length a = Length a
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+
+instance ToDimension Length where
+  type ToDim Length = 'Dimension 1 0 0 0 0 0 0
+
+instance ConvertorClass Length (From a)
+
+lengthTo :: Convertor Length (From a)
+lengthTo = convertor
+{-# INLINE lengthTo #-}
+
+
