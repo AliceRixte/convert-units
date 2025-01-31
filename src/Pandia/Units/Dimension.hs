@@ -96,8 +96,6 @@ type SameDim f g = DimEq (ToDim f) (ToDim g) ~ 'DimOK
 
 
 
-
-
 -- | A container for a quantity whose unit can change but whose dimension is a
 -- length.
 --
