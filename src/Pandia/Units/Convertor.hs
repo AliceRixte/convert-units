@@ -64,6 +64,7 @@ newtype ((f :: Unit) -/- (g :: Unit)) a = PerDim (f (g a))
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infix 6 -/-
 
+
 -- | Unit to the power of a positive natural number
 --
 -- Negative exponents are not supported. Use division and @'NoUnit'@ if you need

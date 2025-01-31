@@ -1,4 +1,5 @@
 {-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE NoStarIsType #-}
 
 module Pandia.Units.Convert
   ( module Pandia.Units.Convert
@@ -6,12 +7,12 @@ module Pandia.Units.Convert
 
 import Data.Coerce
 import Data.Proxy
--- import GHC.TypeLits
+import GHC.TypeLits
 
 import Pandia.Units.Dimension
 import Pandia.Units.Convertor
--- import Pandia.Units.SI
--- import Pandia.Units.Prefix
+import Pandia.Units.SI
+import Pandia.Units.Prefix
 
 -- type family NatToUnit (n :: Nat) :: Unit where
 --   NatToUnit 0 = NoUnit
@@ -25,17 +26,57 @@ fromSI :: forall f a. Coercible a (f a)
 fromSI f a = coerce (f (Proxy :: Proxy f)) a
 
 
--- TODO : implement toSI . This can be done by converting Dimension to a Unit (ie a newtype constructor)
+--  The following type families aim at implementing a normalization function that toSI can use (and it also would be useful in many other cases)
 
--- the following doesn't work and for now I don't know why
+-- but really it does not work because we need Relative type level numbers instead of natural numbers
 
--- type family DimToSI (d :: Dimension Nat Nat Nat Nat Nat Nat Nat) :: Unit where
---   DimToSI ('Dimension l m t i th n j) = (Meter -^- l) -*- (Kilo Gram -^- m) -*- (Ampere -^- t) -*- (Kelvin -^- i) -*- (Mole -^- th) -*- (Candela -^- n)
+type family DimToSI (d :: Dimension Nat Nat Nat Nat Nat Nat Nat) :: Unit where
+  DimToSI ('Dimension l m t i th n j) =
+      (Meter -^- l)
+      -*- (Kilo Gram -^- m)
+      -*- (Second -^- t)
+      -*- (Ampere -^- i)
+      -*- (Kelvin -^- th)
+      -*- (Mole -^- n)
+      -*- (Candela -^- j)
+
+type family ElimDiv (f :: Unit) :: Unit where
+    ElimDiv (f -*- g) = ElimDiv f -*- ElimDiv g
+    ElimDiv (f -^- n) = ElimDiv f -^- n
+    ElimDiv (f -/- f) = NoUnit
+    ElimDiv (f -/- g) = ElimDiv f -*- ElimDiv g -^- (0-1) -- BAD ! this does not  work, as 0 - 1 has no instance
+    ElimDiv f = f
+
+type family ElimPow (f :: Unit) :: Unit where
+  ElimPow (f -/- g) = ElimPow f -/- ElimPow g
+  ElimPow (f -*- g) = ElimPow f -*- ElimPow g
+  ElimPow (f -^- 0) = NoUnit
+  ElimPow (f -^- 1) = ElimPow f
+  ElimPow ((f -^- n) -^- m) = ElimPow (f -^- (n * m))
+  ElimPow ((f -*- g) -^- n) = ElimPow (f -^- n -*- g -^- n)
+  ElimPow f = f
+
+type family ElimNoUnit (f :: Unit) :: Unit where
+  ElimNoUnit (NoUnit -*- f) = ElimNoUnit f
+  ElimNoUnit (f -*- NoUnit) = ElimNoUnit f
+  ElimNoUnit (f -*- g) = ElimNoUnit f -*- ElimNoUnit g
+  ElimNoUnit f = f
+
+type family NormalizeUnit (f :: Unit) :: Unit where
+  NormalizeUnit f = ElimNoUnit (ElimPow (ElimDiv f))
+
+data Rel n = Pos n | Neg n
 
 
--- toSI :: forall f a. Coercible a ((DimToSI (ToDim f)) a)
---   => Convertor f (From a) -> a -> (DimToSI (ToDim f)) a
--- toSI f a = coerce (f (Proxy :: Proxy f)) a
+type family UnitToSI (f :: Unit) :: Unit where
+  UnitToSI f = NormalizeUnit (DimToSI (ToDim f))
+
+
+--  | This does NOT work ! Type inference will fail as soon as there is a negative exponent.
+toSI :: forall f a. Coercible a ((UnitToSI f) a)
+  => Convertor f (From a) -> a -> (UnitToSI f) a
+toSI f a = coerce (f (Proxy :: Proxy f)) a
+
 
 fromSI' :: forall f a. Coercible a (f a)
   => Convertor f (To a) -> a -> a
@@ -103,7 +144,7 @@ convertCheck = (~>)
 --
 -- @
 -- >>> x = 4 :: (Kilo Meter -/- Second) Double
--- >>> asCheck x meter
+-- >>> as x meter
 -- <interactive>:54:1: error: [GHC-18872]
 --     • Couldn't match type ‘DimensionError
 --                              ('Dimension 1 (0 GHC.TypeNats.- 1) 0 0 0 0 0)

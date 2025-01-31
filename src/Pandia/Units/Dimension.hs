@@ -34,15 +34,10 @@ type family PowDim (d :: Dimension Nat Nat Nat Nat Nat Nat Nat) (n :: Nat)
     'Dimension (n * n) (m * n') (t * n') (i * n') (th * n') (n * n') (j * n')
 
 
--- | Are two dimensions equal?
-data DimCheck =
+-- | Print both dimensions in case of error
+data DimCheck d =
     DimOK
-  | DimError
-
-
--- | Used for better reading of error messages
-newtype DiffDimIsNotZero d = DiffDimIsNotZero d
-
+  | DimError d d
 
 
 -- | This allows Haskell to print an error message showing the dimension
@@ -51,30 +46,28 @@ newtype DiffDimIsNotZero d = DiffDimIsNotZero d
 -- For instance, when trying to convert kilo meter per second to meters, this shows the following error message:
 --
 -- @
--- >ghci> x = 4 :: (Kilo Meter -/- Second) Double
--- >ghci> asCheck x meter
+-- ghci> x = 10 :: Second Int
+-- ghci> x  `as` gram
 
--- ><interactive>:54:1: error: [GHC-18872]
--- >    • Couldn't match type ‘DimensionError
--- >                             ('Dimension 1 (0 GHC.TypeNats.- 1) 0 0 0 0 0)
--- >                             ('Dimension 1 0 0 0 0 0 0)
--- >                             ('DiffDimIsNotZero ('Dimension 0 (0 GHC.TypeNats.- 1) 0 0 0 0 0))’
--- >                     with ‘DimOK’
--- >        arising from a use of ‘asCheck’
--- >    • In the expression: asCheck x meter
--- >      In an equation for ‘it’: it = asCheck x meter
+-- <interactive>:86:4: error: [GHC-18872]
+--     • Couldn't match type: DimError
+--                              ('Dimension 0 0 1 0 0 0 0) ('Dimension 0 1 0 0 0 0 0)
+--                      with: DimOK
 -- @
 type family DimensionError
   (d1 :: Dimension Nat Nat Nat Nat Nat Nat Nat)
   (d2 :: Dimension Nat Nat Nat Nat Nat Nat Nat)
-  (d1md2 :: DiffDimIsNotZero (Dimension Nat Nat Nat Nat Nat Nat Nat)) :: DimCheck where
-  DimensionError _ _('DiffDimIsNotZero ('Dimension 0 0 0 0 0 0 0)) = 'DimOK
-  DimensionError _ _ _ = 'DimError
+  (d1md2 :: Dimension Nat Nat Nat Nat Nat Nat Nat)
+  :: DimCheck (Dimension Nat Nat Nat Nat Nat Nat Nat) where
+
+  DimensionError _ _ ('Dimension 0 0 0 0 0 0 0) = 'DimOK
+  DimensionError d d' d1md2 = 'DimError d d'
+
 
 type family DimEq (d :: Dimension Nat Nat Nat Nat Nat Nat Nat)
                   (d' :: Dimension Nat Nat Nat Nat Nat Nat Nat)
-                        :: DimCheck where
-  DimEq d d' = DimensionError d d' ('DiffDimIsNotZero (d `DivDim` d'))
+                  :: DimCheck (Dimension Nat Nat Nat Nat Nat Nat Nat) where
+  DimEq d d' = DimensionError d d' (d `DivDim` d')
 
 
 
@@ -101,6 +94,10 @@ type SameDim f g = DimEq (ToDim f) (ToDim g) ~ 'DimOK
 
 ------------------------------------------------------------------------------
 
+
+
+
+
 -- | A container for a quantity whose unit can change but whose dimension is a
 -- length.
 --
@@ -111,14 +108,14 @@ newtype Length a = Length a
 instance ToDimension Length where
   type ToDim Length = 'Dimension 1 0 0 0 0 0 0
 
-instance ConvertorClass Length (From a)
+
 
 -- | Convert an unspecified length to some length unit. You can only convert to
 -- that unit and not the other way around.
 --
 -- @
---  >>> (lengthTo ~> meter) 1 Meter 1
--- 1.0
+--  >>> (lengthTo ~> meter) 1
+-- Meter 1
 -- >>> (meter ~> lengthTo) 1
 -- <interactive>:9:11: error: [GHC-83865]
 --   • Couldn't match type: From a0
@@ -127,15 +124,38 @@ instance ConvertorClass Length (From a)
 --       Actual: Convertor Length (From a0)
 -- @
 --
-lengthTo :: Convertor Length (From a)
-lengthTo = convertor
-{-# INLINE lengthTo #-}
+-- lengthTo :: Convertor Length (From a)
+-- lengthTo = convertor
+-- {-# INLINE lengthTo #-}
 
 
--- | Convert an unspecified mass to some mass unit. You can only convert to
--- that unit and not the other way around.
+-- | A container for a quantity whose unit can change but whose dimension is a
+-- mass.
 --
--- @
---  >>> (massTo ~> kilo gram) 1
--- 1.0
--- >>> (kilo gram ~> massTo) 1
+-- newtype Mass a = Mass a
+--   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+--            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+
+-- instance ToDimension Mass where
+--   type ToDim Mass = 'Dimension 0 1 0 0 0 0 0
+
+-- instance ConvertorClass Mass (From a)
+
+-- -- | Convert an unspecified mass to some mass unit. You can only convert to
+-- -- that unit and not the other way around.
+-- --
+-- -- @
+-- --  >>> (massTo ~> ton) 1 Meter 1
+-- --  >>> (massTo ~> kilo gram) 1 Meter 1
+-- -- 1.0
+-- -- >>> (kilo gram ~> massTo) 1
+-- -- <interactive>:9:11: error: [GHC-83865]
+-- --   • Couldn't match type: From a0
+-- --                    with: To a
+-- --     Expected: Convertor Mass (To a)
+-- --       Actual: Convertor Mass (From a0)
+-- -- @
+-- --
+-- massTo :: Convertor Mass (From a)
+-- massTo = convertor
+-- {-# INLINE massTo #-}

@@ -7,52 +7,15 @@ import Pandia.Units.Dimension
 
 ----------------------------------- Length -----------------------------------
 
-newtype Meter a = Meter a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
-
-instance ToDimension Meter where
-  type ToDim Meter = 'Dimension 1 0 0 0 0 0 0
-
-instance ConvertorClass Meter a
-
-meter :: Convertor Meter a
-meter = convertor
-{-# INLINE meter #-}
 
 ------------------------------------ Mass ------------------------------------
-
-newtype Gram a = Gram a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
-
-instance ToDimension Gram where
-  type ToDim Gram = 'Dimension 0 1 0 0 0 0 0
-
-gram :: ConvertorClass Gram a => Convertor Gram a
-gram = convertor
-{-# INLINE gram #-}
-
---  This is not the identity, as SI uses kilograms as the base unit for mass.
-instance Fractional a => ConvertorClass Gram (From a) where
-  convertor _ x = x / 1000
-  {-# INLINE convertor #-}
-
-instance Num a => ConvertorClass Gram (Per (From a)) where
-  convertor _ x = x * 1000
-  {-# INLINE convertor #-}
-
-instance Num a => ConvertorClass Gram (To a) where
-  convertor _ x = x * 1000
-  {-# INLINE convertor #-}
-
-instance Fractional a => ConvertorClass Gram (Per (To a)) where
-  convertor _ x = x / 1000
-  {-# INLINE convertor #-}
 
 newtype Ton a = Ton a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+instance ToDimension Ton where
+  type ToDim Ton = 'Dimension 0 1 0 0 0 0 0
 
 ton :: ConvertorClass Ton a => Convertor Ton a
 ton = convertor
@@ -76,19 +39,6 @@ instance Num a => ConvertorClass Ton (Per (To a)) where
 
 
 ------------------------------------ Time ------------------------------------
-
-newtype Second a = Second a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
-
-instance ToDimension Second where
-  type ToDim Second = 'Dimension 0 0 1 0 0 0 0
-
-instance ConvertorClass Second a
-
-second :: Convertor Second a
-second = convertor
-{-# INLINE second #-}
 
 newtype Hour a = Hour a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
