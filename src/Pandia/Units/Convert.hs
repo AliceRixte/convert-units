@@ -22,7 +22,7 @@ import Pandia.Units.Rel
 
 
 fromSI :: forall f a. Coercible a (f a)
-  => Convertor f (To a) -> a -> f a
+  => Convertor f (FromSI a) -> a -> f a
 fromSI f a = coerce (f (Proxy :: Proxy f)) a
 
 
@@ -79,28 +79,28 @@ type family UnitToSI (f :: Unit) :: Unit where
 
 --  | This does NOT work ! Type inference will fail as soon as there is a negative exponent.
 toSI :: forall f a. Coercible a ((UnitToSI f) a)
-  => Convertor f (From a) -> a -> (UnitToSI f) a
+  => Convertor f (ToSI a) -> a -> (UnitToSI f) a
 toSI f = coerce (f (Proxy :: Proxy f))
 {-# INLINE toSI #-}
 
 asSI :: forall f a.
-  (Coercible a (f a), Coercible a ((UnitToSI f) a), ConvertorClass f (From a))
+  (Coercible a (f a), Coercible a ((UnitToSI f) a), ConvertorClass f (ToSI a))
   =>  f a -> (UnitToSI f) a
-asSI fa = toSI (convertor :: Convertor f (From a)) (coerce fa :: a)
+asSI fa = toSI (convertor :: Convertor f (ToSI a)) (coerce fa :: a)
 {-# INLINE asSI #-}
 
-fromSI' :: forall f a. Convertor f (To a) -> a -> a
+fromSI' :: forall f a. Convertor f (FromSI a) -> a -> a
 fromSI' f = coerce (f (Proxy :: Proxy f))
 {-# INLINE fromSI' #-}
 
-toSI' :: forall f a. Convertor f (From a) -> a -> a
+toSI' :: forall f a. Convertor f (ToSI a) -> a -> a
 toSI' f = coerce (f (Proxy :: Proxy f))
 {-# INLINE toSI' #-}
 
 
 
 fromToNoCheck :: forall f g a. (Coercible a (g a), Coercible a (f a))
-   => Convertor f (From a) -> Convertor g (To a) -> f a -> g a
+   => Convertor f (ToSI a) -> Convertor g (FromSI a) -> f a -> g a
 fromToNoCheck f t a = coerce
    $ (coerce (t (Proxy :: Proxy g)) :: a -> a)
    $ (coerce (f (Proxy :: Proxy f)) :: a -> a)
@@ -109,17 +109,17 @@ fromToNoCheck f t a = coerce
 
 fromTo :: forall f g a.
   (Coercible a (g a), Coercible a (f a), SameDim f g)
-  => Convertor f (From a) -> Convertor g (To a) -> f a -> g a
+  => Convertor f (ToSI a) -> Convertor g (FromSI a) -> f a -> g a
 fromTo = fromToNoCheck
 {-# INLINE fromTo #-}
 
 fromToNoCheck' :: forall f g a.
-  Convertor f (From a) -> Convertor g (To a) -> a -> a
+  Convertor f (ToSI a) -> Convertor g (FromSI a) -> a -> a
 fromToNoCheck' f t  = fromSI' t . toSI' f
 {-# INLINE fromToNoCheck' #-}
 
 fromTo' ::  forall f g a.
-  Convertor f (From a) -> Convertor g (To a) -> a -> a
+  Convertor f (ToSI a) -> Convertor g (FromSI a) -> a -> a
 fromTo' = fromToNoCheck'
 {-# INLINE fromTo' #-}
 infix 2 `fromTo'`
@@ -129,21 +129,21 @@ infix 2 `fromTo'`
 
 (~>) :: forall f g a.
   (Coercible a (g a), Coercible a (f a), SameDim f g)
-  => Convertor f (From a) -> Convertor g (To a) -> f a -> g a
+  => Convertor f (ToSI a) -> Convertor g (FromSI a) -> f a -> g a
 (~>) = fromTo
 {-# INLINE (~>) #-}
 infix 2 ~>
 
 (~~>) :: forall f g a.
-  Convertor f (From a) -> Convertor g (To a) -> a -> a
+  Convertor f (ToSI a) -> Convertor g (FromSI a) -> a -> a
 (~~>) = fromToNoCheck'
 {-# INLINE (~~>) #-}
 infix 2 ~~>
 
 asNoCheck :: forall f g a.
-  (Coercible a (f a), Coercible a (g a), ConvertorClass f (From a))
-  => f a -> Convertor g (To a) -> g a
-asNoCheck fa g = fromToNoCheck (convertor :: Convertor f (From a)) g fa
+  (Coercible a (f a), Coercible a (g a), ConvertorClass f (ToSI a))
+  => f a -> Convertor g (FromSI a) -> g a
+asNoCheck fa g = fromToNoCheck (convertor :: Convertor f (ToSI a)) g fa
 {-# INLINE asNoCheck #-}
 
 
@@ -164,8 +164,8 @@ asNoCheck fa g = fromToNoCheck (convertor :: Convertor f (From a)) g fa
 --       In an equation for ‘it’: it = asCheck x meter
 -- @
 as :: forall f g a.
-  (Coercible a (f a), Coercible a (g a), ConvertorClass f (From a), SameDim f g)
-  => f a -> Convertor g (To a) -> g a
+  (Coercible a (f a), Coercible a (g a), ConvertorClass f (ToSI a), SameDim f g)
+  => f a -> Convertor g (FromSI a) -> g a
 as = asNoCheck
 {-# INLINE as #-}
 infix 2 `as`

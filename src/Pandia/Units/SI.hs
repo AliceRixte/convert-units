@@ -36,19 +36,19 @@ gram = convertor
 {-# INLINE gram #-}
 
 --  This is not the identity, as SI uses kilograms as the base unit for mass.
-instance Fractional a => ConvertorClass Gram (From a) where
+instance Fractional a => ConvertorClass Gram (ToSI a) where
   convertor _ x = x / 1000
   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Gram (Per (From a)) where
+instance Num a => ConvertorClass Gram (Per (ToSI a)) where
   convertor _ x = x * 1000
   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Gram (To a) where
+instance Num a => ConvertorClass Gram (FromSI a) where
   convertor _ x = x * 1000
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Gram (Per (To a)) where
+instance Fractional a => ConvertorClass Gram (Per (FromSI a)) where
   convertor _ x = x / 1000
   {-# INLINE convertor #-}
 

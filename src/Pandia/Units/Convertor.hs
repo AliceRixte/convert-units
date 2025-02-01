@@ -50,22 +50,22 @@ type Convertor (f :: Unit) a = Proxy f -> a -> a
 -- | When a quantity decorated by this newtype is fed to a convertor, the
 -- convertor will compute the conversion from its unit to the international
 -- system unit
-newtype From a = From a
+newtype ToSI a = ToSI a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
           , RealFrac, RealFloat, Bounded)
 
 -- | When a quantity decorated by this newtype is fed to a convertor, the
 -- convertor will compute the conversion from the international system unit to
 -- its unit
-newtype To a = To a
+newtype FromSI a = FromSI a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
           , RealFrac, RealFloat, Bounded)
 
--- | When receiving a quantity of the form @'Per' ('From' a)@, the convertor
+-- | When receiving a quantity of the form @'Per' ('ToSI' a)@, the convertor
 -- will compute the conversion from the international system unit to its
 -- inverted unit
 --
--- Similarly, when receiving a quantity of the form @'Per' ('To' a)@, the
+-- Similarly, when receiving a quantity of the form @'Per' ('FromSI' a)@, the
 -- convertor will compute the conversion from its unit to the international
 -- system unit
 --
@@ -74,12 +74,12 @@ newtype Per a = Per a
           , RealFrac, RealFloat, Bounded)
 
 -- | Forces a convertor to be from SI to its unit
-coerceTo :: Convertor f a -> Convertor f (To a)
+coerceTo :: Convertor f a -> Convertor f (FromSI a)
 coerceTo f p = coerce (f p)
 {-# INLINE coerceTo #-}
 
 -- | Forces a convertor to be from its unit to SI
-coerceFrom :: Convertor f a -> Convertor f (From a)
+coerceFrom :: Convertor f a -> Convertor f (ToSI a)
 coerceFrom f p = coerce (f p)
 {-# INLINE coerceFrom #-}
 
@@ -198,7 +198,7 @@ nounit _ = id
 -- >>> (kilo meter -/- (second -/- kilo newton)  ~~> meter -/- second ) (5 :: Float)
 --
 -- <interactive>:73:29: error: [GHC-39999] • No instance for ‘KiloClass (Per
---     (Per (From Float)))’
+--     (Per (ToSI Float)))’
 --  @
 --
 -- This feature could be added by adding @('Per' ('Per' a))@ for every instances

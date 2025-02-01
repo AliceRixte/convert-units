@@ -91,19 +91,19 @@ instance (Num a, ConvertorClass f a, MilliClass a)
 class MilliClass a where
   milliFun :: (a -> a) -> a -> a
 
-instance Fractional a => MilliClass (From a) where
+instance Fractional a => MilliClass (ToSI a) where
   milliFun f = (/ 1000) . f
   {-# INLINE milliFun #-}
 
-instance Num a => MilliClass (Per (From a)) where
+instance Num a => MilliClass (Per (ToSI a)) where
   milliFun f = (* 1000) . f
   {-# INLINE milliFun #-}
 
-instance Num a => MilliClass (To a) where
+instance Num a => MilliClass (FromSI a) where
   milliFun f = (* 1000) . f
   {-# INLINE milliFun #-}
 
-instance Fractional a => MilliClass (Per (To a)) where
+instance Fractional a => MilliClass (Per (FromSI a)) where
   milliFun f = (/ 1000) . f
   {-# INLINE milliFun #-}
 
@@ -128,19 +128,19 @@ instance (Num a, ConvertorClass f a, DecaClass a)
 class DecaClass a where
   decaFun :: (a -> a) -> a -> a
 
-instance Num a => DecaClass (From a) where
+instance Num a => DecaClass (ToSI a) where
   decaFun f = (* 10) . f
   {-# INLINE decaFun #-}
 
-instance Fractional a => DecaClass (Per (From a)) where
+instance Fractional a => DecaClass (Per (ToSI a)) where
   decaFun f = (/ 10) . f
   {-# INLINE decaFun #-}
 
-instance Fractional a => DecaClass (To a) where
+instance Fractional a => DecaClass (FromSI a) where
   decaFun f = (/ 10) . f
   {-# INLINE decaFun #-}
 
-instance Num a => DecaClass (Per (To a)) where
+instance Num a => DecaClass (Per (FromSI a)) where
   decaFun f = (* 10) . f
   {-# INLINE decaFun #-}
 
@@ -165,19 +165,19 @@ instance (Num a, ConvertorClass f a, KiloClass a)
 class KiloClass a where
   kiloFun :: (a -> a) -> a -> a
 
-instance Num a => KiloClass (From a) where
+instance Num a => KiloClass (ToSI a) where
   kiloFun f = f . (* 1000)
   {-# INLINE kiloFun #-}
 
-instance Fractional a => KiloClass (Per (From a)) where
+instance Fractional a => KiloClass (Per (ToSI a)) where
   kiloFun f = f . (/ 1000)
   {-# INLINE kiloFun #-}
 
-instance Fractional a => KiloClass (To a) where
+instance Fractional a => KiloClass (FromSI a) where
   kiloFun f = (/ 1000) . f
   {-# INLINE kiloFun #-}
 
-instance Num a => KiloClass (Per (To a)) where
+instance Num a => KiloClass (Per (FromSI a)) where
   kiloFun f = (* 1000) . f
   {-# INLINE kiloFun #-}
 

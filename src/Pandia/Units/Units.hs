@@ -21,19 +21,19 @@ ton :: ConvertorClass Ton a => Convertor Ton a
 ton = convertor
 {-# INLINE ton #-}
 
-instance Num a => ConvertorClass Ton (From a) where
+instance Num a => ConvertorClass Ton (ToSI a) where
   convertor _ x = x * 1000
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Ton (Per (From a)) where
+instance Fractional a => ConvertorClass Ton (Per (ToSI a)) where
   convertor _ x = x / 1000
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Ton (To a) where
+instance Fractional a => ConvertorClass Ton (FromSI a) where
   convertor _ x = x / 1000
   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Ton (Per (To a)) where
+instance Num a => ConvertorClass Ton (Per (FromSI a)) where
   convertor _ x = x * 1000
   {-# INLINE convertor #-}
 
@@ -51,19 +51,19 @@ hour :: ConvertorClass Hour a => Convertor Hour a
 hour = convertor
 {-# INLINE hour #-}
 
-instance Num a => ConvertorClass Hour (From a) where
+instance Num a => ConvertorClass Hour (ToSI a) where
   convertor _ x = x * 3600
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Hour (Per (From a)) where
+instance Fractional a => ConvertorClass Hour (Per (ToSI a)) where
   convertor _ x = x / 3600
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Hour (To a) where
+instance Fractional a => ConvertorClass Hour (FromSI a) where
   convertor _ x = x / 3600
   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Hour (Per (To a)) where
+instance Num a => ConvertorClass Hour (Per (FromSI a)) where
   convertor _ x = x * 3600
   {-# INLINE convertor #-}
 
@@ -75,11 +75,11 @@ newtype Celsius a = Celsius a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance Fractional a => ConvertorClass Celsius (From a) where
+instance Fractional a => ConvertorClass Celsius (ToSI a) where
   convertor _ x = x + 273.15
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Celsius (To a) where
+instance Fractional a => ConvertorClass Celsius (FromSI a) where
   convertor _ x = x - 273.15
   {-# INLINE convertor #-}
 

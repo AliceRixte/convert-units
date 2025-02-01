@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeOperators #-}
+
 module Pandia.Test
   ( module Pandia.Test
   ) where
@@ -8,7 +10,7 @@ import Test.QuickCheck
 
 import Pandia.Units
 
--- approxEq :: Double -> Double -> Bool
+-- approxEq :: a -> a -> Bool
 -- approxEq a b = abs (a - b) < 1e-12
 
 -- fromToSelf1 :: Convertor f a -> a -> a
@@ -17,11 +19,38 @@ import Pandia.Units
 -- fromToSelf2 :: Convertor f a -> a -> a
 -- fromToSelf2 f =  toSI' (coerceFrom f) . fromSI' (coerceTo f)
 
--- fromToSelf :: Convertor f Double -> Double -> Bool
+-- fromToSelf :: Convertor f a -> a -> Bool
 -- fromToSelf f a = fromToSelf1 f a `approxEq` a && fromToSelf2 f a `approxEq` a
 
--- main' :: IO ()
--- main' = hspec $ do
+
+
+-- sameFunc :: (a -> a) -> (a -> a) -> a ->  Bool
+-- sameFunc f g a = f a `approxEq` g a
+
+-- propConvSpec ::
+--   Convertor f a -> Convertor g a -> (a -> a) -> (a -> a) -> Bool
+-- propConvSpec f g specfg specgf =
+--   sameFunc (coerceFrom f ~~> coerceTo g) specfg
+--   && sameFunc (coerceFrom g ~~> coerceTo f) specgf
+
+
+-- type Kmmph = Kilo Meter -/- Hour
+-- type Mps = Meter -/- Second
+
+
+-- kmphTomps :: a -> a
+-- kmphTomps = (/3.6)
+
+-- mpsTokmph :: a -> a
+-- mpsTokmph = (*3.6)
+
+
+-- main :: IO ()
+-- main = hspec $ do
+--   describe "~~>" $ do
+--     it "km/h <~> m/s" $ property $
+--       propConvSpec (kilo meter -/- hour)  (meter -/- second) kmphTomps mpsTokmph
+
 --   describe "angles" $ do
 --    it "self radians" $ property $
 --     fromToSelf radian
