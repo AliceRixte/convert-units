@@ -14,16 +14,12 @@ import Pandia.Units.SI
 import Pandia.Units.Prefix
 import Pandia.Units.Rel
 
--- type family NatToUnit (n :: Nat) :: Unit where
---   NatToUnit 0 = NoUnit
---   NatToUnit 1 = Unit
---   NatToUnit n  | n < 1 = Unit -*- NatToUnit (n - 1)
 
 
-
-fromSI :: forall f a. Coercible a (f a)
-  => Convertor f (FromSI a) -> a -> f a
-fromSI f a = coerce (f (Proxy :: Proxy f)) a
+fromSI :: forall u cd p a. Coercible a (u a)
+  => Convertor u 'FromSI p a -> a -> u a
+fromSI u = coerce (runConvertor u)
+{-# INLINE fromSI #-}
 
 
 --  The following type families aim at implementing a normalization function that toSI can use (and it also would be useful in many other cases)
@@ -41,85 +37,86 @@ type family DimToSI (d :: Dimension Rel Rel Rel Rel Rel Rel Rel) :: Unit where
       -*- (Candela   -^- j )
 
 
-type family PushNeg (f :: Unit) :: Unit where
-  PushNeg (f -^- Neg n -*- g) = PushNeg f -^- Pos n
+type family PushNeg (u :: Unit) :: Unit where
+  PushNeg (u -^- Neg n -*- v) = PushNeg u -^- Pos n
 
 
-type family ElimDiv (f :: Unit) :: Unit where
-    ElimDiv (f -*- g) = ElimDiv f -*- ElimDiv g
-    ElimDiv (f -^- n) = ElimDiv f -^- n
-    ElimDiv (f -/- f) = NoUnit
-    ElimDiv (f -/- g) = ElimDiv f -*- ElimDiv g -^- Neg 1
-    ElimDiv f = f
+type family ElimDiv (u :: Unit) :: Unit where
+    ElimDiv (u -*- v) = ElimDiv u -*- ElimDiv v
+    ElimDiv (u -^- n) = ElimDiv u -^- n
+    ElimDiv (u -/- u) = NoUnit
+    ElimDiv (u -/- v) = ElimDiv u -*- ElimDiv v -^- Neg 1
+    ElimDiv u = u
 
-type family ElimPow (f :: Unit) :: Unit where
-  ElimPow (f -/- g) = ElimPow f -/- ElimPow g
-  ElimPow (f -*- g) = ElimPow f -*- ElimPow g
-  ElimPow (f -^- Pos 0) = NoUnit
-  ElimPow (f -^- Neg 0) = NoUnit
-  ElimPow (f -^- Pos 1) = ElimPow f
-  ElimPow ((f -^- n) -^- m) = ElimPow (f -^- (n `MulRel` m))
-  ElimPow ((f -*- g) -^- n) = ElimPow (f -^- n -*- g -^- n)
-  ElimPow f = f
+type family ElimPow (u :: Unit) :: Unit where
+  ElimPow (u -/- v) = ElimPow u -/- ElimPow v
+  ElimPow (u -*- v) = ElimPow u -*- ElimPow v
+  ElimPow (u -^- Pos 0) = NoUnit
+  ElimPow (u -^- Neg 0) = NoUnit
+  ElimPow (u -^- Pos 1) = ElimPow u
+  ElimPow ((u -^- n) -^- m) = ElimPow (u -^- (n `MulRel` m))
+  ElimPow ((u -*- v) -^- n) = ElimPow (u -^- n -*- v -^- n)
+  ElimPow u = u
 
-type family ElimNoUnit (f :: Unit) :: Unit where
-  ElimNoUnit (NoUnit -*- f) = ElimNoUnit f
-  ElimNoUnit (f -*- NoUnit) = ElimNoUnit f
-  ElimNoUnit (f -*- g) = ElimNoUnit f -*- ElimNoUnit g
-  ElimNoUnit f = f
+type family ElimNoUnit (u :: Unit) :: Unit where
+  ElimNoUnit (NoUnit -*- u) = ElimNoUnit u
+  ElimNoUnit (u -*- NoUnit) = ElimNoUnit u
+  ElimNoUnit (u -*- v) = ElimNoUnit u -*- ElimNoUnit v
+  ElimNoUnit u = u
 
-type family SimplifyUnit (f :: Unit) :: Unit where
-  SimplifyUnit f = ElimNoUnit (ElimPow (ElimDiv f))
+type family SimplifyUnit (u :: Unit) :: Unit where
+  SimplifyUnit u = ElimNoUnit (ElimPow (ElimDiv u))
 
 
 
-type family UnitToSI (f :: Unit) :: Unit where
-  UnitToSI f = SimplifyUnit (DimToSI (ToDim f))
+type family UnitToSI (u :: Unit) :: Unit where
+  UnitToSI u = SimplifyUnit (DimToSI (ToDim u))
 
 
 --  | This does NOT work ! Type inference will fail as soon as there is a negative exponent.
-toSI :: forall f a. Coercible a ((UnitToSI f) a)
-  => Convertor f (ToSI a) -> a -> (UnitToSI f) a
-toSI f = coerce (f (Proxy :: Proxy f))
+toSI :: forall u cd p a. Coercible a ((UnitToSI u) a)
+  => Convertor u 'ToSI 'False a -> a -> (UnitToSI u) a
+toSI u = coerce (runConvertor u)
 {-# INLINE toSI #-}
 
-asSI :: forall f a.
-  (Coercible a (f a), Coercible a ((UnitToSI f) a), ConvertorClass f (ToSI a))
-  =>  f a -> (UnitToSI f) a
-asSI fa = toSI (convertor :: Convertor f (ToSI a)) (coerce fa :: a)
+asSI :: forall u a.
+  (Coercible a (u a), Coercible a ((UnitToSI u) a)
+  , ConvertorClass u 'ToSI 'False a)
+  =>  u a -> (UnitToSI u) a
+asSI fa = toSI (convertor :: Convertor u 'ToSI 'False a ) (coerce fa :: a)
 {-# INLINE asSI #-}
 
-fromSI' :: forall f a. Convertor f (FromSI a) -> a -> a
-fromSI' f = coerce (f (Proxy :: Proxy f))
+fromSI' :: Convertor u 'FromSI 'False a  -> a -> a
+fromSI' = runConvertor
 {-# INLINE fromSI' #-}
 
-toSI' :: forall f a. Convertor f (ToSI a) -> a -> a
-toSI' f = coerce (f (Proxy :: Proxy f))
+toSI' :: Convertor u 'ToSI 'False a -> a -> a
+toSI'  = runConvertor
 {-# INLINE toSI' #-}
 
 
 
-fromToNoCheck :: forall f g a. (Coercible a (g a), Coercible a (f a))
-   => Convertor f (ToSI a) -> Convertor g (FromSI a) -> f a -> g a
-fromToNoCheck f t a = coerce
-   $ (coerce (t (Proxy :: Proxy g)) :: a -> a)
-   $ (coerce (f (Proxy :: Proxy f)) :: a -> a)
+fromToNoCheck :: forall u v a. (Coercible a (v a), Coercible a (u a))
+   => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> u a -> v a
+fromToNoCheck u v a = coerce
+   $ runConvertor v
+   $ runConvertor u
    $ (coerce a :: a)
 {-# INLINE fromToNoCheck #-}
 
-fromTo :: forall f g a.
-  (Coercible a (g a), Coercible a (f a), SameDim f g)
-  => Convertor f (ToSI a) -> Convertor g (FromSI a) -> f a -> g a
+fromTo :: forall u v a.
+  (Coercible a (v a), Coercible a (u a), SameDim u v)
+  => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> u a -> v a
 fromTo = fromToNoCheck
 {-# INLINE fromTo #-}
 
-fromToNoCheck' :: forall f g a.
-  Convertor f (ToSI a) -> Convertor g (FromSI a) -> a -> a
-fromToNoCheck' f t  = fromSI' t . toSI' f
+fromToNoCheck' :: forall u v a.
+  Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> a -> a
+fromToNoCheck' u t  = fromSI' t . toSI' u
 {-# INLINE fromToNoCheck' #-}
 
-fromTo' ::  forall f g a.
-  Convertor f (ToSI a) -> Convertor g (FromSI a) -> a -> a
+fromTo' ::  forall u v a. SameDim u v
+  => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> a -> a
 fromTo' = fromToNoCheck'
 {-# INLINE fromTo' #-}
 infix 2 `fromTo'`
@@ -127,23 +124,23 @@ infix 2 `fromTo'`
 
 
 
-(~>) :: forall f g a.
-  (Coercible a (g a), Coercible a (f a), SameDim f g)
-  => Convertor f (ToSI a) -> Convertor g (FromSI a) -> f a -> g a
+(~>) :: forall u v a.
+  (Coercible a (v a), Coercible a (u a), SameDim u v)
+  => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> u a -> v a
 (~>) = fromTo
 {-# INLINE (~>) #-}
 infix 2 ~>
 
-(~~>) :: forall f g a.
-  Convertor f (ToSI a) -> Convertor g (FromSI a) -> a -> a
-(~~>) = fromToNoCheck'
+(~~>) :: forall u v a. SameDim u v
+  => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> a -> a
+(~~>) = fromTo'
 {-# INLINE (~~>) #-}
 infix 2 ~~>
 
-asNoCheck :: forall f g a.
-  (Coercible a (f a), Coercible a (g a), ConvertorClass f (ToSI a))
-  => f a -> Convertor g (FromSI a) -> g a
-asNoCheck fa g = fromToNoCheck (convertor :: Convertor f (ToSI a)) g fa
+asNoCheck :: forall u v a.
+  (Coercible a (u a), Coercible a (v a), ConvertorClass u 'ToSI 'False a)
+  => u a -> Convertor v 'FromSI 'False a  -> v a
+asNoCheck fa v = fromToNoCheck (convertor :: Convertor u 'ToSI 'False a ) v fa
 {-# INLINE asNoCheck #-}
 
 
@@ -163,9 +160,10 @@ asNoCheck fa g = fromToNoCheck (convertor :: Convertor f (ToSI a)) g fa
 --     • In the expression: asCheck x meter
 --       In an equation for ‘it’: it = asCheck x meter
 -- @
-as :: forall f g a.
-  (Coercible a (f a), Coercible a (g a), ConvertorClass f (ToSI a), SameDim f g)
-  => f a -> Convertor g (FromSI a) -> g a
+as :: forall u v a.
+  (Coercible a (u a), Coercible a (v a)
+  , ConvertorClass u 'ToSI 'False a, SameDim u v)
+  => u a -> Convertor v 'FromSI 'False a  -> v a
 as = asNoCheck
 {-# INLINE as #-}
 infix 2 `as`

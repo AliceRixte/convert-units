@@ -100,7 +100,7 @@ type family DimensionError
 type family DimEq (d :: Dimension Rel Rel Rel Rel Rel Rel Rel)
                   (d' :: Dimension Rel Rel Rel Rel Rel Rel Rel)
                   :: DimCheck (Dimension Rel Rel Rel Rel Rel Rel Rel) where
-  DimEq d d' = DimensionError d d' (d `DivDim` d')
+  DimEq d d' = DimensionError d d' (NormalizeDim (d `DivDim` d'))
 
 
 

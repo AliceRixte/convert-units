@@ -70,114 +70,134 @@ import Data.Kind
 
 ----------------------------------- Milli ------------------------------------
 
-newtype Milli (f :: Type -> Type) a = Milli (f a)
+newtype Milli (u :: Type -> Type) a = Milli (u a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
-instance ToDimension f => ToDimension (Milli f) where
-  type ToDim (Milli f) = ToDim f
+instance ToDimension u => ToDimension (Milli u) where
+  type ToDim (Milli u) = ToDim u
 
-milli :: forall f a. MilliClass a => Convertor f a -> Convertor (Milli f) a
-milli f _ = milliFun (f (Proxy :: Proxy f) :: a -> a)
-{-# INLINE milli #-}
-
-
-
-instance (Num a, ConvertorClass f a, MilliClass a)
-  => ConvertorClass (Milli f) a where
-  convertor _ = milliFun (convertor (Proxy :: Proxy f))
+instance (Num a, ConvertorClass u cd p a, MilliClass u cd p a)
+  => ConvertorClass (Milli u) cd p a where
+  convertor = milli convertor
   {-# INLINE convertor #-}
 
-class MilliClass a where
-  milliFun :: (a -> a) -> a -> a
+class MilliClass u cd p a where
+  milli :: Convertor u cd p a -> Convertor (Milli u) cd p a
 
-instance Fractional a => MilliClass (ToSI a) where
-  milliFun f = (/ 1000) . f
-  {-# INLINE milliFun #-}
+instance Fractional a => MilliClass u 'ToSI 'False a where
+  milli u _ = (/ 1000) . runConvertor u
+  {-# INLINE milli #-}
 
-instance Num a => MilliClass (Per (ToSI a)) where
-  milliFun f = (* 1000) . f
-  {-# INLINE milliFun #-}
+instance Num a => MilliClass u 'ToSI 'True a where
+  milli u _ = (* 1000) . runConvertor u
+  {-# INLINE milli #-}
 
-instance Num a => MilliClass (FromSI a) where
-  milliFun f = (* 1000) . f
-  {-# INLINE milliFun #-}
+instance Num a => MilliClass u 'FromSI 'False a where
+  milli u _ = (* 1000) . runConvertor u
+  {-# INLINE milli #-}
 
-instance Fractional a => MilliClass (Per (FromSI a)) where
-  milliFun f = (/ 1000) . f
-  {-# INLINE milliFun #-}
+instance Fractional a => MilliClass u 'FromSI 'True a where
+  milli u _ = (/ 1000) . runConvertor u
+  {-# INLINE milli #-}
+
+
 
 ----------------------------------- Deca ------------------------------------
 
-newtype Deca (f :: Type -> Type) a = Deca (f a)
-  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+-- newtype Deca (u :: Type -> Type) a = Deca (u a)
+--   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+--              , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
-instance ToDimension f => ToDimension (Deca f) where
-  type ToDim (Deca f) = ToDim f
+-- instance ToDimension u => ToDimension (Deca u) where
+--   type ToDim (Deca u) = ToDim u
 
-deca :: forall f a. DecaClass a => Convertor f a -> Convertor (Deca f) a
-deca f _ = decaFun (f (Proxy :: Proxy f) :: a -> a)
-{-# INLINE deca #-}
+-- deca :: forall u a. DecaClass a => Convertor u a -> Convertor (Deca u) a
+-- deca u _ = decaFun (u (Proxy :: Proxy u) :: a -> a)
+-- {-# INLINE deca #-}
 
-instance (Num a, ConvertorClass f a, DecaClass a)
-  => ConvertorClass (Deca f) a where
-  convertor _ = decaFun (convertor (Proxy :: Proxy f))
-  {-# INLINE convertor #-}
+-- instance (Num a, ConvertorClass u a, DecaClass a)
+--   => ConvertorClass (Deca u) a where
+--   convertor _ = decaFun (convertor (Proxy :: Proxy u))
+--   {-# INLINE convertor #-}
 
-class DecaClass a where
-  decaFun :: (a -> a) -> a -> a
+-- class DecaClass a where
+--   decaFun :: (a -> a) -> a -> a
 
-instance Num a => DecaClass (ToSI a) where
-  decaFun f = (* 10) . f
-  {-# INLINE decaFun #-}
+-- instance Num a => DecaClass (ToSI a) where
+--   decaFun u = (* 10) . u
+--   {-# INLINE decaFun #-}
 
-instance Fractional a => DecaClass (Per (ToSI a)) where
-  decaFun f = (/ 10) . f
-  {-# INLINE decaFun #-}
+-- instance Fractional a => DecaClass (Per (ToSI a)) where
+--   decaFun u = (/ 10) . u
+--   {-# INLINE decaFun #-}
 
-instance Fractional a => DecaClass (FromSI a) where
-  decaFun f = (/ 10) . f
-  {-# INLINE decaFun #-}
+-- instance Fractional a => DecaClass (FromSI a) where
+--   decaFun u = (/ 10) . u
+--   {-# INLINE decaFun #-}
 
-instance Num a => DecaClass (Per (FromSI a)) where
-  decaFun f = (* 10) . f
-  {-# INLINE decaFun #-}
+-- instance Num a => DecaClass (Per (FromSI a)) where
+--   decaFun u = (* 10) . u
+--   {-# INLINE decaFun #-}
 
 ------------------------------------ Kilo ------------------------------------
 
-newtype Kilo (f :: Type -> Type) a = Kilo (f a)
+newtype Kilo (u :: Type -> Type) a = Kilo (u a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
-instance ToDimension f => ToDimension (Kilo f) where
-  type ToDim (Kilo f) = ToDim f
+instance ToDimension u => ToDimension (Kilo u) where
+  type ToDim (Kilo u) = ToDim u
 
-kilo :: forall f a. KiloClass a => Convertor f a -> Convertor (Kilo f) a
-kilo f _ = kiloFun (f (Proxy :: Proxy f) :: a -> a)
-{-# INLINE kilo #-}
-
-instance (Num a, ConvertorClass f a, KiloClass a)
-  => ConvertorClass (Kilo f) a where
-  convertor _ = kiloFun (convertor (Proxy :: Proxy f))
+instance (Num a, ConvertorClass u cd p a, KiloClass u cd p a)
+  => ConvertorClass (Kilo u) cd p a where
+  convertor = kilo convertor
   {-# INLINE convertor #-}
 
-class KiloClass a where
-  kiloFun :: (a -> a) -> a -> a
+class KiloClass u cd p a where
+  kilo :: Convertor u cd p a -> Convertor (Kilo u) cd p a
 
-instance Num a => KiloClass (ToSI a) where
-  kiloFun f = f . (* 1000)
-  {-# INLINE kiloFun #-}
+instance Num a => KiloClass u 'ToSI 'False a where
+  kilo u _ = (* 1000) . runConvertor u
+  {-# INLINE kilo #-}
 
-instance Fractional a => KiloClass (Per (ToSI a)) where
-  kiloFun f = f . (/ 1000)
-  {-# INLINE kiloFun #-}
+instance Fractional a => KiloClass u 'ToSI 'True a where
+  kilo u _ = (/ 1000) . runConvertor u
+  {-# INLINE kilo #-}
 
-instance Fractional a => KiloClass (FromSI a) where
-  kiloFun f = (/ 1000) . f
-  {-# INLINE kiloFun #-}
+instance Fractional a => KiloClass u 'FromSI 'False a where
+  kilo u _ = (/ 1000) . runConvertor u
+  {-# INLINE kilo #-}
 
-instance Num a => KiloClass (Per (FromSI a)) where
-  kiloFun f = (* 1000) . f
-  {-# INLINE kiloFun #-}
+instance Num a => KiloClass u 'FromSI 'True a where
+  kilo u _ = (* 1000) . runConvertor u
+  {-# INLINE kilo #-}
+
+-- kilo :: forall u a. KiloClass a => Convertor u a -> Convertor (Kilo u) a
+-- kilo u _ = kiloFun (u (Proxy :: Proxy u) :: a -> a)
+-- {-# INLINE kilo #-}
+
+-- instance (Num a, ConvertorClass u a, KiloClass a)
+--   => ConvertorClass (Kilo u) a where
+--   convertor _ = kiloFun (convertor (Proxy :: Proxy u))
+--   {-# INLINE convertor #-}
+
+-- class KiloClass a where
+--   kiloFun :: (a -> a) -> a -> a
+
+-- instance Num a => KiloClass (ToSI a) where
+--   kiloFun u = u . (* 1000)
+--   {-# INLINE kiloFun #-}
+
+-- instance Fractional a => KiloClass (Per (ToSI a)) where
+--   kiloFun u = u . (/ 1000)
+--   {-# INLINE kiloFun #-}
+
+-- instance Fractional a => KiloClass (FromSI a) where
+--   kiloFun u = (/ 1000) . u
+--   {-# INLINE kiloFun #-}
+
+-- instance Num a => KiloClass (Per (FromSI a)) where
+--   kiloFun u = (* 1000) . u
+--   {-# INLINE kiloFun #-}
 

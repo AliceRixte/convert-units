@@ -16,9 +16,9 @@ newtype Meter a = Meter a
 instance ToDimension Meter where
   type ToDim Meter = DimLength
 
-instance ConvertorClass Meter a
+instance ConvertorClass Meter cd p a
 
-meter :: Convertor Meter a
+meter :: Convertor Meter cd p a
 meter = convertor
 {-# INLINE meter #-}
 
@@ -31,26 +31,43 @@ newtype Gram a = Gram a
 instance ToDimension Gram where
   type ToDim Gram = DimMass
 
-gram :: ConvertorClass Gram a => Convertor Gram a
+gram :: ConvertorClass Gram cd p a => Convertor Gram cd p a
 gram = convertor
 {-# INLINE gram #-}
 
+instance Fractional a => ConvertorClass Gram 'ToSI 'False a where
+  convertor _ x = x / 1000
+  {-# INLINE convertor #-}
+
+instance Num a => ConvertorClass Gram 'ToSI 'True a where
+  convertor _ x = x * 1000
+  {-# INLINE convertor #-}
+
+instance Num a => ConvertorClass Gram 'FromSI 'False a where
+  convertor _ x = x * 1000
+  {-# INLINE convertor #-}
+
+instance Fractional a => ConvertorClass Gram 'FromSI 'True a where
+  convertor _ x = x / 1000
+  {-# INLINE convertor #-}
+
+
 --  This is not the identity, as SI uses kilograms as the base unit for mass.
-instance Fractional a => ConvertorClass Gram (ToSI a) where
-  convertor _ x = x / 1000
-  {-# INLINE convertor #-}
+-- instance Fractional a => ConvertorClass Gram (ToSI a) where
+--   convertor _ x = x / 1000
+--   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Gram (Per (ToSI a)) where
-  convertor _ x = x * 1000
-  {-# INLINE convertor #-}
+-- instance Num a => ConvertorClass Gram (Per (ToSI a)) where
+--   convertor _ x = x * 1000
+--   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Gram (FromSI a) where
-  convertor _ x = x * 1000
-  {-# INLINE convertor #-}
+-- instance Num a => ConvertorClass Gram (FromSI a) where
+--   convertor _ x = x * 1000
+--   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Gram (Per (FromSI a)) where
-  convertor _ x = x / 1000
-  {-# INLINE convertor #-}
+-- instance Fractional a => ConvertorClass Gram (Per (FromSI a)) where
+--   convertor _ x = x / 1000
+--   {-# INLINE convertor #-}
 
 ------------------------------------ Time ------------------------------------
 
@@ -61,9 +78,9 @@ newtype Second a = Second a
 instance ToDimension Second where
   type ToDim Second = DimTime
 
-instance ConvertorClass Second a
+instance ConvertorClass Second cd p a
 
-second :: Convertor Second a
+second :: Convertor Second cd p a
 second = convertor
 {-# INLINE second #-}
 
@@ -77,9 +94,9 @@ newtype Ampere a = Ampere a
 instance ToDimension Ampere where
   type ToDim Ampere = DimCurrent
 
-instance ConvertorClass Ampere a
+instance ConvertorClass Ampere cd p a
 
-ampere :: Convertor Ampere a
+ampere :: Convertor Ampere cd p a
 ampere = convertor
 {-# INLINE ampere #-}
 
@@ -93,9 +110,9 @@ newtype Kelvin a = Kelvin a
 instance ToDimension Kelvin where
   type ToDim Kelvin = DimTemperature
 
-instance ConvertorClass Kelvin a
+instance ConvertorClass Kelvin cd p a
 
-kelvin :: Convertor Kelvin a
+kelvin :: Convertor Kelvin cd p a
 kelvin = convertor
 {-# INLINE kelvin #-}
 
@@ -109,9 +126,9 @@ newtype Mole a = Mole a
 instance ToDimension Mole where
   type ToDim Mole = DimAmount
 
-instance ConvertorClass Mole a
+instance ConvertorClass Mole cd p a
 
-mole :: Convertor Mole a
+mole :: Convertor Mole cd p a
 mole = convertor
 {-# INLINE mole #-}
 
@@ -124,9 +141,9 @@ newtype Candela a = Candela a
 instance ToDimension Candela where
   type ToDim Candela = DimLuminousIntensity
 
-instance ConvertorClass Candela a
+instance ConvertorClass Candela cd p a
 
-candela :: Convertor Candela a
+candela :: Convertor Candela cd p a
 candela = convertor
 {-# INLINE candela #-}
 
@@ -135,7 +152,7 @@ candela = convertor
 
 type Radian = Meter -/- Meter
 
-radian :: Num a => Convertor Radian a
+radian :: Num a => Convertor Radian cd p a
 radian = convertor
 {-# INLINE radian #-}
 

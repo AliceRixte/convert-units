@@ -29,63 +29,32 @@
 
 module Pandia.Units.Convertor
   ( module Pandia.Units.Convertor
+  , Not
   ) where
 
 import Data.Coerce
 import Data.Proxy
 import Data.Kind
+import Data.Type.Bool
 
 import Pandia.Units.Rel
+
+----------------------------- Unit construction ------------------------------
 
 -- | A unit is represented by a newtype constructor. A quantity of some newtype
 -- @f@ is of type @f a@.
 type Unit = Type -> Type
 
--- | A convertor that can convert from and to some unit.
+
+-- | A unit that has no dimension.
 --
--- Convertors can be combined via 'mul'@, @'per'@, and @'pow'@ .
+-- @
+-- type MyHertz = NoUnit -/- Second
+-- @
 --
-type Convertor (f :: Unit) a = Proxy f -> a -> a
-
--- | When a quantity decorated by this newtype is fed to a convertor, the
--- convertor will compute the conversion from its unit to the international
--- system unit
-newtype ToSI a = ToSI a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
-          , RealFrac, RealFloat, Bounded)
-
--- | When a quantity decorated by this newtype is fed to a convertor, the
--- convertor will compute the conversion from the international system unit to
--- its unit
-newtype FromSI a = FromSI a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
-          , RealFrac, RealFloat, Bounded)
-
--- | When receiving a quantity of the form @'Per' ('ToSI' a)@, the convertor
--- will compute the conversion from the international system unit to its
--- inverted unit
---
--- Similarly, when receiving a quantity of the form @'Per' ('FromSI' a)@, the
--- convertor will compute the conversion from its unit to the international
--- system unit
---
-newtype Per a = Per a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
-          , RealFrac, RealFloat, Bounded)
-
--- | Forces a convertor to be from SI to its unit
-coerceTo :: Convertor f a -> Convertor f (FromSI a)
-coerceTo f p = coerce (f p)
-{-# INLINE coerceTo #-}
-
--- | Forces a convertor to be from its unit to SI
-coerceFrom :: Convertor f a -> Convertor f (ToSI a)
-coerceFrom f p = coerce (f p)
-{-# INLINE coerceFrom #-}
-
-
-
-
+newtype NoUnit a = NoUnit a
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
 
 -- | Multiplication of two units.
@@ -128,44 +97,103 @@ newtype ((f :: Unit) -^- (n :: Rel)) a = PowDim (f a)
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infix 8 -^-
 
--- | A unit that has no dimension.
+
+--------------------------------- Conversion ---------------------------------
+
+data ConversionDirection  = FromSI | ToSI
+
+type IsPer = Bool
+type Per = 'True
+
+data ConversionInfo = ConversionInfo Unit ConversionDirection IsPer
+
+
+
+-- | A convertor that can convert from and to some unit.
 --
--- @
--- type MyHertz = NoUnit -/- Second
--- @
+-- Convertors can be combined via 'mul'@, @'per'@, and @'pow'@ .
 --
-newtype NoUnit a = NoUnit a
-  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+type Convertor (u :: Unit) (cd :: ConversionDirection) (p :: IsPer) a
+  = Proxy ('ConversionInfo u cd p) -> a -> a
+
+runConvertor :: Convertor u cd p a -> a -> a
+runConvertor f = f Proxy
+{-# INLINE runConvertor #-}
+
+coerceConvertor :: Convertor u cd p a -> Convertor v cd' p' a
+coerceConvertor f _ = f Proxy
+{-# INLINE coerceConvertor #-}
+
+coerceTo :: Convertor u cd p a -> Convertor u 'ToSI 'False a
+coerceTo f _ = f Proxy
+{-# INLINE coerceTo #-}
+
+coerceFrom :: Convertor u cd p a -> Convertor u 'FromSI 'False a
+coerceFrom f _ = f Proxy
+{-# INLINE coerceFrom #-}
+
+-- fromSI' :: Convertor u 'FromSI (Not Per) -> a -> a
+-- fromSI' f = f (Proxy :: Proxy ('ConversionInfo u 'FromSI (Not Per)))
+-- {-# INLINE fromSI' #-}
+
+
+-- -- | When a quantity decorated by this newtype is fed to a convertor, the
+-- -- convertor will compute the conversion from its unit to the international
+-- -- system unit
+-- newtype ToSI a = ToSI a
+--   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
+--           , RealFrac, RealFloat, Bounded)
+
+-- -- | When a quantity decorated by this newtype is fed to a convertor, the
+-- -- convertor will compute the conversion from the international system unit to
+-- -- its unit
+-- newtype FromSI a = FromSI a
+--   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
+--           , RealFrac, RealFloat, Bounded)
+
+-- -- | When receiving a quantity of the form @'Per' ('ToSI' a)@, the convertor
+-- -- will compute the conversion from the international system unit to its
+-- -- inverted unit
+-- --
+-- -- Similarly, when receiving a quantity of the form @'Per' ('FromSI' a)@, the
+-- -- convertor will compute the conversion from its unit to the international
+-- -- system unit
+-- --
+-- newtype Per a = Per a
+--   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
+--           , RealFrac, RealFloat, Bounded)
+
+
+
+
+
+
 
 
 -- | Create a convertor from a unit newtype
 --
-class ConvertorClass (f :: Unit) a where
-  convertor :: Convertor f a
+class ConvertorClass (u :: Unit) (cd :: ConversionDirection) (p :: IsPer) a
+  where
+  convertor :: Convertor u cd p a
   convertor _ = id
   {-# INLINE convertor #-}
 
-instance {-# INCOHERENT #-} ConvertorClass f a
-   => ConvertorClass f (Per (Per a)) where
-  convertor _  = convertor (Proxy :: Proxy f)
-
-instance (ConvertorClass f a, ConvertorClass g (Per a), Num a)
-  => ConvertorClass ( f -/- g) a where
-  convertor =
-    (convertor :: Convertor f a) -/- (convertor :: Convertor g (Per a))
+instance (ConvertorClass u cd p a, ConvertorClass v cd (Not p) a, Num a)
+  => ConvertorClass (u -/- v) cd p a where
+  convertor = (convertor :: Convertor u cd p a)
+          -/- (convertor :: Convertor v cd (Not p) a)
   {-# INLINE convertor #-}
 
-instance (ConvertorClass f a, ConvertorClass g a, Num a)
-  => ConvertorClass ( f -*- g) a where
+instance (ConvertorClass u cd p a, ConvertorClass v cd p a, Num a)
+  => ConvertorClass (u -*- v) cd p a where
   convertor =
-    (convertor :: Convertor f a) -*- (convertor :: Convertor g a)
+    (convertor :: Convertor u cd p a) -*- (convertor :: Convertor v cd p a)
   {-# INLINE convertor #-}
 
-instance (ConvertorClass f a, KnownRel n)
-  => ConvertorClass ( f -^- n) a where
+instance (ConvertorClass u cd p a, KnownRel n)
+  => ConvertorClass (u -^- n) cd p a where
   convertor =
-    (convertor :: Convertor f a) -^- fromInteger (relVal (Proxy :: Proxy n))
+    (convertor :: Convertor u cd p a) -^- fromInteger (relVal (Proxy :: Proxy n))
   {-# INLINE convertor #-}
 
 
@@ -180,7 +208,7 @@ instance (ConvertorClass f a, KnownRel n)
 -- 5000
 -- @
 --
-nounit :: Convertor NoUnit a
+nounit :: Convertor NoUnit cd p a
 nounit _ = id
 {-# INLINE nounit #-}
 
@@ -205,10 +233,10 @@ nounit _ = id
 -- of  @'ConvertorClass'@. If you want to contribute, this is fairly simple to
 -- do although very repetitive.
 --
-per :: forall f g a. Num a
-  =>  Convertor f a -> Convertor g (Per a) -> Convertor (f -/- g) a
-per f g _ a = f (Proxy :: Proxy f) a *
-              (coerce (g (Proxy :: Proxy g)) :: a -> a) 1
+per :: forall u v cd p a. Num a =>
+  Convertor u cd p a -> Convertor v cd (Not p) a -> Convertor (u -/- v) cd p a
+per f g _ a = runConvertor f a
+            * runConvertor (coerceConvertor g :: Convertor v cd (Not p) a) 1
 infix 6 `per`
 
 -- | Infix synonym for @'per'@
@@ -217,13 +245,11 @@ infix 6 `per`
 -- >>> (kilo meter -/- hour ~~> meter -/- second ) (5 :: Float) 1.388889 @
 -- @
 --
-(-/-) :: forall f g a. Num a
-  =>  Convertor f a -> Convertor g (Per a) -> Convertor (f -/- g) a
+(-/-) :: forall u v cd p a. Num a =>
+  Convertor u cd p a -> Convertor v cd (Not p) a -> Convertor (u -/- v) cd p a
 (f -/- g) a = per f g a
 {-# INLINE (-/-) #-}
 
-invert :: forall f a. Convertor f a -> Convertor f (Per a)
-invert f _ = coerce (f (Proxy :: Proxy f))
 
 
 -- | Multiplication of convertors. / Warning  : Use with caution \
@@ -278,15 +304,15 @@ invert f _ = coerce (f (Proxy :: Proxy f))
 --
 -- For now, it will stay like this
 --
-mul :: forall f g a. Num a
-  => Convertor f a -> Convertor g a -> Convertor (f -*- g) a
-mul f g _ = f (Proxy :: Proxy f) . g (Proxy :: Proxy g)
+mul :: forall u v cd p a. Num a
+  => Convertor u cd p a -> Convertor v cd p a -> Convertor (u -*- v) cd p a
+mul f g _ = runConvertor f . runConvertor g
 {-# INLINE mul #-}
 infixl 7 `mul`
 
 
-(-*-) :: forall f g a. Num a =>
-  Convertor f a -> Convertor g a -> Convertor (f -*- g) a
+(-*-) :: forall u v cd p a. Num a
+  => Convertor u cd p a -> Convertor v cd p a -> Convertor (u -*- v) cd p a
 (-*-) =mul
 {-# INLINE (-*-) #-}
 
@@ -296,13 +322,16 @@ timesFun 0 _ = id
 timesFun n f = f . timesFun (n - 1) f
 {-# INLINE timesFun #-}
 
-powConv :: Convertor f a -> Int -> a -> a
-powConv f n | n >= 0  = timesFun n (f (Proxy :: Proxy f))
-            | n < 0   = coerce $ timesFun n (invert f (Proxy :: Proxy f))
+powConv :: forall u cd p a. Convertor u cd p a -> Int -> a -> a
+powConv f n | n >= 0  = timesFun n (runConvertor f)
+            | n < 0   = timesFun n
+              (runConvertor (coerceConvertor f :: Convertor u cd (Not p) a))
 {-# INLINE powConv #-}
 
 
-pow :: forall f n a. KnownRel n => Convertor f a -> Int -> Convertor (f -^- n) a
+
+pow :: forall u cd p n a. KnownRel n
+  => Convertor u cd p a -> Int -> Convertor (u -^- n) cd p a
 pow f n _ = if n == fromInteger (relVal (Proxy :: Proxy n)) then
             coerce $ powConv f n
           else
@@ -332,6 +361,6 @@ infix 8 `pow`
 --   pow f (-1) _ a = coerce (f (Proxy :: Proxy f) (Per a))
 
 
-(-^-) :: KnownRel n => Convertor f a -> Int -> Convertor (f -^- n) a
+(-^-) :: KnownRel n => Convertor u cd p a -> Int -> Convertor (u -^- n) cd p a
 (-^-) = pow
 
