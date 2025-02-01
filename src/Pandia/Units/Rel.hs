@@ -8,19 +8,21 @@ import Data.Type.Ord
 
 import Data.Proxy
 
-type Rel = Relative Nat
 
-data Relative a = Pos a | Neg a
 
-type family AbsRel (a :: Relative Nat) :: Nat where
+data Signed a = Pos a | Neg a
+
+type Rel = Signed Nat
+
+type family AbsRel (a :: Rel) :: Nat where
   AbsRel (Pos a) = a
   AbsRel (Neg a) = a
 
-type family NegateRel (a :: Relative Nat) :: Relative Nat where
+type family NegateRel (a :: Rel) :: Rel where
   NegateRel (Pos a) = Neg a
   NegateRel (Neg a) = Pos a
 
-type family SumRelBool (a :: Relative Nat) (b :: Relative Nat) (cmp :: Bool) where
+type family SumRelBool (a :: Rel) (b :: Rel) (cmp :: Bool) where
   SumRelBool (Pos a) (Pos b) _ = Pos (a + b)
   SumRelBool (Pos a) (Neg b) True = Pos (a - b)
   SumRelBool (Pos a) (Neg b) False = Neg (b - a)
@@ -28,33 +30,33 @@ type family SumRelBool (a :: Relative Nat) (b :: Relative Nat) (cmp :: Bool) whe
   SumRelBool (Neg a) (Pos b) False = Pos (b - a)
   SumRelBool (Neg a) (Neg b) _ = Neg (a + b)
 
-type family SumRel (a :: Relative Nat) (b :: Relative Nat) :: Relative Nat where
+type family SumRel (a :: Rel) (b :: Rel) :: Rel where
   SumRel a b = SumRelBool a b (AbsRel a >=? AbsRel b)
 
-type family SubRel (a :: Relative Nat) (b :: Relative Nat) :: Relative Nat where
+type family SubRel (a :: Rel) (b :: Rel) :: Rel where
   SubRel a b = SumRel a (NegateRel b)
 
 
-type family NormalizeRel (a :: Relative Nat) :: Relative Nat where
+type family NormalizeRel (a :: Rel) :: Rel where
   NormalizeRel (Neg 0) = Pos 0
   NormalizeRel a = a
 
-type family MulRel (a :: Relative Nat) (b :: Relative Nat) :: Relative Nat where
+type family MulRel (a :: Rel) (b :: Rel) :: Rel where
   MulRel (Pos a) (Pos b) = Pos (a * b)
   MulRel (Pos a) (Neg b) = Neg (a * b)
   MulRel (Neg a) (Pos b) = Neg (a * b)
   MulRel (Neg a) (Neg b) = Pos (a * b)
 
-type family PowRel (a :: Relative Nat) (n :: Nat) :: Relative Nat where
+type family PowRel (a :: Rel) (n :: Nat) :: Rel where
   PowRel (Pos a) n = Pos (a ^ n)
   PowRel (Neg a) n = NegPow a n (Compare (Mod n 2) 0)
 
-type family NegPow (a :: Nat) (n :: Nat) (mod2 :: Ordering) :: Relative Nat where
+type family NegPow (a :: Nat) (n :: Nat) (mod2 :: Ordering) :: Rel where
   NegPow a n EQ = Pos (a ^ n)
   NegPow a n _ = Neg (a ^ n)
 
 
-class KnownRel (r :: Relative Nat) where
+class KnownRel (r :: Rel) where
   relVal :: proxy r -> Integer
 
 instance KnownNat n => KnownRel (Pos n) where

@@ -40,6 +40,11 @@ type family DimToSI (d :: Dimension Rel Rel Rel Rel Rel Rel Rel) :: Unit where
       -*- (Mole      -^- n )
       -*- (Candela   -^- j )
 
+
+type family PushNeg (f :: Unit) :: Unit where
+  PushNeg (f -^- Neg n -*- g) = PushNeg f -^- Pos n
+
+
 type family ElimDiv (f :: Unit) :: Unit where
     ElimDiv (f -*- g) = ElimDiv f -*- ElimDiv g
     ElimDiv (f -^- n) = ElimDiv f -^- n
@@ -63,19 +68,19 @@ type family ElimNoUnit (f :: Unit) :: Unit where
   ElimNoUnit (f -*- g) = ElimNoUnit f -*- ElimNoUnit g
   ElimNoUnit f = f
 
-type family NormalizeUnit (f :: Unit) :: Unit where
-  NormalizeUnit f = ElimNoUnit (ElimPow (ElimDiv f))
+type family SimplifyUnit (f :: Unit) :: Unit where
+  SimplifyUnit f = ElimNoUnit (ElimPow (ElimDiv f))
 
 
 
 type family UnitToSI (f :: Unit) :: Unit where
-  UnitToSI f = NormalizeUnit (DimToSI (ToDim f))
+  UnitToSI f = SimplifyUnit (DimToSI (ToDim f))
 
 
 --  | This does NOT work ! Type inference will fail as soon as there is a negative exponent.
 toSI :: forall f a. Coercible a ((UnitToSI f) a)
   => Convertor f (From a) -> a -> (UnitToSI f) a
-toSI f a = coerce (f (Proxy :: Proxy f)) a
+toSI f = coerce (f (Proxy :: Proxy f))
 {-# INLINE toSI #-}
 
 asSI :: forall f a.

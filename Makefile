@@ -43,7 +43,7 @@ bench:
 	$(stack) bench $(pkg):bench:$(bch) --ba "--output $(make-work)/$(bch).html"
 
 test:
-	$(stack) test $(pkg):test:$(tst)
+	$(stack) test $(pkg):test:$(tst) --coverage
 
 install:
 	$(stack) install $(pkg)

@@ -146,6 +146,10 @@ class ConvertorClass (f :: Unit) a where
   convertor _ = id
   {-# INLINE convertor #-}
 
+instance {-# INCOHERENT #-} ConvertorClass f a
+   => ConvertorClass f (Per (Per a)) where
+  convertor _  = convertor (Proxy :: Proxy f)
+
 instance (ConvertorClass f a, ConvertorClass g (Per a), Num a)
   => ConvertorClass ( f -/- g) a where
   convertor =
@@ -158,11 +162,14 @@ instance (ConvertorClass f a, ConvertorClass g a, Num a)
     (convertor :: Convertor f a) -*- (convertor :: Convertor g a)
   {-# INLINE convertor #-}
 
-instance (PowClass f n a, ConvertorClass f a, KnownRel n)
+instance (ConvertorClass f a, KnownRel n)
   => ConvertorClass ( f -^- n) a where
   convertor =
     (convertor :: Convertor f a) -^- fromInteger (relVal (Proxy :: Proxy n))
   {-# INLINE convertor #-}
+
+
+
 
 
 
@@ -294,20 +301,20 @@ powConv f n | n >= 0  = timesFun n (f (Proxy :: Proxy f))
             | n < 0   = coerce $ timesFun n (invert f (Proxy :: Proxy f))
 {-# INLINE powConv #-}
 
--- powNeg :: Convertor f (Per a) -> Int -> a -> a
--- powNeg f 0 = id
--- powNeg f 1 = coerce $ f (Proxy :: Proxy f)
--- powNeg f n = coerce $ f (Proxy :: Proxy f) . powNeg f (n - 1)
--- {-# INLINE powNeg #-}
 
-class PowClass (f :: Unit) (n::Rel) a where
-  pow :: Convertor f a -> Int -> Convertor (f -^- n) a
-  infix 8 `pow`
+pow :: forall f n a. KnownRel n => Convertor f a -> Int -> Convertor (f -^- n) a
+pow f n _ = if n == fromInteger (relVal (Proxy :: Proxy n)) then
+            coerce $ powConv f n
+          else
+            error "The exponent doesn't match the dimension"
+{-# INLINE pow #-}
+infix 8 `pow`
 
-instance PowClass f (Pos 0) a where
-  pow _ 0 _ = coerce (id :: a -> a)
-  pow _ _ _ = error "The exponent doesn't match the dimension"
-  {-# INLINE pow #-}
+
+-- instance PowClass f (Pos 0) a where
+--   pow _ 0 _ = coerce (id :: a -> a)
+--   pow _ _ _ = error "The exponent doesn't match the dimension"
+--   {-# INLINE pow #-}
 
 
 -- instance (PowClass f (Pos n) a, np1 ~ n + 1, Num a)
@@ -325,7 +332,6 @@ instance PowClass f (Pos 0) a where
 --   pow f (-1) _ a = coerce (f (Proxy :: Proxy f) (Per a))
 
 
-(-^-) :: forall f n a.  PowClass f n a
-  => Convertor f a -> Int -> Convertor (f -^- n) a
+(-^-) :: KnownRel n => Convertor f a -> Int -> Convertor (f -^- n) a
 (-^-) = pow
 
