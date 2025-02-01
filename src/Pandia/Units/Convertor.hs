@@ -158,7 +158,7 @@ instance (ConvertorClass f a, ConvertorClass g a, Num a)
     (convertor :: Convertor f a) -*- (convertor :: Convertor g a)
   {-# INLINE convertor #-}
 
-instance (PowClass f n a, ConvertorClass f a, RelVal n)
+instance (PowClass f n a, ConvertorClass f a, KnownRel n)
   => ConvertorClass ( f -^- n) a where
   convertor =
     (convertor :: Convertor f a) -^- fromInteger (relVal (Proxy :: Proxy n))
