@@ -98,6 +98,34 @@ newtype ((f :: Unit) -^- (n :: Rel)) a = PowDim (f a)
 infix 8 -^-
 
 
+
+type family ElimDiv (u :: Unit) :: Unit where
+    ElimDiv (u -*- v) = ElimDiv u -*- ElimDiv v
+    ElimDiv (u -^- n) = ElimDiv u -^- n
+    ElimDiv (u -/- u) = NoUnit
+    ElimDiv (u -/- v) = ElimDiv u -*- ElimDiv v -^- Neg 1
+    ElimDiv u = u
+
+type family ElimPow (u :: Unit) :: Unit where
+  ElimPow (u -/- v) = ElimPow u -/- ElimPow v
+  ElimPow (u -*- v) = ElimPow u -*- ElimPow v
+  ElimPow (u -^- Pos 0) = NoUnit
+  ElimPow (u -^- Neg 0) = NoUnit
+  ElimPow (u -^- Pos 1) = ElimPow u
+  ElimPow ((u -^- n) -^- m) = ElimPow (u -^- (n `MulRel` m))
+  ElimPow ((u -*- v) -^- n) = ElimPow (u -^- n -*- v -^- n)
+  ElimPow u = u
+
+type family ElimNoUnit (u :: Unit) :: Unit where
+  ElimNoUnit (NoUnit -*- u) = ElimNoUnit u
+  ElimNoUnit (u -*- NoUnit) = ElimNoUnit u
+  ElimNoUnit (u -*- v) = ElimNoUnit u -*- ElimNoUnit v
+  ElimNoUnit u = u
+
+type family SimplifyUnit (u :: Unit) :: Unit where
+  SimplifyUnit u = ElimNoUnit (ElimPow (ElimDiv u))
+
+
 --------------------------------- Conversion ---------------------------------
 
 data ConversionDirection  = FromSI | ToSI

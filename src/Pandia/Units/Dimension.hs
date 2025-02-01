@@ -95,20 +95,13 @@ type family MonoDim (syst :: DimSystem k) (key :: k) (n :: Rel) where
   MonoDim syst key n = SetDim key n (DimensionLess syst)
 
 
-class KnownDimension k where
-  type BaseUnit k :: Unit
-  type Quantity k :: Type -> Type
 
-type family DimToSI (d :: [Dim k]) :: Unit where
-  DimToSI '[] = NoUnit
-  DimToSI ('Dim k n ': ds) = BaseUnit k -^- n -*- DimToSI ds
 
 class HasDim (syst :: DimSystem Symbol) (u::Unit) where
   type DimOf syst u :: [Dim Symbol]
 
 instance HasDim syst NoUnit where
   type DimOf syst NoUnit = DimensionLess syst
-
 
 instance (HasDim syst u, HasDim syst v) => HasDim syst (u -*- v) where
   type DimOf syst (u -*- v) = MulDim' (DimOf syst u) (DimOf syst v)
@@ -121,6 +114,17 @@ instance (HasDim syst u) => HasDim syst (u -^- n) where
 
 
 type SameDim syst u v = EqDim (DimOf syst u) (DimOf syst v) ~ 'DimOK
+
+
+
+class KnownDimension k where
+  type BaseUnit k :: Unit
+  type Quantity k :: Type -> Type
+
+type family DimToBaseUnit (d :: [Dim k]) :: Unit where
+  DimToBaseUnit '[] = NoUnit
+  DimToBaseUnit ('Dim k n ': ds) = BaseUnit k -^- n -*- DimToBaseUnit ds
+
 
 
 ------------------------------------------------------------------------------
