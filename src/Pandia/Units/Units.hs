@@ -4,6 +4,8 @@ module Pandia.Units.Units
 
 import Pandia.Units.Convertor
 import Pandia.Units.Dimension
+import Pandia.Units.SI
+import Pandia.Units.Rel
 
 ----------------------------------- Length -----------------------------------
 

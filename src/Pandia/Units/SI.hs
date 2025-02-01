@@ -8,11 +8,64 @@ import Pandia.Units.Prefix
 import Pandia.Units.Rel
 
 import GHC.TypeLits
+
+type SI = '[
+    'Dim "L"
+  , 'Dim "M"
+  , 'Dim "T"
+  , 'Dim "I"
+  , 'Dim "Th"
+  , 'Dim "N"
+  , 'Dim "J"
+  ]
+
+type AngleSI = 'Dim "A" ': SI
+
+type family DimL (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimL syst n = MonoDim syst "L" n
+
+type family DimM (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimM syst n = MonoDim syst "M" n
+
+type family DimT (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimT syst n = MonoDim syst "T" n
+
+type family DimI (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimI syst n = MonoDim syst "I" n
+
+type family DimTh (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimTh syst n = MonoDim syst "Th" n
+
+type family DimN (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimN syst n = MonoDim syst "N" n
+
+type family DimJ (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimJ syst n = MonoDim syst "J" n
+
+type family DimA (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimA syst n = MonoDim syst "A" n
+
+
 ----------------------------------- Length -----------------------------------
 
+
+
+-- | Quantity of the length dimension whose unit is not specified.
+newtype Length a = Length a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+instance HasDim syst Length where
+  type DimOf syst Length = DimL syst (Pos 1)
+
+-- | A quantity in meters
+--
+-- This is the base unit of the length dimension in the SI system.
 newtype Meter a = Meter a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+type instance BaseUnit "L" = Meter
 
 instance HasDim syst Meter where
   type DimOf syst Meter = DimL syst (Pos 1)

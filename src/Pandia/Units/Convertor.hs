@@ -119,7 +119,7 @@ type family ElimPow (u :: Unit) :: Unit where
 type family ElimNoUnit (u :: Unit) :: Unit where
   ElimNoUnit (NoUnit -*- u) = ElimNoUnit u
   ElimNoUnit (u -*- NoUnit) = ElimNoUnit u
-  ElimNoUnit (u -*- v) = ElimNoUnit u -*- ElimNoUnit v
+  ElimNoUnit (u -*- v) = ElimNoUnit (ElimNoUnit u -*- ElimNoUnit v)
   ElimNoUnit u = u
 
 type family SimplifyUnit (u :: Unit) :: Unit where
