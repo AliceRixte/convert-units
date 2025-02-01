@@ -39,7 +39,8 @@ import GHC.TypeLits
 
 import Pandia.Units.Rel
 
--- | A unit is represented by a newtype constructor
+-- | A unit is represented by a newtype constructor. A quantity of some newtype
+-- @f@ is of type @f a@.
 type Unit = Type -> Type
 
 -- | A convertor that can convert from and to some unit.

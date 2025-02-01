@@ -71,17 +71,6 @@ instance Num a => ConvertorClass Hour (Per (To a)) where
 
 ------------------------- Thermodynamic temperature --------------------------
 
-
-newtype Kelvin a = Kelvin a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
-
-instance ConvertorClass Kelvin a
-
-kelvin :: Convertor Kelvin a
-kelvin = convertor
-{-# INLINE kelvin #-}
-
 newtype Celsius a = Celsius a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
@@ -110,14 +99,5 @@ celsius = convertor
 
 ------------------------------- Compound units -------------------------------
 
-newtype Newton a = Newton a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
-
-instance ConvertorClass Newton a
-
-newton :: Convertor Newton a
-newton = convertor
-{-# INLINE newton #-}
 
 

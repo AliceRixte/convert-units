@@ -131,7 +131,15 @@ candela = convertor
 {-# INLINE candela #-}
 
 
-------------------------------- Compound units -------------------------------
+------------------------------- Derived units -------------------------------
+
+type Radian = Meter -/- Meter
+
+radian :: Num a => Convertor Radian a
+radian = convertor
+{-# INLINE radian #-}
+
+
 
 type Newton = Kilo Gram -*- Meter -/- Second -^- Pos 2
 

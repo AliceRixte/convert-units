@@ -8,8 +8,6 @@ import Data.Type.Ord
 
 import Data.Proxy
 
-import Control.Exception
-
 type Rel = Relative Nat
 
 data Relative a = Pos a | Neg a
@@ -37,9 +35,6 @@ type family NegateRel (a :: Relative Nat) :: Relative Nat where
 type family SubRel (a :: Relative Nat) (b :: Relative Nat) :: Relative Nat where
   SubRel a b = SumRel a (NegateRel b)
 
-
-x:: Proxy (SumRel (Neg 2) (Pos 2))
-x = Proxy
 
 type family NormalizeRel (a :: Relative Nat) :: Relative Nat where
   NormalizeRel (Neg 0) = Pos 0

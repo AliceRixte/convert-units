@@ -14,7 +14,7 @@ import Pandia.Units.Rel
 
 data Dimension l m t i th n j = Dimension l m t i th n j
 
-type NoDimension =
+type DimNoUnit =
   'Dimension (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0) (Pos 0)
 
 type DimLength =
@@ -110,7 +110,7 @@ class ToDimension (f :: Unit) where
   type ToDim f :: Dimension Rel Rel Rel Rel Rel Rel Rel
 
 instance ToDimension NoUnit where
-  type ToDim NoUnit = NoDimension
+  type ToDim NoUnit = DimNoUnit
 
 instance (ToDimension (f :: Unit), ToDimension (g :: Unit))
   => ToDimension (f -*- g) where
