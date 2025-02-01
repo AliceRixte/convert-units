@@ -26,15 +26,16 @@ fromSI u = coerce (runConvertor u)
 
 -- but really it does not work because we need Relative type level numbers instead of natural numbers
 
-type family DimToSI (d :: Dimension Rel Rel Rel Rel Rel Rel Rel) :: Unit where
-  DimToSI ('Dimension l m t i th n j) =
-          (Meter     -^- l )
-      -*- (Kilo Gram -^- m )
-      -*- (Second    -^- t )
-      -*- (Ampere    -^- i )
-      -*- (Kelvin    -^- th)
-      -*- (Mole      -^- n )
-      -*- (Candela   -^- j )
+-- type family DimToSI (d :: Dimension Rel Rel Rel Rel Rel Rel Rel) :: Unit where
+--   DimToSI ('Dimension l m t i th n j) =
+--           (Meter     -^- l )
+--       -*- (Kilo Gram -^- m )
+--       -*- (Second    -^- t )
+--       -*- (Ampere    -^- i )
+--       -*- (Kelvin    -^- th)
+--       -*- (Mole      -^- n )
+--       -*- (Candela   -^- j )
+
 
 
 type family PushNeg (u :: Unit) :: Unit where
@@ -70,7 +71,7 @@ type family SimplifyUnit (u :: Unit) :: Unit where
 
 
 type family UnitToSI (u :: Unit) :: Unit where
-  UnitToSI u = SimplifyUnit (DimToSI (ToDim u))
+  UnitToSI u = SimplifyUnit (DimToSI (DimOf SI u))
 
 
 --  | This does NOT work ! Type inference will fail as soon as there is a negative exponent.
@@ -105,17 +106,30 @@ fromToNoCheck u v a = coerce
 {-# INLINE fromToNoCheck #-}
 
 fromTo :: forall u v a.
-  (Coercible a (v a), Coercible a (u a), SameDim u v)
+  (Coercible a (v a), Coercible a (u a), SameDim SI u v)
   => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> u a -> v a
 fromTo = fromToNoCheck
 {-# INLINE fromTo #-}
+
+fromTo2 :: forall u v a.
+  (Coercible a (v a), Coercible a (u a), SameDim SI u v)
+  => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> u a -> v a
+fromTo2 = fromToNoCheck
+{-# INLINE fromTo2 #-}
+
+
+-- fromTo2 :: forall u v a.
+--   (Coercible a (v a), Coercible a (u a), SameDim SI u v)
+--   => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> u a -> v a
+-- fromTo = fromToNoCheck
+-- {-# INLINE fromTo #-}
 
 fromToNoCheck' :: forall u v a.
   Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> a -> a
 fromToNoCheck' u t  = fromSI' t . toSI' u
 {-# INLINE fromToNoCheck' #-}
 
-fromTo' ::  forall u v a. SameDim u v
+fromTo' ::  forall u v a. SameDim SI u v
   => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> a -> a
 fromTo' = fromToNoCheck'
 {-# INLINE fromTo' #-}
@@ -125,13 +139,13 @@ infix 2 `fromTo'`
 
 
 (~>) :: forall u v a.
-  (Coercible a (v a), Coercible a (u a), SameDim u v)
+  (Coercible a (v a), Coercible a (u a), SameDim SI u v)
   => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> u a -> v a
 (~>) = fromTo
 {-# INLINE (~>) #-}
 infix 2 ~>
 
-(~~>) :: forall u v a. SameDim u v
+(~~>) :: forall u v a. SameDim SI u v
   => Convertor u 'ToSI 'False a -> Convertor v 'FromSI 'False a  -> a -> a
 (~~>) = fromTo'
 {-# INLINE (~~>) #-}
@@ -162,7 +176,7 @@ asNoCheck fa v = fromToNoCheck (convertor :: Convertor u 'ToSI 'False a ) v fa
 -- @
 as :: forall u v a.
   (Coercible a (u a), Coercible a (v a)
-  , ConvertorClass u 'ToSI 'False a, SameDim u v)
+  , ConvertorClass u 'ToSI 'False a, SameDim SI u v)
   => u a -> Convertor v 'FromSI 'False a  -> v a
 as = asNoCheck
 {-# INLINE as #-}

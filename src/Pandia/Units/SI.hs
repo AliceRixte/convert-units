@@ -7,14 +7,15 @@ import Pandia.Units.Dimension
 import Pandia.Units.Prefix
 import Pandia.Units.Rel
 
+import GHC.TypeLits
 ----------------------------------- Length -----------------------------------
 
 newtype Meter a = Meter a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance ToDimension Meter where
-  type ToDim Meter = DimLength
+instance HasDim syst Meter where
+  type DimOf syst Meter = DimL syst (Pos 1)
 
 instance ConvertorClass Meter cd p a
 
@@ -28,8 +29,8 @@ newtype Gram a = Gram a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance ToDimension Gram where
-  type ToDim Gram = DimMass
+instance HasDim syst Gram where
+  type DimOf syst Gram = DimM syst (Pos 1)
 
 gram :: ConvertorClass Gram cd p a => Convertor Gram cd p a
 gram = convertor
@@ -75,8 +76,8 @@ newtype Second a = Second a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance ToDimension Second where
-  type ToDim Second = DimTime
+instance HasDim syst Second where
+  type DimOf syst Second = DimT syst (Pos 1)
 
 instance ConvertorClass Second cd p a
 
@@ -91,8 +92,9 @@ newtype Ampere a = Ampere a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance ToDimension Ampere where
-  type ToDim Ampere = DimCurrent
+instance HasDim syst Ampere where
+  type DimOf syst Ampere = DimI syst (Pos 1)
+
 
 instance ConvertorClass Ampere cd p a
 
@@ -107,8 +109,8 @@ newtype Kelvin a = Kelvin a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance ToDimension Kelvin where
-  type ToDim Kelvin = DimTemperature
+instance HasDim syst Kelvin where
+  type DimOf syst Kelvin = DimTh syst (Pos 1)
 
 instance ConvertorClass Kelvin cd p a
 
@@ -123,8 +125,8 @@ newtype Mole a = Mole a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance ToDimension Mole where
-  type ToDim Mole = DimAmount
+instance HasDim syst Mole where
+  type DimOf syst Mole = DimN syst (Pos 1)
 
 instance ConvertorClass Mole cd p a
 
@@ -138,8 +140,8 @@ newtype Candela a = Candela a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance ToDimension Candela where
-  type ToDim Candela = DimLuminousIntensity
+instance HasDim syst Candela where
+  type DimOf syst Candela = DimJ syst (Pos 1)
 
 instance ConvertorClass Candela cd p a
 

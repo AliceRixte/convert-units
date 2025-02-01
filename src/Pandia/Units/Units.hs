@@ -15,8 +15,8 @@ newtype Ton a = Ton a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance ToDimension Ton where
-  type ToDim Ton = DimMass
+instance HasDim syst Ton where
+  type DimOf syst Ton = DimM syst (Pos 1)
 
 ton :: ConvertorClass Ton cd p a => Convertor Ton cd p a
 ton = convertor
@@ -65,8 +65,8 @@ newtype Hour a = Hour a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance ToDimension Hour where
-  type ToDim Hour = DimTime
+instance HasDim syst Hour where
+  type DimOf syst Hour = DimT syst (Pos 1)
 
 hour :: ConvertorClass Hour cd p a => Convertor Hour cd p a
 hour = convertor
@@ -116,8 +116,8 @@ newtype Celsius a = Celsius a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-instance ToDimension Celsius where
-  type ToDim Celsius = DimTemperature
+instance HasDim syst Celsius where
+  type DimOf syst Celsius = DimTh syst (Pos 1)
 
 celsius :: ConvertorClass Celsius cd p a => Convertor Celsius cd p a
 celsius = convertor

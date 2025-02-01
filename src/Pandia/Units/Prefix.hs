@@ -74,8 +74,8 @@ newtype Milli (u :: Type -> Type) a = Milli (u a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
-instance ToDimension u => ToDimension (Milli u) where
-  type ToDim (Milli u) = ToDim u
+instance HasDim syst u => HasDim syst (Milli u) where
+  type DimOf syst (Milli u) = DimOf syst u
 
 instance (Num a, ConvertorClass u cd p a, MilliClass u cd p a)
   => ConvertorClass (Milli u) cd p a where
@@ -146,8 +146,8 @@ newtype Kilo (u :: Type -> Type) a = Kilo (u a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
-instance ToDimension u => ToDimension (Kilo u) where
-  type ToDim (Kilo u) = ToDim u
+instance HasDim syst u => HasDim syst (Kilo u) where
+  type DimOf syst (Kilo u) = DimOf syst u
 
 instance (Num a, ConvertorClass u cd p a, KiloClass u cd p a)
   => ConvertorClass (Kilo u) cd p a where
