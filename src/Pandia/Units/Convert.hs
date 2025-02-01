@@ -77,16 +77,15 @@ type family UnitToSI (f :: Unit) :: Unit where
 toSI :: forall f a. Coercible a ((UnitToSI f) a)
   => Convertor f (From a) -> a -> (UnitToSI f) a
 toSI f a = coerce (f (Proxy :: Proxy f)) a
+{-# INLINE toSI #-}
 
+fromSI' :: forall f a. Convertor f (To a) -> a -> a
+fromSI' f = coerce (f (Proxy :: Proxy f))
+{-# INLINE fromSI' #-}
 
-fromSI' :: forall f a. Coercible a (f a)
-  => Convertor f (To a) -> a -> a
-fromSI' f a = coerce (f (Proxy :: Proxy f)) a
-
-toSI' :: forall f a. ConvertorClass f (To a)
-  => Convertor f (From a) -> a -> a
-toSI' f a = coerce (f (Proxy :: Proxy f)) a
-
+toSI' :: forall f a. Convertor f (From a) -> a -> a
+toSI' f = coerce (f (Proxy :: Proxy f))
+{-# INLINE toSI' #-}
 
 
 
@@ -106,16 +105,16 @@ fromTo = fromToNoCheck
 
 fromToNoCheck' :: forall f g a.
   Convertor f (From a) -> Convertor g (To a) -> a -> a
-fromToNoCheck' f t  = (coerce (t (Proxy :: Proxy g)) :: a -> a)
-                    . (coerce (f (Proxy :: Proxy f)) :: a -> a)
+fromToNoCheck' f t  = fromSI' t . toSI' f
+{-# INLINE fromToNoCheck' #-}
+
+fromTo' ::  forall f g a.
+  Convertor f (From a) -> Convertor g (To a) -> a -> a
+fromTo' = fromToNoCheck'
+{-# INLINE fromTo' #-}
+infix 2 `fromTo'`
 
 
-
-asNoCheck :: forall f g a.
-  (Coercible a (f a), Coercible a (g a), ConvertorClass f (From a))
-  => f a -> Convertor g (To a) -> g a
-asNoCheck fa g = fromToNoCheck (convertor :: Convertor f (From a)) g fa
-{-# INLINE asNoCheck #-}
 
 
 (~>) :: forall f g a.
@@ -127,18 +126,16 @@ infix 2 ~>
 
 (~~>) :: forall f g a.
   Convertor f (From a) -> Convertor g (To a) -> a -> a
-f ~~> t = (coerce (t (Proxy :: Proxy g)) :: a -> a)
-            . (coerce (f (Proxy :: Proxy f)) :: a -> a)
+(~~>) = fromToNoCheck'
 {-# INLINE (~~>) #-}
 infix 2 ~~>
 
+asNoCheck :: forall f g a.
+  (Coercible a (f a), Coercible a (g a), ConvertorClass f (From a))
+  => f a -> Convertor g (To a) -> g a
+asNoCheck fa g = fromToNoCheck (convertor :: Convertor f (From a)) g fa
+{-# INLINE asNoCheck #-}
 
-
-
-convertCheck :: forall f g a.
-  (Coercible a (g a), Coercible a (f a), SameDim f g)
-  => Convertor f (From a) -> Convertor g (To a) -> f a -> g a
-convertCheck = (~>)
 
 -- | Convert a quantity from one unit to the other, and checks if the unit's
 -- dimensions are compatible

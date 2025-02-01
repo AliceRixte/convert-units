@@ -39,7 +39,55 @@ import GHC.TypeLits
 
 import Pandia.Units.Rel
 
+-- | A unit is represented by a newtype constructor
 type Unit = Type -> Type
+
+-- | A convertor that can convert from and to some unit.
+--
+-- Convertors can be combined via 'mul'@, @'per'@, and @'pow'@ .
+--
+type Convertor (f :: Unit) a = Proxy f -> a -> a
+
+-- | When a quantity decorated by this newtype is fed to a convertor, the
+-- convertor will compute the conversion from its unit to the international
+-- system unit
+newtype From a = From a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
+          , RealFrac, RealFloat, Bounded)
+
+-- | When a quantity decorated by this newtype is fed to a convertor, the
+-- convertor will compute the conversion from the international system unit to
+-- its unit
+newtype To a = To a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
+          , RealFrac, RealFloat, Bounded)
+
+-- | When receiving a quantity of the form @'Per' ('From' a)@, the convertor
+-- will compute the conversion from the international system unit to its
+-- inverted unit
+--
+-- Similarly, when receiving a quantity of the form @'Per' ('To' a)@, the
+-- convertor will compute the conversion from its unit to the international
+-- system unit
+--
+newtype Per a = Per a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
+          , RealFrac, RealFloat, Bounded)
+
+-- | Forces a convertor to be from SI to its unit
+coerceTo :: Convertor f a -> Convertor f (To a)
+coerceTo f p = coerce (f p)
+{-# INLINE coerceTo #-}
+
+-- | Forces a convertor to be from its unit to SI
+coerceFrom :: Convertor f a -> Convertor f (From a)
+coerceFrom f p = coerce (f p)
+{-# INLINE coerceFrom #-}
+
+
+
+
+
 
 -- | Multiplication of two units.
 --
@@ -91,11 +139,6 @@ newtype NoUnit a = NoUnit a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
--- | A convertor that can convert from and to some unit.
---
--- Convertors can be combined via 'mul'@, @'per'@, and @'pow'@ .
---
-type Convertor (f :: Unit) a = Proxy f -> a -> a
 
 -- | Create a convertor from a unit newtype
 --
@@ -122,32 +165,6 @@ instance (PowClass f n a, ConvertorClass f a, RelVal n)
     (convertor :: Convertor f a) -^- fromInteger (relVal (Proxy :: Proxy n))
   {-# INLINE convertor #-}
 
-
--- | When a quantity decorated by this newtype is fed to a convertor, the
--- convertor will compute the conversion from its unit to the international
--- system unit
-newtype From a = From a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
-          , RealFrac, RealFloat, Bounded)
-
--- | When a quantity decorated by this newtype is fed to a convertor, the
--- convertor will compute the conversion from the international system unit to
--- its unit
-newtype To a = To a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
-          , RealFrac, RealFloat, Bounded)
-
--- | When receiving a quantity of the form @'Per' ('From' a)@, the convertor
--- will compute the conversion from the international system unit to its
--- inverted unit
---
--- Similarly, when receiving a quantity of the form @'Per' ('To' a)@, the
--- convertor will compute the conversion from its unit to the international
--- system unit
---
-newtype Per a = Per a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
-          , RealFrac, RealFloat, Bounded)
 
 
 -- | A convertor that does nothing
@@ -292,8 +309,6 @@ instance PowClass f (Pos 0) a where
   pow _ 0 _ = coerce (id :: a -> a)
   pow _ _ _ = error "The exponent doesn't match the dimension"
   {-# INLINE pow #-}
-
-
 
 
 -- instance (PowClass f (Pos n) a, np1 ~ n + 1, Num a)

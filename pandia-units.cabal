@@ -26,6 +26,7 @@ source-repository head
 
 library
   exposed-modules:
+      Pandia.Test
       Pandia.Units
       Pandia.Units.Convert
       Pandia.Units.Convertor
@@ -51,7 +52,9 @@ library
       FlexibleContexts
   ghc-options: -Wall -threaded -O2
   build-depends:
-      base >=4.18 && <5
+      QuickCheck
+    , base >=4.18 && <5
+    , hspec
   default-language: Haskell2010
 
 test-suite pandia-units-test
@@ -78,7 +81,9 @@ benchmark pandia-units-bench
       benchmark
   ghc-options: -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.18 && <5
+      QuickCheck
+    , base >=4.18 && <5
     , criterion >=1.6
+    , hspec
     , pandia-units
   default-language: Haskell2010

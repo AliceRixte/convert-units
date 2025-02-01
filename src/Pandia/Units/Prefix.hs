@@ -166,11 +166,11 @@ class KiloClass a where
   kiloFun :: (a -> a) -> a -> a
 
 instance Num a => KiloClass (From a) where
-  kiloFun f = (* 1000) . f
+  kiloFun f = f . (* 1000)
   {-# INLINE kiloFun #-}
 
 instance Fractional a => KiloClass (Per (From a)) where
-  kiloFun f = (/ 1000) . f
+  kiloFun f = f . (/ 1000)
   {-# INLINE kiloFun #-}
 
 instance Fractional a => KiloClass (To a) where
