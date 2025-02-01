@@ -20,10 +20,6 @@ type family SumRelBool (a :: Relative Nat) (b :: Relative Nat) (cmp :: Bool) whe
   SumRelBool (Neg a) (Pos b) False = Pos (b - a)
   SumRelBool (Neg a) (Neg b) _ = Neg (a + b)
 
--- type CmpRel (a :: Relative Nat) (b :: Relative Nat):: Bool where
---   CmpRel (Pos a) (Pos b) = a >=? b
---   CmpRel (Pos a) (Neg b) = True
-
 
 type family SumRel (a :: Relative Nat) (b :: Relative Nat) :: Relative Nat where
   SumRel a b = SumRelBool a b (a >=? b)

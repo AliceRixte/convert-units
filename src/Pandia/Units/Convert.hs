@@ -7,7 +7,6 @@ module Pandia.Units.Convert
 
 import Data.Coerce
 import Data.Proxy
-import GHC.TypeLits
 
 import Pandia.Units.Dimension
 import Pandia.Units.Convertor
@@ -78,6 +77,12 @@ toSI :: forall f a. Coercible a ((UnitToSI f) a)
   => Convertor f (From a) -> a -> (UnitToSI f) a
 toSI f a = coerce (f (Proxy :: Proxy f)) a
 {-# INLINE toSI #-}
+
+asSI :: forall f a.
+  (Coercible a (f a), Coercible a ((UnitToSI f) a), ConvertorClass f (From a))
+  =>  f a -> (UnitToSI f) a
+asSI fa = toSI (convertor :: Convertor f (From a)) (coerce fa :: a)
+{-# INLINE asSI #-}
 
 fromSI' :: forall f a. Convertor f (To a) -> a -> a
 fromSI' f = coerce (f (Proxy :: Proxy f))

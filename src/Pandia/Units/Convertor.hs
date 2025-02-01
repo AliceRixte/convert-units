@@ -35,8 +35,6 @@ import Data.Coerce
 import Data.Proxy
 import Data.Kind
 
-import GHC.TypeLits
-
 import Pandia.Units.Rel
 
 -- | A unit is represented by a newtype constructor. A quantity of some newtype

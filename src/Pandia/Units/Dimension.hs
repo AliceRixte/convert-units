@@ -6,8 +6,6 @@ module Pandia.Units.Dimension
   ( module Pandia.Units.Dimension
   ) where
 
-import GHC.TypeLits
-
 import Pandia.Units.Convertor
 import Pandia.Units.Rel
 
