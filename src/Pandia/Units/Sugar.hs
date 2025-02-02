@@ -1,8 +1,8 @@
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE NoStarIsType #-}
 
-module Pandia.Units.Convert
-  ( module Pandia.Units.Convert
+module Pandia.Units.Sugar
+  ( module Pandia.Units.Sugar
   ) where
 
 import Data.Coerce

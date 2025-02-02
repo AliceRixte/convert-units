@@ -5,8 +5,8 @@ module Pandia.Units
   , module Pandia.Units.Prefix
   , module Pandia.Units.Dimension
   , module Pandia.Units.SI
-  , module Pandia.Units.Units
-  , module Pandia.Units.Convert
+  , module Pandia.Units.NonSI
+  , module Pandia.Units.Sugar
   ) where
 
 import Data.Coerce (coerce)
@@ -16,7 +16,7 @@ import Pandia.Units.Convertor
 import Pandia.Units.Prefix
 import Pandia.Units.Dimension
 import Pandia.Units.SI
-import Pandia.Units.Units
-import Pandia.Units.Convert
+import Pandia.Units.NonSI
+import Pandia.Units.Sugar
 
 

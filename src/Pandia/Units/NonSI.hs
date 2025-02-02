@@ -1,5 +1,5 @@
-module Pandia.Units.Units
-  ( module Pandia.Units.Units
+module Pandia.Units.NonSI
+  ( module Pandia.Units.NonSI
   ) where
 
 import Pandia.Units.Convertor
@@ -40,25 +40,6 @@ instance Num a => ConvertorClass Ton 'FromDimSys 'True a where
   convertor _ x = x * 1000
   {-# INLINE convertor #-}
 
--- ton :: ConvertorClass Ton a => Convertor Ton a
--- ton = convertor
--- {-# INLINE ton #-}
-
--- instance Num a => ConvertorClass Ton (ToSI a) where
---   convertor _ x = x * 1000
---   {-# INLINE convertor #-}
-
--- instance Fractional a => ConvertorClass Ton (Per (ToSI a)) where
---   convertor _ x = x / 1000
---   {-# INLINE convertor #-}
-
--- instance Fractional a => ConvertorClass Ton (FromSI a) where
---   convertor _ x = x / 1000
---   {-# INLINE convertor #-}
-
--- instance Num a => ConvertorClass Ton (Per (FromSI a)) where
---   convertor _ x = x * 1000
---   {-# INLINE convertor #-}
 
 
 ------------------------------------ Time ------------------------------------
@@ -90,25 +71,6 @@ instance Num a => ConvertorClass Hour 'FromDimSys 'True a where
   convertor _ x = x * 3600
   {-# INLINE convertor #-}
 
--- hour :: ConvertorClass Hour a => Convertor Hour a
--- hour = convertor
--- {-# INLINE hour #-}
-
--- instance Num a => ConvertorClass Hour (ToSI a) where
---   convertor _ x = x * 3600
---   {-# INLINE convertor #-}
-
--- instance Fractional a => ConvertorClass Hour (Per (ToSI a)) where
---   convertor _ x = x / 3600
---   {-# INLINE convertor #-}
-
--- instance Fractional a => ConvertorClass Hour (FromSI a) where
---   convertor _ x = x / 3600
---   {-# INLINE convertor #-}
-
--- instance Num a => ConvertorClass Hour (Per (FromSI a)) where
---   convertor _ x = x * 3600
---   {-# INLINE convertor #-}
 
 ------------------------------ Electric current ------------------------------
 
@@ -136,23 +98,6 @@ instance Fractional a => ConvertorClass Celsius 'FromDimSys 'False a where
 instance Fractional a => ConvertorClass Celsius cd 'True a where
   convertor _ = id
   {-# INLINE convertor #-}
-
-
--- instance Fractional a => ConvertorClass Celsius (ToSI a) where
---   convertor _ x = x + 273.15
---   {-# INLINE convertor #-}
-
--- instance Fractional a => ConvertorClass Celsius (FromSI a) where
---   convertor _ x = x - 273.15
---   {-# INLINE convertor #-}
-
--- instance Fractional a => ConvertorClass Celsius (Per a) where
---   convertor _ = id
---   {-# INLINE convertor #-}
-
--- celsius :: ConvertorClass Celsius a => Convertor Celsius a
--- celsius = convertor
--- {-# INLINE celsius #-}
 
 
 ---------------------------- Amount of substance -----------------------------

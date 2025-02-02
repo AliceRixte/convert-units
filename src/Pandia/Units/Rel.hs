@@ -9,8 +9,7 @@ import Data.Type.Ord
 
 import Data.Proxy
 
-
-
+-- | Type level sign that allow to encode type level integers
 data Signed a = Pos a | Neg a
 
 type Rel = Signed Nat
