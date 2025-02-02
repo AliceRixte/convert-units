@@ -36,13 +36,14 @@ import Data.Coerce
 import Data.Proxy
 import Data.Kind
 import Data.Type.Bool
+import GHC.TypeLits
 
 import Pandia.Units.Rel
 
 ----------------------------- Unit construction ------------------------------
 
 -- | A unit is represented by a newtype constructor. A quantity of some newtype
--- @f@ is of type @f a@.
+-- @u@ is of type @u a@.
 type Unit = Type -> Type
 
 
@@ -63,7 +64,7 @@ newtype NoUnit a = NoUnit a
 -- type MyForceMoment a = (Newton -*- Meter) a
 -- @
 --
-newtype ((f :: Unit) -*- (g :: Unit)) a = MulDim (f (g a))
+newtype ((u :: Unit) -*- (g :: Unit)) a = MulDim (u (g a))
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infixl 7 -*-
@@ -77,7 +78,7 @@ infixl 7 -*-
 --
 -- Notice that division has priority over division.
 --
-newtype ((f :: Unit) -/- (g :: Unit)) a = PerDim (f (g a))
+newtype ((u :: Unit) -/- (g :: Unit)) a = PerDim (u (g a))
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infix 6 -/-
@@ -92,7 +93,7 @@ infix 6 -/-
 -- type MyAcceleration a = (Meter -/- Second -^- 2) a
 -- @
 --
-newtype ((f :: Unit) -^- (n :: Rel)) a = PowDim (f a)
+newtype ((u :: Unit) -^- (n :: Rel)) a = PowDim (u a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infix 8 -^-
@@ -119,11 +120,12 @@ type family ElimPow (u :: Unit) :: Unit where
 type family ElimNoUnit (u :: Unit) :: Unit where
   ElimNoUnit (NoUnit -*- u) = ElimNoUnit u
   ElimNoUnit (u -*- NoUnit) = ElimNoUnit u
-  ElimNoUnit (u -*- v) = ElimNoUnit (ElimNoUnit u -*- ElimNoUnit v)
+  ElimNoUnit (u -*- v) = ElimNoUnit u -*- ElimNoUnit v
   ElimNoUnit u = u
 
 type family SimplifyUnit (u :: Unit) :: Unit where
-  SimplifyUnit u = ElimNoUnit (ElimPow (ElimDiv u))
+  SimplifyUnit u =  ElimNoUnit (ElimNoUnit (ElimPow (ElimDiv u)))
+  -- we need to apply ElimNoUnit twice because there can be one trailing at the end
 
 
 --------------------------------- Conversion ---------------------------------
@@ -145,57 +147,20 @@ type Convertor (u :: Unit) (cd :: ConversionDirection) (p :: IsPer) a
   = Proxy ('ConversionInfo u cd p) -> a -> a
 
 runConvertor :: Convertor u cd p a -> a -> a
-runConvertor f = f Proxy
+runConvertor u = u Proxy
 {-# INLINE runConvertor #-}
 
 coerceConvertor :: Convertor u cd p a -> Convertor v cd' p' a
-coerceConvertor f _ = f Proxy
+coerceConvertor u _ = u Proxy
 {-# INLINE coerceConvertor #-}
 
 coerceTo :: Convertor u cd p a -> Convertor u 'ToSI 'False a
-coerceTo f _ = f Proxy
+coerceTo u _ = u Proxy
 {-# INLINE coerceTo #-}
 
 coerceFrom :: Convertor u cd p a -> Convertor u 'FromSI 'False a
-coerceFrom f _ = f Proxy
+coerceFrom u _ = u Proxy
 {-# INLINE coerceFrom #-}
-
--- fromSI' :: Convertor u 'FromSI (Not Per) -> a -> a
--- fromSI' f = f (Proxy :: Proxy ('ConversionInfo u 'FromSI (Not Per)))
--- {-# INLINE fromSI' #-}
-
-
--- -- | When a quantity decorated by this newtype is fed to a convertor, the
--- -- convertor will compute the conversion from its unit to the international
--- -- system unit
--- newtype ToSI a = ToSI a
---   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
---           , RealFrac, RealFloat, Bounded)
-
--- -- | When a quantity decorated by this newtype is fed to a convertor, the
--- -- convertor will compute the conversion from the international system unit to
--- -- its unit
--- newtype FromSI a = FromSI a
---   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
---           , RealFrac, RealFloat, Bounded)
-
--- -- | When receiving a quantity of the form @'Per' ('ToSI' a)@, the convertor
--- -- will compute the conversion from the international system unit to its
--- -- inverted unit
--- --
--- -- Similarly, when receiving a quantity of the form @'Per' ('FromSI' a)@, the
--- -- convertor will compute the conversion from its unit to the international
--- -- system unit
--- --
--- newtype Per a = Per a
---   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real
---           , RealFrac, RealFloat, Bounded)
-
-
-
-
-
-
 
 
 -- | Create a convertor from a unit newtype
@@ -218,10 +183,18 @@ instance (ConvertorClass u cd p a, ConvertorClass v cd p a, Num a)
     (convertor :: Convertor u cd p a) -*- (convertor :: Convertor v cd p a)
   {-# INLINE convertor #-}
 
+
+
+-- instance (ConvertorClass u cd p a)
+--   => ConvertorClass (u -^- n) cd p a where
+--   convertor _ =
+--     powConv (convertor :: Convertor u cd p a)  2
+--   {-# INLINE convertor #-}
+
 instance (ConvertorClass u cd p a, KnownRel n)
   => ConvertorClass (u -^- n) cd p a where
   convertor =
-    (convertor :: Convertor u cd p a) -^- fromInteger (relVal (Proxy :: Proxy n))
+    pow (convertor :: Convertor u cd p a)  (Proxy :: Proxy n)
   {-# INLINE convertor #-}
 
 
@@ -263,7 +236,7 @@ nounit _ = id
 --
 per :: forall u v cd p a. Num a =>
   Convertor u cd p a -> Convertor v cd (Not p) a -> Convertor (u -/- v) cd p a
-per f g _ a = runConvertor f a
+per u g _ a = runConvertor u a
             * runConvertor (coerceConvertor g :: Convertor v cd (Not p) a) 1
 infix 6 `per`
 
@@ -275,7 +248,7 @@ infix 6 `per`
 --
 (-/-) :: forall u v cd p a. Num a =>
   Convertor u cd p a -> Convertor v cd (Not p) a -> Convertor (u -/- v) cd p a
-(f -/- g) a = per f g a
+(u -/- g) a = per u g a
 {-# INLINE (-/-) #-}
 
 
@@ -334,7 +307,7 @@ infix 6 `per`
 --
 mul :: forall u v cd p a. Num a
   => Convertor u cd p a -> Convertor v cd p a -> Convertor (u -*- v) cd p a
-mul f g _ = runConvertor f . runConvertor g
+mul u g _ = runConvertor u . runConvertor g
 {-# INLINE mul #-}
 infixl 7 `mul`
 
@@ -347,48 +320,105 @@ infixl 7 `mul`
 
 timesFun  :: Int -> (a -> a) -> a -> a
 timesFun 0 _ = id
-timesFun n f = f . timesFun (n - 1) f
+timesFun n u = u . timesFun (n - 1) u
 {-# INLINE timesFun #-}
 
 powConv :: forall u cd p a. Convertor u cd p a -> Int -> a -> a
-powConv f n | n >= 0  = timesFun n (runConvertor f)
+powConv u n | n >= 0  = timesFun n (runConvertor u)
             | n < 0   = timesFun n
-              (runConvertor (coerceConvertor f :: Convertor u cd (Not p) a))
+              (runConvertor (coerceConvertor u :: Convertor u cd (Not p) a))
 {-# INLINE powConv #-}
 
 
+p0 :: Proxy (Pos 0)
+p0 = Proxy
+
+p1 :: Proxy (Pos 1)
+p1 = Proxy
+
+p2 :: Proxy (Pos 2)
+p2 = Proxy
+
+p3 :: Proxy (Pos 3)
+p3 = Proxy
+
+p4 :: Proxy (Pos 4)
+p4 = Proxy
+
+m1 :: Proxy (Neg 1)
+m1 = Proxy
+
+m2 :: Proxy (Neg 2)
+m2 = Proxy
+
+m3 :: Proxy (Neg 3)
+m3 = Proxy
+
+m4 :: Proxy (Neg 4)
+m4 = Proxy
+
+sqr :: forall u cd p a. Convertor u cd p a -> Convertor (u -^- Pos 2) cd p a
+sqr f _ = powConv f 2
+{-# INLINE sqr #-}
+
+pow1 :: forall u cd p a. Convertor u cd p a -> Convertor (u -^- Pos 1) cd p a
+pow1 = coerceConvertor
+{-# INLINE pow1 #-}
+
+negatePow :: forall u cd p n a. Convertor (u -^- n) cd p a -> Convertor (u -^- NegateRel n) cd p a
+negatePow = coerceConvertor
+{-# INLINE negatePow #-}
+
+
+
+
+negSqr :: forall u cd p a. Convertor u cd p a -> Convertor (u -^- Neg 2) cd p a
+negSqr f _ = powConv f (-2)
+{-# INLINE negSqr #-}
+
 
 pow :: forall u cd p n a. KnownRel n
-  => Convertor u cd p a -> Int -> Convertor (u -^- n) cd p a
-pow f n _ = if n == fromInteger (relVal (Proxy :: Proxy n)) then
-            coerce $ powConv f n
-          else
-            error "The exponent doesn't match the dimension"
+   => Convertor u cd p a -> Proxy n -> Convertor (u -^- n) cd p a
+pow f _ _ = powConv f $ fromInteger (relVal (Proxy :: Proxy n))
 {-# INLINE pow #-}
 infix 8 `pow`
+-- pow :: forall u cd p a.
+--   Convertor u cd p a -> Int -> Convertor (u -^- Pos 0) cd p a
 
+-- pow :: forall u cd p a.
+--   => Convertor u cd p a -> Int -> Convertor (u -^- Pos 0) cd p a
 
--- instance PowClass f (Pos 0) a where
+-- newtype Blub = Blub Rel
+
+-- class PowClass u cd p (n :: Rel) a where
+--   pow :: Convertor u cd p a -> Int -> Convertor (u -^- n) cd p a
+
+--   infix 8 `pow`
+
+-- instance PowClass u cd p (Pos 0) a where
 --   pow _ 0 _ = coerce (id :: a -> a)
 --   pow _ _ _ = error "The exponent doesn't match the dimension"
 --   {-# INLINE pow #-}
 
 
--- instance (PowClass f (Pos n) a, np1 ~ n + 1, Num a)
---   => PowClass f (Pos np1) a where
---   pow f n _ a = f (Proxy :: Proxy f) a
---                 * pow f (n - 1) (Proxy :: Proxy (f -^- Pos n)) a
+-- instance (PowClass u cd p (Pos n) a, np1 ~ n + 1, Num a)
+--   => PowClass u cd p (Pos np1) a where
+--   pow u n _  = runConvertor u . runConvertor
+--           ((pow ::  Convertor u cd p a -> Int -> Convertor (u -^- Pos n) cd p a)
+--           (coerceConvertor u)  (n - 1))
+--                 -- pow u (n - 1) (Proxy :: Proxy (u -^- Pos n)) a
 --   {-# INLINE pow #-}
 
--- instance PowClass f (Neg 0) a where
+-- instance PowClass u (Neg 0) a where
 --   pow _ 0 _ = coerce (id :: a -> a)
 --   pow _ _ _ = error "The exponent doesn't match the dimension"
 --   {-# INLINE pow #-}
 
--- instance PowClass f (Neg 1) a where
---   pow f (-1) _ a = coerce (f (Proxy :: Proxy f) (Per a))
+-- instance PowClass u (Neg 1) a where
+--   pow u (-1) _ a = coerce (u (Proxy :: Proxy u) (Per a))
 
 
-(-^-) :: KnownRel n => Convertor u cd p a -> Int -> Convertor (u -^- n) cd p a
+(-^-) :: KnownRel n =>
+   Convertor u cd p a -> Proxy n -> Convertor (u -^- n) cd p a
 (-^-) = pow
 

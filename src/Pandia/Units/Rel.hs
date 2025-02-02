@@ -1,4 +1,5 @@
 {-# LANGUAGE NoStarIsType #-}
+{-# LANGUAGE ExistentialQuantification #-}
 module Pandia.Units.Rel
   ( module Pandia.Units.Rel
   ) where
@@ -64,3 +65,4 @@ instance KnownNat n => KnownRel (Pos n) where
 
 instance KnownNat n => KnownRel (Neg n) where
   relVal _  = -natVal (Proxy :: Proxy n)
+

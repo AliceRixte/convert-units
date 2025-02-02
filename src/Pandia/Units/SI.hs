@@ -46,6 +46,30 @@ type family DimA (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
   DimA syst n = MonoDim syst "A" n
 
 
+----------------------------------- Angle ------------------------------------
+
+newtype Angle a = Angle a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+type instance FlexQuantity "A" = Angle
+
+newtype Radian a = Radian a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+type instance BaseUnit "A" = Radian
+
+instance HasDim syst Radian where
+  type DimOf syst Radian = DimA syst (Pos 1)
+
+instance ConvertorClass Radian cd p a
+
+radian :: Convertor Radian cd p a
+radian = convertor
+{-# INLINE radian #-}
+
+
 ----------------------------------- Length -----------------------------------
 
 
@@ -54,6 +78,8 @@ type family DimA (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
 newtype Length a = Length a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+type instance FlexQuantity "L" = Length
 
 instance HasDim syst Length where
   type DimOf syst Length = DimL syst (Pos 1)
@@ -78,9 +104,17 @@ meter = convertor
 
 ------------------------------------ Mass ------------------------------------
 
+newtype Mass a = Mass a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+type instance FlexQuantity "M" = Mass
+
 newtype Gram a = Gram a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+type instance BaseUnit "M" = Kilo Gram
 
 instance HasDim syst Gram where
   type DimOf syst Gram = DimM syst (Pos 1)
@@ -106,28 +140,19 @@ instance Fractional a => ConvertorClass Gram 'FromSI 'True a where
   {-# INLINE convertor #-}
 
 
---  This is not the identity, as SI uses kilograms as the base unit for mass.
--- instance Fractional a => ConvertorClass Gram (ToSI a) where
---   convertor _ x = x / 1000
---   {-# INLINE convertor #-}
-
--- instance Num a => ConvertorClass Gram (Per (ToSI a)) where
---   convertor _ x = x * 1000
---   {-# INLINE convertor #-}
-
--- instance Num a => ConvertorClass Gram (FromSI a) where
---   convertor _ x = x * 1000
---   {-# INLINE convertor #-}
-
--- instance Fractional a => ConvertorClass Gram (Per (FromSI a)) where
---   convertor _ x = x / 1000
---   {-# INLINE convertor #-}
-
 ------------------------------------ Time ------------------------------------
+
+newtype Time a = Time a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+type instance FlexQuantity "T" = Time
 
 newtype Second a = Second a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+type instance BaseUnit "T" = Second
 
 instance HasDim syst Second where
   type DimOf syst Second = DimT syst (Pos 1)
@@ -141,9 +166,17 @@ second = convertor
 
 ------------------------------ Electric current ------------------------------
 
+newtype ElectricCurrent a = ElectricCurrent a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+type instance FlexQuantity "I" = ElectricCurrent
+
 newtype Ampere a = Ampere a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+type instance BaseUnit "I" = Ampere
 
 instance HasDim syst Ampere where
   type DimOf syst Ampere = DimI syst (Pos 1)
@@ -157,10 +190,17 @@ ampere = convertor
 
 ------------------------- Thermodynamic temperature --------------------------
 
+newtype Temperature a = Temperature a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+type instance FlexQuantity "Th" = Temperature
 
 newtype Kelvin a = Kelvin a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+type instance BaseUnit "Th" = Kelvin
 
 instance HasDim syst Kelvin where
   type DimOf syst Kelvin = DimTh syst (Pos 1)
@@ -174,9 +214,17 @@ kelvin = convertor
 
 ---------------------------- Amount of substance -----------------------------
 
+newtype SubstanceAmount a = SubstanceAmount a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+type instance FlexQuantity "N" = SubstanceAmount
+
 newtype Mole a = Mole a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+type instance BaseUnit "N" = Mole
 
 instance HasDim syst Mole where
   type DimOf syst Mole = DimN syst (Pos 1)
@@ -189,12 +237,21 @@ mole = convertor
 
 ----------------------------- Luminous intensity -----------------------------
 
+newtype LuminousIntensity a = LuminousIntensity a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+type instance FlexQuantity "J" = LuminousIntensity
+
 newtype Candela a = Candela a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
+type instance BaseUnit "J" = Candela
+
 instance HasDim syst Candela where
   type DimOf syst Candela = DimJ syst (Pos 1)
+
 
 instance ConvertorClass Candela cd p a
 
@@ -205,13 +262,7 @@ candela = convertor
 
 ------------------------------- Derived units -------------------------------
 
-type Radian = Meter -/- Meter
-
-radian :: Num a => Convertor Radian cd p a
-radian = convertor
-{-# INLINE radian #-}
 
 
-
-type Newton = Kilo Gram -*- Meter -/- Second -^- Pos 2
+type Newton = Meter -*- Kilo Gram  -*- Second -^- Neg 2
 

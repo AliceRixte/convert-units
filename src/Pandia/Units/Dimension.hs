@@ -114,10 +114,8 @@ instance (HasDim syst u) => HasDim syst (u -^- n) where
 type SameDim syst u v = EqDim (DimOf syst u) (DimOf syst v) ~ 'DimOK
 
 
-
-
 type family BaseUnit (k :: Symbol) :: Unit
-type family Quantity (k :: Symbol) :: Type -> Type
+type family FlexQuantity (k :: Symbol) :: Type -> Type
 
 type family DimToBaseUnit (d :: [Dim k]) :: Unit where
   DimToBaseUnit '[] = NoUnit
