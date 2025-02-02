@@ -32,11 +32,10 @@ module Pandia.Units.Convertor
   , Not
   ) where
 
-import Data.Coerce
+-- import Data.Coerce
 import Data.Proxy
-import Data.Kind
+
 import Data.Type.Bool
-import GHC.TypeLits
 
 import Pandia.Units.Rel
 import Pandia.Units.Unit
@@ -239,8 +238,8 @@ timesFun n u = u . timesFun (n - 1) u
 {-# INLINE timesFun #-}
 
 powConv :: forall u cd p a. Convertor u cd p a -> Int -> a -> a
-powConv u n | n >= 0  = timesFun n (runConvertor u)
-            | n < 0   = timesFun n
+powConv u n | n >= 0     = timesFun n (runConvertor u)
+            | otherwise  = timesFun n
               (runConvertor (coerceConvertor u :: Convertor u cd (Not p) a))
 {-# INLINE powConv #-}
 

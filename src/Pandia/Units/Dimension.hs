@@ -8,13 +8,11 @@ module Pandia.Units.Dimension
   ( module Pandia.Units.Dimension
   ) where
 
-import Pandia.Units.Convertor
 import Pandia.Units.Rel
 import Pandia.Units.Unit
 
 import GHC.TypeLits
 
-import Data.Proxy
 import Data.Kind
 
 data Dim k = Dim k Rel
