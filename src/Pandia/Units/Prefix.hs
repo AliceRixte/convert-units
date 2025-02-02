@@ -84,19 +84,19 @@ instance (Num a, ConvertorClass u cd p a, MilliClass u cd p a)
 class MilliClass u cd p a where
   milli :: Convertor u cd p a -> Convertor (Milli u) cd p a
 
-instance Fractional a => MilliClass u 'ToSI 'False a where
+instance Fractional a => MilliClass u 'ToDimSys 'False a where
   milli u _ = (/ 1000) . runConvertor u
   {-# INLINE milli #-}
 
-instance Num a => MilliClass u 'ToSI 'True a where
+instance Num a => MilliClass u 'ToDimSys 'True a where
   milli u _ = (* 1000) . runConvertor u
   {-# INLINE milli #-}
 
-instance Num a => MilliClass u 'FromSI 'False a where
+instance Num a => MilliClass u 'FromDimSys 'False a where
   milli u _ = (* 1000) . runConvertor u
   {-# INLINE milli #-}
 
-instance Fractional a => MilliClass u 'FromSI 'True a where
+instance Fractional a => MilliClass u 'FromDimSys 'True a where
   milli u _ = (/ 1000) . runConvertor u
   {-# INLINE milli #-}
 
@@ -156,19 +156,19 @@ instance (Num a, ConvertorClass u cd p a, KiloClass u cd p a)
 class KiloClass u cd p a where
   kilo :: Convertor u cd p a -> Convertor (Kilo u) cd p a
 
-instance Num a => KiloClass u 'ToSI 'False a where
+instance Num a => KiloClass u 'ToDimSys 'False a where
   kilo u _ = (* 1000) . runConvertor u
   {-# INLINE kilo #-}
 
-instance Fractional a => KiloClass u 'ToSI 'True a where
+instance Fractional a => KiloClass u 'ToDimSys 'True a where
   kilo u _ = (/ 1000) . runConvertor u
   {-# INLINE kilo #-}
 
-instance Fractional a => KiloClass u 'FromSI 'False a where
+instance Fractional a => KiloClass u 'FromDimSys 'False a where
   kilo u _ = (/ 1000) . runConvertor u
   {-# INLINE kilo #-}
 
-instance Num a => KiloClass u 'FromSI 'True a where
+instance Num a => KiloClass u 'FromDimSys 'True a where
   kilo u _ = (* 1000) . runConvertor u
   {-# INLINE kilo #-}
 

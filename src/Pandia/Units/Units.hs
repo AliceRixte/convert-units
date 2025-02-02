@@ -24,19 +24,19 @@ ton :: ConvertorClass Ton cd p a => Convertor Ton cd p a
 ton = convertor
 {-# INLINE ton #-}
 
-instance Num a => ConvertorClass Ton 'ToSI 'False a where
+instance Num a => ConvertorClass Ton 'ToDimSys 'False a where
   convertor _ x = x * 1000
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Ton 'ToSI 'True a where
+instance Fractional a => ConvertorClass Ton 'ToDimSys 'True a where
   convertor _ x = x / 1000
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Ton 'FromSI 'False a where
+instance Fractional a => ConvertorClass Ton 'FromDimSys 'False a where
   convertor _ x = x / 1000
   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Ton 'FromSI 'True a where
+instance Num a => ConvertorClass Ton 'FromDimSys 'True a where
   convertor _ x = x * 1000
   {-# INLINE convertor #-}
 
@@ -74,19 +74,19 @@ hour :: ConvertorClass Hour cd p a => Convertor Hour cd p a
 hour = convertor
 {-# INLINE hour #-}
 
-instance Num a => ConvertorClass Hour 'ToSI 'False a where
+instance Num a => ConvertorClass Hour 'ToDimSys 'False a where
   convertor _ x = x * 3600
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Hour 'ToSI 'True a where
+instance Fractional a => ConvertorClass Hour 'ToDimSys 'True a where
   convertor _ x = x / 3600
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Hour 'FromSI 'False a where
+instance Fractional a => ConvertorClass Hour 'FromDimSys 'False a where
   convertor _ x = x / 3600
   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Hour 'FromSI 'True a where
+instance Num a => ConvertorClass Hour 'FromDimSys 'True a where
   convertor _ x = x * 3600
   {-# INLINE convertor #-}
 
@@ -125,11 +125,11 @@ celsius :: ConvertorClass Celsius cd p a => Convertor Celsius cd p a
 celsius = convertor
 {-# INLINE celsius #-}
 
-instance Fractional a => ConvertorClass Celsius 'ToSI 'False a where
+instance Fractional a => ConvertorClass Celsius 'ToDimSys 'False a where
   convertor _ x = x + 273.15
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Celsius 'FromSI 'False a where
+instance Fractional a => ConvertorClass Celsius 'FromDimSys 'False a where
   convertor _ x = x - 273.15
   {-# INLINE convertor #-}
 

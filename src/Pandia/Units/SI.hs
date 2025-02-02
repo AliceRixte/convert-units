@@ -124,19 +124,19 @@ gram :: ConvertorClass Gram cd p a => Convertor Gram cd p a
 gram = convertor
 {-# INLINE gram #-}
 
-instance Fractional a => ConvertorClass Gram 'ToSI 'False a where
+instance Fractional a => ConvertorClass Gram 'ToDimSys 'False a where
   convertor _ x = x / 1000
   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Gram 'ToSI 'True a where
+instance Num a => ConvertorClass Gram 'ToDimSys 'True a where
   convertor _ x = x * 1000
   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Gram 'FromSI 'False a where
+instance Num a => ConvertorClass Gram 'FromDimSys 'False a where
   convertor _ x = x * 1000
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Gram 'FromSI 'True a where
+instance Fractional a => ConvertorClass Gram 'FromDimSys 'True a where
   convertor _ x = x / 1000
   {-# INLINE convertor #-}
 

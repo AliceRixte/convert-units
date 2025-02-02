@@ -29,28 +29,37 @@
 
 module Pandia.Units.Convertor
   ( module Pandia.Units.Convertor
-  , Not
+  --  Convertor
+  -- , FromSys, ToSys
+  -- , fromSys'
+  -- , nounit, (-*-), (-/-), (-^-)
+  -- , mul, per, pow
+  -- , p0, p1, p2, p3, p4, m1, m2, m3, m4
+  -- , ConvertorClass (..)
+  -- , ConversionDirection (..)
+  -- , runConvertor
+  -- , coerceFrom, coerceTo
   ) where
 
--- import Data.Coerce
+import Data.Coerce
 import Data.Proxy
 
 import Data.Type.Bool
 
 import Pandia.Units.Rel
 import Pandia.Units.Unit
+import Pandia.Units.Dimension
 
 
 
 --------------------------------- Conversion ---------------------------------
 
-data ConversionDirection  = FromSI | ToSI
+data ConversionDirection  = FromDimSys | ToDimSys
 
 type IsPer = Bool
 type Per = 'True
 
 data ConversionInfo = ConversionInfo Unit ConversionDirection IsPer
-
 
 
 -- | A convertor that can convert from and to some unit.
@@ -60,6 +69,92 @@ data ConversionInfo = ConversionInfo Unit ConversionDirection IsPer
 type Convertor (u :: Unit) (cd :: ConversionDirection) (p :: IsPer) a
   = Proxy ('ConversionInfo u cd p) -> a -> a
 
+
+type FromSys u a = Convertor u 'FromDimSys 'False a
+type ToSys u a = Convertor u 'ToDimSys 'False a
+
+
+type family UnitToSys (u :: Unit) (sys :: DimSystem k) :: Unit where
+  UnitToSys u sys = SimplifyUnit (DimToBaseUnit (DimOf sys u))
+
+fromSys' :: FromSys u a -> a -> a
+fromSys' = runConvertor
+{-# INLINE fromSys' #-}
+
+toSys' :: ToSys u a -> a -> a
+toSys' = runConvertor
+{-# INLINE toSys' #-}
+
+convertNoCheck' :: forall u v a.
+  ToSys u a -> FromSys v a  -> a -> a
+convertNoCheck' u v  = runConvertor v . runConvertor u
+{-# INLINE convertNoCheck' #-}
+
+convertNoCheck :: forall u v a. (Coercible a (v a), Coercible a (u a))
+   => ToSys u a -> FromSys v a  -> u a -> v a
+convertNoCheck u v a = coerce
+   $ runConvertor v
+   $ runConvertor u
+   $ (coerce a :: a)
+{-# INLINE convertNoCheck #-}
+
+
+convertUnits :: forall (u :: Unit) (v :: Unit) sys a.
+  ( Coercible a (v a), Coercible a (u a)
+  , ConvertorClass u 'ToDimSys 'False a, ConvertorClass v 'FromDimSys 'False a
+  , SameDim sys u v
+  )
+  => Proxy sys -> u a -> v a
+convertUnits _ =
+    convertNoCheck (convertor :: ToSys u a) (convertor :: FromSys v a)
+{-# INLINE convertUnits #-}
+
+asSys :: forall sys u v a.
+  (Coercible a (u a), Coercible a (v a)
+  , ConvertorClass u 'ToDimSys 'False a
+  , SameDim sys u v
+  )
+  => Proxy sys -> u a -> FromSys v a  -> v a
+asSys _ fa v = convertNoCheck (convertor :: ToSys u a ) v fa
+{-# INLINE asSys #-}
+
+
+
+asNoCheck :: forall u v a.
+  (Coercible a (u a), Coercible a (v a), ConvertorClass u 'ToDimSys 'False a)
+  => u a -> FromSys v a  -> v a
+asNoCheck fa v = convertNoCheck (convertor :: ToSys u a ) v fa
+{-# INLINE asNoCheck #-}
+
+convertSys' :: forall sys u v a.
+  (Coercible a (v a), Coercible a (u a), SameDim sys u v)
+  => Proxy sys -> ToSys u a -> FromSys v a -> a -> a
+convertSys' _ = convertNoCheck'
+
+fromSys :: forall u a. Coercible a (u a)
+  => FromSys u a -> a -> u a
+fromSys u = coerce (runConvertor u)
+{-# INLINE fromSys #-}
+
+toSys :: forall sys u a. Coercible a ((UnitToSys u sys) a)
+  => Proxy sys -> ToSys u a -> a -> (UnitToSys u sys) a
+toSys _ u = coerce (runConvertor u)
+{-# INLINE toSys #-}
+
+
+
+
+-- convertSys :: forall u v a.
+--   (Coercible a (v a), Coercible a (u a), SameDim SI u v)
+--   => ToSys u a -> FromSys v a  -> u a -> v a
+-- convertSys = convertNoCheck
+-- {-# INLINE convert #-}
+
+
+
+
+
+
 runConvertor :: Convertor u cd p a -> a -> a
 runConvertor u = u Proxy
 {-# INLINE runConvertor #-}
@@ -68,11 +163,15 @@ coerceConvertor :: Convertor u cd p a -> Convertor v cd' p' a
 coerceConvertor u _ = u Proxy
 {-# INLINE coerceConvertor #-}
 
-coerceTo :: Convertor u cd p a -> Convertor u 'ToSI 'False a
+-- flipFromTo :: FromSys u a -> ToSys u a
+-- flipFromTo = coerceConvertor
+-- {-# INLINE flipFromTo #-}
+
+coerceTo :: Convertor u cd p a -> ToSys u a
 coerceTo u _ = u Proxy
 {-# INLINE coerceTo #-}
 
-coerceFrom :: Convertor u cd p a -> Convertor u 'FromSI 'False a
+coerceFrom :: Convertor u cd p a -> FromSys u a
 coerceFrom u _ = u Proxy
 {-# INLINE coerceFrom #-}
 
@@ -97,21 +196,11 @@ instance (ConvertorClass u cd p a, ConvertorClass v cd p a, Num a)
     (convertor :: Convertor u cd p a) -*- (convertor :: Convertor v cd p a)
   {-# INLINE convertor #-}
 
-
-
--- instance (ConvertorClass u cd p a)
---   => ConvertorClass (u -^- n) cd p a where
---   convertor _ =
---     powConv (convertor :: Convertor u cd p a)  2
---   {-# INLINE convertor #-}
-
 instance (ConvertorClass u cd p a, KnownRel n)
   => ConvertorClass (u -^- n) cd p a where
   convertor =
     pow (convertor :: Convertor u cd p a)  (Proxy :: Proxy n)
   {-# INLINE convertor #-}
-
-
 
 
 
@@ -277,40 +366,6 @@ pow :: forall u cd p n a. KnownRel n
 pow f _ _ = powConv f $ fromInteger (relVal (Proxy :: Proxy n))
 {-# INLINE pow #-}
 infix 8 `pow`
--- pow :: forall u cd p a.
---   Convertor u cd p a -> Int -> Convertor (u -^- Pos 0) cd p a
-
--- pow :: forall u cd p a.
---   => Convertor u cd p a -> Int -> Convertor (u -^- Pos 0) cd p a
-
--- newtype Blub = Blub Rel
-
--- class PowClass u cd p (n :: Rel) a where
---   pow :: Convertor u cd p a -> Int -> Convertor (u -^- n) cd p a
-
---   infix 8 `pow`
-
--- instance PowClass u cd p (Pos 0) a where
---   pow _ 0 _ = coerce (id :: a -> a)
---   pow _ _ _ = error "The exponent doesn't match the dimension"
---   {-# INLINE pow #-}
-
-
--- instance (PowClass u cd p (Pos n) a, np1 ~ n + 1, Num a)
---   => PowClass u cd p (Pos np1) a where
---   pow u n _  = runConvertor u . runConvertor
---           ((pow ::  Convertor u cd p a -> Int -> Convertor (u -^- Pos n) cd p a)
---           (coerceConvertor u)  (n - 1))
---                 -- pow u (n - 1) (Proxy :: Proxy (u -^- Pos n)) a
---   {-# INLINE pow #-}
-
--- instance PowClass u (Neg 0) a where
---   pow _ 0 _ = coerce (id :: a -> a)
---   pow _ _ _ = error "The exponent doesn't match the dimension"
---   {-# INLINE pow #-}
-
--- instance PowClass u (Neg 1) a where
---   pow u (-1) _ a = coerce (u (Proxy :: Proxy u) (Per a))
 
 
 (-^-) :: KnownRel n =>
