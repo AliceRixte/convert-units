@@ -6,6 +6,7 @@ import Pandia.Units.Convertor
 import Pandia.Units.Dimension
 import Pandia.Units.Prefix
 import Pandia.Units.Rel
+import Pandia.Units.Unit
 
 import GHC.TypeLits
 

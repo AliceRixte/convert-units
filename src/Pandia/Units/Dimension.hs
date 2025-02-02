@@ -10,6 +10,7 @@ module Pandia.Units.Dimension
 
 import Pandia.Units.Convertor
 import Pandia.Units.Rel
+import Pandia.Units.Unit
 
 import GHC.TypeLits
 

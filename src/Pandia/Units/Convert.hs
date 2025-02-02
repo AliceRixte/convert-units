@@ -6,27 +6,25 @@ module Pandia.Units.Convert
   ) where
 
 import Data.Coerce
-import Data.Proxy
 
 import Pandia.Units.Dimension
 import Pandia.Units.Convertor
 import Pandia.Units.SI
-import Pandia.Units.Prefix
-import Pandia.Units.Rel
+import Pandia.Units.Unit
 
 
 
 type family UnitToSI (u :: Unit) :: Unit where
   UnitToSI u = SimplifyUnit (DimToBaseUnit (DimOf SI u))
 
-fromSI :: forall u cd p a. Coercible a (u a)
-  => Convertor u 'FromSI p a -> a -> u a
+fromSI :: forall u a. Coercible a (u a)
+  => Convertor u 'FromSI 'False a -> a -> u a
 fromSI u = coerce (runConvertor u)
 {-# INLINE fromSI #-}
 
 
 --  | This does NOT work ! Type inference will fail as soon as there is a negative exponent.
-toSI :: forall u cd p a. Coercible a ((UnitToSI u) a)
+toSI :: forall u a. Coercible a ((UnitToSI u) a)
   => Convertor u 'ToSI 'False a -> a -> (UnitToSI u) a
 toSI u = coerce (runConvertor u)
 {-# INLINE toSI #-}
