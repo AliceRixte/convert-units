@@ -67,7 +67,7 @@ data ConversionInfo = ConversionInfo Unit ConversionDirection IsMul
 -- Convertors can be combined via 'mul'@, @'per'@, and @'pow'@ .
 --
 type Convertor (u :: Unit) (cd :: ConversionDirection) (p :: IsMul) a
-  = Proxy ('ConversionInfo u cd p) -> (a -> a) -> a -> a
+  = Proxy ('ConversionInfo u cd p) -> a -> a
 
 
 type FromSys u a = Convertor u 'FromDimSys 'False a
@@ -78,7 +78,7 @@ type family UnitToSys (u :: Unit) (sys :: DimSystem k) :: Unit where
   UnitToSys u sys = SimplifyUnit (DimToBaseUnit (DimOf sys u))
 
 runConvertor :: Convertor u cd p a -> a -> a
-runConvertor u = u Proxy id
+runConvertor u = u Proxy
 {-# INLINE runConvertor #-}
 
 coerceConvertor :: Convertor u cd p a -> Convertor v cd' p' a
@@ -180,7 +180,7 @@ coerceFrom u _ = u Proxy
 class ConvertorClass (u :: Unit) (cd :: ConversionDirection) (p :: IsMul) a
   where
   convertor :: Convertor u cd p a
-  convertor _ _ = id
+  convertor _  = id
   {-# INLINE convertor #-}
 
 instance (ConvertorClass u cd True a, ConvertorClass v cd True a
@@ -213,44 +213,32 @@ instance (ConvertorClass u cd True a, PowClass p a, KnownRel n)
 -- @
 --
 nounit :: Convertor NoUnit cd p a
-nounit _ _ = id
+nounit _ = id
 {-# INLINE nounit #-}
 
 
--- | Division of convertors
---
--- @
--- >>> (kilo meter `per` hour ~~> meter `per` second ) (5 :: Float)
--- 1.388889
--- @
 
--- Nested convertor division is not supported.
---
--- @
--- >>> (kilo meter -/- (second -/- kilo newton)  ~~> meter -/- second ) (5 :: Float)
---
--- <interactive>:73:29: error: [GHC-39999] • No instance for ‘KiloClass (Per
---     (Per (ToSI Float)))’
---  @
---
--- This feature could be added by adding @('Per' ('Per' a))@ for every instances
--- of  @'ConvertorClass'@. If you want to contribute, this is fairly simple to
--- do although very repetitive.
---
+
+
 class Fractional a => PerClass p a where
+  -- | Division of convertors
+  --
+  -- @
+  -- >>> (kilo meter `per` hour ~~> meter `per` second ) (5 :: Float)
+  -- 1.388889
+  -- @
   per ::
     Convertor u cd True a -> Convertor v cd True a -> Convertor (u -/- v) cd p a
   infix 6 `per`
 
 instance Fractional a => PerClass True a where
-  per u v _ _ _ = unitMultiplier u / unitMultiplier v
+  per u v _ _ = unitMultiplier u / unitMultiplier v
   {-# INLINE per #-}
 
 instance Fractional a =>  PerClass False a where
-  per u v _ _ a = a * unitMultiplier u / unitMultiplier v
+  per u v _ a = a * unitMultiplier u / unitMultiplier v
   {-# INLINE per #-}
 
--- per :: forall u v cd p a. Fractional a =>
 
 
 -- | Infix synonym for @'per'@
@@ -263,80 +251,30 @@ instance Fractional a =>  PerClass False a where
   Convertor u cd True a -> Convertor v cd True a -> Convertor (u -/- v) cd p a
 (u -/- v) a = per u v a
 {-# INLINE (-/-) #-}
+infix 6 -/-
 
 
 
--- | Multiplication of convertors. / Warning  : Use with caution \
---
--- @
--- >>> (newton `mul` kilo meter  ~~> newton `mul` meter ) (5 :: Float) 5000 @
---
--- In the previous case it works fine, and as long as you only use international
--- system units it will work too. However, if you want to use conversions that
--- have an offset, like Celsius -> Kelvin, there is a problem.
---
--- The good news is it rarely (I didn't find a real life example yet) happens in
--- concrete real life examples.
---
--- [What is the problem ?]
---
--- To be able to compute the multiplication of two convertors, we rely on the
--- -- **false** assumption that the composition of two convertors is
--- commutative.
---
--- This is true when all convertors are just a multiplication factor, for
--- instance when converting between kilometers and meters, or between kilometers
--- and miles.
---
--- The good news is that in most of the cases that makes sense it is the case.
---
--- However, everything falls apart as soon as some convertors use an offset,
--- because as soon as we combine them with multiplicators we do not have
--- commutativity any more.
---
--- Here is a concrete example :
---
--- @
--- >>> kilo meter  -*- celsius ~~> meter -*- kelvin )  1 274150.0 celsius -*-
--- kilo meter ~~> kelvin -*- meter )  1 1273.15 @
---
--- [When to trust convertor multiplication ?]
---
--- 1. when using only use standard units and prefixes, as every conversion is
--- just a multiplication  corresponding to the prefix
--- 2. when using only convertors that are just a multiplying factor
---
--- There might be other cases where it works but in this case you should know
--- what you are doing.
---
--- [Is this fixable ?]
---
--- Probably not. There is a possibility to add a @Mul@ newtype just like for
--- @'Per'@ to be able to know whenever we are in a multiplication, but I don't
--- see how this information would help, except for a few fringe cases that
--- probably are not worth the investment.
---
--- For now, it will stay like this
---
+
 class Num a => MulClass p a where
+  -- | Multiplication of convertors.
+  --
+  -- @
+  -- >>> ( meter -*- gram -*- second -^- m2  ~~> newton) 5
+  -- 5.0e-3
+  -- @
+  --
   mul ::
     Convertor u cd True a -> Convertor v cd True a -> Convertor (u -*- v) cd p a
   infix 7 `mul`
 
 instance Num a => MulClass True a where
-  mul u v _ _ _ = unitMultiplier u * unitMultiplier v
+  mul u v _ _ = unitMultiplier u * unitMultiplier v
   {-# INLINE mul #-}
 
 instance Num a => MulClass False a where
-  mul u v _ _ a = a * unitMultiplier u * unitMultiplier v
+  mul u v _ a = a * unitMultiplier u * unitMultiplier v
   {-# INLINE mul #-}
-
--- mul :: forall u v cd p a. Num a
---   => Convertor u cd True a -> Convertor v cd True a
---   -> Convertor (u -*- v) cd p a
--- mul u v _ = runConvertor u . runConvertor v
--- {-# INLINE mul #-}
--- infixl 7 `mul`
 
 
 (-*-) :: forall u v cd p a. MulClass p a
@@ -344,18 +282,7 @@ instance Num a => MulClass False a where
   -> Convertor (u -*- v) cd p a
 (-*-) = mul
 {-# INLINE (-*-) #-}
-
-
--- timesFun  :: Int -> (a -> a) -> a -> a
--- timesFun 0 _ = id
--- timesFun n u = u . timesFun (n - 1) u
--- {-# INLINE timesFun #-}
-
--- powConv :: forall u cd a. Convertor u cd True a -> Int -> a -> a
--- powConv u n | n >= 0     = timesFun n (runConvertor u)
---             | otherwise  = timesFun n
---               (runConvertor (coerceConvertor u :: Convertor u cd  a))
--- {-# INLINE powConv #-}
+infixl 7 -*-
 
 
 p0 :: Proxy (Pos 0)
@@ -391,24 +318,17 @@ class Fractional a => PowClass p a where
   infix 8 `pow`
 
 instance Fractional a => PowClass True a where
-  pow u n _ _ _ = unitMultiplier u ^^ fromInteger (relVal n)
+  pow u n _ _ = unitMultiplier u ^^ fromInteger (relVal n)
   {-# INLINE pow #-}
 
 instance Fractional a => PowClass False a where
-  pow u n _ _ a = a * unitMultiplier u ^^ fromInteger (relVal n)
+  pow u n _ a = a * unitMultiplier u ^^ fromInteger (relVal n)
   {-# INLINE pow #-}
 
-
-
-
--- pow :: forall u cd p n a. KnownRel n
---    => Convertor u cd p a -> Proxy n -> Convertor (u -^- n) cd p a
--- pow f _ _ = powConv f $ fromInteger (relVal (Proxy :: Proxy n))
--- {-# INLINE pow #-}
--- infix 8 `pow`
 
 
 (-^-) :: (PowClass p a, KnownRel n) =>
    Convertor u cd True a -> Proxy n -> Convertor (u -^- n) cd p a
 (-^-) = pow
+infix 8 -^-
 

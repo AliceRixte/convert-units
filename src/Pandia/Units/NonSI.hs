@@ -56,19 +56,19 @@ hour = convertor
 {-# INLINE hour #-}
 
 instance Num a => ConvertorClass Hour 'ToDimSys 'False a where
-  convertor _ f x = f (x * 3600)
+  convertor _ x = x * 3600
   {-# INLINE convertor #-}
 
 instance Num a => ConvertorClass Hour 'ToDimSys 'True a where
-  convertor _ _ _ = 3600
+  convertor _ _ = 3600
   {-# INLINE convertor #-}
 
 instance Fractional a => ConvertorClass Hour 'FromDimSys 'False a where
-  convertor _ f x = f (x / 3600)
+  convertor _ x = x / 3600
   {-# INLINE convertor #-}
 
 instance Fractional a => ConvertorClass Hour 'FromDimSys 'True a where
-  convertor _ _ _ = 1 / 3600
+  convertor _ _ = 1 / 3600
   {-# INLINE convertor #-}
 
 
@@ -88,19 +88,19 @@ celsius = convertor
 {-# INLINE celsius #-}
 
 instance Fractional a => ConvertorClass Celsius 'ToDimSys 'False a where
-  convertor _ f x = f x + 273.15
+  convertor _ x = x + 273.15
   {-# INLINE convertor #-}
 
 instance Fractional a => ConvertorClass Celsius 'ToDimSys 'True a where
-  convertor _ _ _ = 1
+  convertor _ _ = 1
   {-# INLINE convertor #-}
 
 instance Fractional a => ConvertorClass Celsius 'FromDimSys 'False a where
-  convertor _ f x = f (x - 273.15)
+  convertor _ x = x - 273.15
   {-# INLINE convertor #-}
 
 instance Fractional a => ConvertorClass Celsius 'FromDimSys 'True a where
-  convertor _ _ _ = 1
+  convertor _ _ = 1
   {-# INLINE convertor #-}
 
 

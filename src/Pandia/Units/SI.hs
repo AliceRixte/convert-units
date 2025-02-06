@@ -8,6 +8,8 @@ import Pandia.Units.Prefix
 import Pandia.Units.Rel
 import Pandia.Units.Unit
 
+import Data.Proxy
+
 import GHC.TypeLits
 
 type SI = '[
@@ -124,21 +126,21 @@ gram :: ConvertorClass Gram cd p a => Convertor Gram cd p a
 gram = convertor
 {-# INLINE gram #-}
 
--- instance Fractional a => ConvertorClass Gram 'ToDimSys 'False a where
---   convertor _ x = x / 1000
---   {-# INLINE convertor #-}
+instance Fractional a => ConvertorClass Gram 'ToDimSys 'False a where
+  convertor _ x = x / 1000
+  {-# INLINE convertor #-}
 
--- instance Num a => ConvertorClass Gram 'ToDimSys 'True a where
---   convertor _ x = x * 1000
---   {-# INLINE convertor #-}
+instance Fractional a => ConvertorClass Gram 'ToDimSys 'True a where
+  convertor _ _ = 1 / 1000
+  {-# INLINE convertor #-}
 
--- instance Num a => ConvertorClass Gram 'FromDimSys 'False a where
---   convertor _ x = x * 1000
---   {-# INLINE convertor #-}
+instance Num a => ConvertorClass Gram 'FromDimSys 'False a where
+  convertor _ x = x * 1000
+  {-# INLINE convertor #-}
 
--- instance Fractional a => ConvertorClass Gram 'FromDimSys 'True a where
---   convertor _ x = x / 1000
---   {-# INLINE convertor #-}
+instance Num a => ConvertorClass Gram 'FromDimSys 'True a where
+  convertor _ _ = 1000
+  {-# INLINE convertor #-}
 
 
 ------------------------------------ Time ------------------------------------
@@ -264,6 +266,23 @@ candela = convertor
 ------------------------------- Derived units -------------------------------
 
 
+type Joule = Meter -*- Kilo Gram -^- Pos 2 -*- Second -^- Neg 2
+
+joule :: Convertor Joule cd p a
+joule _ = id
+{-# INLINE joule #-}
 
 type Newton = Meter -*- Kilo Gram  -*- Second -^- Neg 2
 
+newton :: Convertor Newton cd p a
+newton _ = id
+{-# INLINE newton #-}
+
+
+dimSI :: Convertor u cd p a -> Proxy (DimOf SI u)
+dimSI _ = Proxy
+{-# INLINE dimSI #-}
+
+dimUnitSI :: u a -> Proxy (DimOf SI u)
+dimUnitSI _ = Proxy
+{-# INLINE dimUnitSI #-}

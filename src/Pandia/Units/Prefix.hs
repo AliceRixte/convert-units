@@ -71,36 +71,36 @@ import Data.Kind
 
 ----------------------------------- Milli ------------------------------------
 
--- newtype Milli (u :: Type -> Type) a = Milli (u a)
---   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
---             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+newtype Milli (u :: Type -> Type) a = Milli (u a)
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
--- instance HasDim syst u => HasDim syst (Milli u) where
---   type DimOf syst (Milli u) = DimOf syst u
+instance HasDim syst u => HasDim syst (Milli u) where
+  type DimOf syst (Milli u) = DimOf syst u
 
--- instance (Num a, ConvertorClass u cd p a, MilliClass u cd p a)
---   => ConvertorClass (Milli u) cd p a where
---   convertor = milli convertor
---   {-# INLINE convertor #-}
+instance (Num a, ConvertorClass u cd p a, MilliClass u cd p a)
+  => ConvertorClass (Milli u) cd p a where
+  convertor = milli convertor
+  {-# INLINE convertor #-}
 
--- class MilliClass u cd p a where
---   milli :: Convertor u cd p a -> Convertor (Milli u) cd p a
+class MilliClass u cd p a where
+  milli :: Convertor u cd p a -> Convertor (Milli u) cd p a
 
--- instance Fractional a => MilliClass u 'ToDimSys 'False a where
---   milli u _ = (/ 1000) . runConvertor u
---   {-# INLINE milli #-}
+instance Fractional a => MilliClass u 'ToDimSys 'False a where
+  milli u _ = runConvertor u . (/ 1000)
+  {-# INLINE milli #-}
 
--- instance Num a => MilliClass u 'ToDimSys 'True a where
---   milli u _ = (* 1000) . runConvertor u
---   {-# INLINE milli #-}
+instance Fractional a => MilliClass u 'ToDimSys 'True a where
+  milli u _ _ = unitMultiplier u / 1000
+  {-# INLINE milli #-}
 
--- instance Num a => MilliClass u 'FromDimSys 'False a where
---   milli u _ = (* 1000) . runConvertor u
---   {-# INLINE milli #-}
+instance Num a => MilliClass u 'FromDimSys 'False a where
+  milli u _ = (* 1000) . runConvertor u
+  {-# INLINE milli #-}
 
--- instance Fractional a => MilliClass u 'FromDimSys 'True a where
---   milli u _ = (/ 1000) . runConvertor u
---   {-# INLINE milli #-}
+instance Num a => MilliClass u 'FromDimSys 'True a where
+  milli u _ _ = unitMultiplier u * 1000
+  {-# INLINE milli #-}
 
 
 
@@ -159,58 +159,19 @@ class KiloClass u cd p a where
   kilo :: Convertor u cd p a -> Convertor (Kilo u) cd p a
 
 instance Num a => KiloClass u 'ToDimSys 'False a where
-  kilo u _ m a = u Proxy (*1000) a
+  kilo u _ =  runConvertor u . (*1000)
   {-# INLINE kilo #-}
 
 instance Num a => KiloClass u 'ToDimSys 'True a where
-  kilo u _ _ _ = 1000 * unitMultiplier u
+  kilo u _ _  = unitMultiplier u * 1000
   {-# INLINE kilo #-}
 
 instance Fractional a => KiloClass u 'FromDimSys 'False a where
-  kilo u _  m a = u Proxy (/1000 ) a
+  kilo u _  =  (/1000) . runConvertor u
   {-# INLINE kilo #-}
 
 instance Fractional a => KiloClass u 'FromDimSys 'True a where
-  kilo u _ _ _ = 1 / (1000 * unitMultiplier u)
+  kilo u _ _ =  unitMultiplier u / 1000
   {-# INLINE kilo #-}
 
--- instance Fractional a => KiloClass u 'ToDimSys 'True a where
---   kilo u _ = (/ 1000) . runConvertor u
---   {-# INLINE kilo #-}
-
--- instance Fractional a => KiloClass u 'FromDimSys 'False a where
---   kilo u _ = (/ 1000) . runConvertor u
---   {-# INLINE kilo #-}
-
--- instance Num a => KiloClass u 'FromDimSys 'True a where
---   kilo u _ = (* 1000) . runConvertor u
---   {-# INLINE kilo #-}
-
--- kilo :: forall u a. KiloClass a => Convertor u a -> Convertor (Kilo u) a
--- kilo u _ = kiloFun (u (Proxy :: Proxy u) :: a -> a)
--- {-# INLINE kilo #-}
-
--- instance (Num a, ConvertorClass u a, KiloClass a)
---   => ConvertorClass (Kilo u) a where
---   convertor _ = kiloFun (convertor (Proxy :: Proxy u))
---   {-# INLINE convertor #-}
-
--- class KiloClass a where
---   kiloFun :: (a -> a) -> a -> a
-
--- instance Num a => KiloClass (ToSI a) where
---   kiloFun u = u . (* 1000)
---   {-# INLINE kiloFun #-}
-
--- instance Fractional a => KiloClass (Per (ToSI a)) where
---   kiloFun u = u . (/ 1000)
---   {-# INLINE kiloFun #-}
-
--- instance Fractional a => KiloClass (FromSI a) where
---   kiloFun u = (/ 1000) . u
---   {-# INLINE kiloFun #-}
-
--- instance Num a => KiloClass (Per (FromSI a)) where
---   kiloFun u = (* 1000) . u
---   {-# INLINE kiloFun #-}
 
