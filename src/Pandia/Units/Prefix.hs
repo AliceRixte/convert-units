@@ -65,7 +65,6 @@ module Pandia.Units.Prefix
 
 import Pandia.Units.Convertor
 import Pandia.Units.Dimension
-import Data.Proxy
 
 import Data.Kind
 

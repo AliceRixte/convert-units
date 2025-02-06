@@ -44,7 +44,6 @@ module Pandia.Units.Convertor
 import Data.Coerce
 import Data.Proxy
 
-import Data.Type.Bool
 
 import Pandia.Units.Rel
 import Pandia.Units.Unit
@@ -318,11 +317,11 @@ class Fractional a => PowClass p a where
   infix 8 `pow`
 
 instance Fractional a => PowClass True a where
-  pow u n _ _ = unitMultiplier u ^^ fromInteger (relVal n)
+  pow u n _ _ = unitMultiplier u ^^ (fromInteger (relVal n) :: Int)
   {-# INLINE pow #-}
 
 instance Fractional a => PowClass False a where
-  pow u n _ a = a * unitMultiplier u ^^ fromInteger (relVal n)
+  pow u n _ a = a * unitMultiplier u ^^ (fromInteger (relVal n) :: Int)
   {-# INLINE pow #-}
 
 
