@@ -57,12 +57,19 @@ kmphTomps = (/3.6)
 mpsTokmph :: (Ord a, Fractional a) => a -> a
 mpsTokmph = (*3.6)
 
+kcToKk :: (Ord a, Fractional a) => a -> a
+kcToKk a = a - 273.15 / 1000
+
+kkToKc :: (Ord a, Fractional a) => a -> a
+kkToKc a = a + 273.15 / 1000
 
 main :: IO ()
 main = hspec $ do
   describe "~~>" $ do
     it "km/h <~> m/s" $ property $
-      propConvSpec' (kilo meter -/- hour)  (meter -/- second) kmphTomps mpsTokmph
+      propConvSpec' (kilo meter -/- hour) (meter -/- second) kmphTomps mpsTokmph
+    it "k°K <~> k°C" $ property $
+      propConvSpec' (kilo kelvin) (kilo celsius) kkToKc kcToKk
 
   describe "angles" $ do
    it "self radians" $ property $

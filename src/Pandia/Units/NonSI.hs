@@ -24,21 +24,21 @@ ton :: ConvertorClass Ton cd p a => Convertor Ton cd p a
 ton = convertor
 {-# INLINE ton #-}
 
-instance Num a => ConvertorClass Ton 'ToDimSys 'False a where
-  convertor _ x = x * 1000
-  {-# INLINE convertor #-}
+-- instance Num a => ConvertorClass Ton 'ToDimSys 'False a where
+--   convertor _ x = x * 1000
+--   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Ton 'ToDimSys 'True a where
-  convertor _ x = x / 1000
-  {-# INLINE convertor #-}
+-- instance Fractional a => ConvertorClass Ton 'ToDimSys 'True a where
+--   convertor _ x = x / 1000
+--   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Ton 'FromDimSys 'False a where
-  convertor _ x = x / 1000
-  {-# INLINE convertor #-}
+-- instance Fractional a => ConvertorClass Ton 'FromDimSys 'False a where
+--   convertor _ x = x / 1000
+--   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Ton 'FromDimSys 'True a where
-  convertor _ x = x * 1000
-  {-# INLINE convertor #-}
+-- instance Num a => ConvertorClass Ton 'FromDimSys 'True a where
+--   convertor _ x = x * 1000
+--   {-# INLINE convertor #-}
 
 
 
@@ -56,19 +56,19 @@ hour = convertor
 {-# INLINE hour #-}
 
 instance Num a => ConvertorClass Hour 'ToDimSys 'False a where
-  convertor _ x = x * 3600
+  convertor _ f x = f (x * 3600)
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Hour 'ToDimSys 'True a where
-  convertor _ x = x / 3600
+instance Num a => ConvertorClass Hour 'ToDimSys 'True a where
+  convertor _ _ _ = 3600
   {-# INLINE convertor #-}
 
 instance Fractional a => ConvertorClass Hour 'FromDimSys 'False a where
-  convertor _ x = x / 3600
+  convertor _ f x = f (x / 3600)
   {-# INLINE convertor #-}
 
-instance Num a => ConvertorClass Hour 'FromDimSys 'True a where
-  convertor _ x = x * 3600
+instance Fractional a => ConvertorClass Hour 'FromDimSys 'True a where
+  convertor _ _ _ = 1 / 3600
   {-# INLINE convertor #-}
 
 
@@ -88,16 +88,33 @@ celsius = convertor
 {-# INLINE celsius #-}
 
 instance Fractional a => ConvertorClass Celsius 'ToDimSys 'False a where
-  convertor _ x = x + 273.15
+  convertor _ f x = f x + 273.15
+  {-# INLINE convertor #-}
+
+instance Fractional a => ConvertorClass Celsius 'ToDimSys 'True a where
+  convertor _ _ _ = 1
   {-# INLINE convertor #-}
 
 instance Fractional a => ConvertorClass Celsius 'FromDimSys 'False a where
-  convertor _ x = x - 273.15
+  convertor _ f x = f (x - 273.15)
   {-# INLINE convertor #-}
 
-instance Fractional a => ConvertorClass Celsius cd 'True a where
-  convertor _ = id
+instance Fractional a => ConvertorClass Celsius 'FromDimSys 'True a where
+  convertor _ _ _ = 1
   {-# INLINE convertor #-}
+
+
+-- instance Fractional a => ConvertorClass Celsius 'ToDimSys 'False a where
+--   convertor _ x = x + 273.15
+--   {-# INLINE convertor #-}
+
+-- instance Fractional a => ConvertorClass Celsius 'FromDimSys 'False a where
+--   convertor _ x = x - 273.15
+--   {-# INLINE convertor #-}
+
+-- instance Fractional a => ConvertorClass Celsius cd 'True a where
+--   convertor _ = id
+--   {-# INLINE convertor #-}
 
 
 ---------------------------- Amount of substance -----------------------------

@@ -56,18 +56,18 @@ import Pandia.Units.Dimension
 
 data ConversionDirection  = FromDimSys | ToDimSys
 
-type IsPer = Bool
-type Per = 'True
+type IsMul = Bool
+-- type Per = 'True
 
-data ConversionInfo = ConversionInfo Unit ConversionDirection IsPer
+data ConversionInfo = ConversionInfo Unit ConversionDirection IsMul
 
 
 -- | A convertor that can convert from and to some unit.
 --
 -- Convertors can be combined via 'mul'@, @'per'@, and @'pow'@ .
 --
-type Convertor (u :: Unit) (cd :: ConversionDirection) (p :: IsPer) a
-  = Proxy ('ConversionInfo u cd p) -> a -> a
+type Convertor (u :: Unit) (cd :: ConversionDirection) (p :: IsMul) a
+  = Proxy ('ConversionInfo u cd p) -> (a -> a) -> a -> a
 
 
 type FromSys u a = Convertor u 'FromDimSys 'False a
@@ -77,7 +77,19 @@ type ToSys u a = Convertor u 'ToDimSys 'False a
 type family UnitToSys (u :: Unit) (sys :: DimSystem k) :: Unit where
   UnitToSys u sys = SimplifyUnit (DimToBaseUnit (DimOf sys u))
 
-fromSys' :: FromSys u a -> a -> a
+runConvertor :: Convertor u cd p a -> a -> a
+runConvertor u = u Proxy id
+{-# INLINE runConvertor #-}
+
+coerceConvertor :: Convertor u cd p a -> Convertor v cd' p' a
+coerceConvertor u _ = u Proxy
+{-# INLINE coerceConvertor #-}
+
+unitMultiplier :: forall u cd p a. Num a => Convertor u cd p a -> a
+unitMultiplier u = runConvertor (coerceConvertor u :: Convertor u cd True a) 1
+{-# INLINE unitMultiplier #-}
+
+fromSys' ::FromSys u a -> a -> a
 fromSys' = runConvertor
 {-# INLINE fromSys' #-}
 
@@ -131,7 +143,7 @@ convertSys' :: forall sys u v a.
   => Proxy sys -> ToSys u a -> FromSys v a -> a -> a
 convertSys' _ = convertNoCheck'
 
-fromSys :: forall u a. Coercible a (u a)
+fromSys :: forall u a. (Coercible a (u a))
   => FromSys u a -> a -> u a
 fromSys u = coerce (runConvertor u)
 {-# INLINE fromSys #-}
@@ -144,24 +156,10 @@ toSys _ u = coerce (runConvertor u)
 
 
 
--- convertSys :: forall u v a.
---   (Coercible a (v a), Coercible a (u a), SameDim SI u v)
---   => ToSys u a -> FromSys v a  -> u a -> v a
--- convertSys = convertNoCheck
--- {-# INLINE convert #-}
 
 
 
 
-
-
-runConvertor :: Convertor u cd p a -> a -> a
-runConvertor u = u Proxy
-{-# INLINE runConvertor #-}
-
-coerceConvertor :: Convertor u cd p a -> Convertor v cd' p' a
-coerceConvertor u _ = u Proxy
-{-# INLINE coerceConvertor #-}
 
 -- flipFromTo :: FromSys u a -> ToSys u a
 -- flipFromTo = coerceConvertor
@@ -176,30 +174,32 @@ coerceFrom u _ = u Proxy
 {-# INLINE coerceFrom #-}
 
 
+
 -- | Create a convertor from a unit newtype
 --
-class ConvertorClass (u :: Unit) (cd :: ConversionDirection) (p :: IsPer) a
+class ConvertorClass (u :: Unit) (cd :: ConversionDirection) (p :: IsMul) a
   where
   convertor :: Convertor u cd p a
-  convertor _ = id
+  convertor _ _ = id
   {-# INLINE convertor #-}
 
-instance (ConvertorClass u cd p a, ConvertorClass v cd (Not p) a, Num a)
+instance (ConvertorClass u cd True a, ConvertorClass v cd True a
+        , PerClass p a)
   => ConvertorClass (u -/- v) cd p a where
-  convertor = (convertor :: Convertor u cd p a)
-          -/- (convertor :: Convertor v cd (Not p) a)
+  convertor = (convertor :: Convertor u cd True a)
+          -/- (convertor :: Convertor v cd True a)
   {-# INLINE convertor #-}
 
-instance (ConvertorClass u cd p a, ConvertorClass v cd p a, Num a)
+instance (ConvertorClass u cd True a, ConvertorClass v cd True a, MulClass p a)
   => ConvertorClass (u -*- v) cd p a where
-  convertor =
-    (convertor :: Convertor u cd p a) -*- (convertor :: Convertor v cd p a)
+  convertor = (convertor :: Convertor u cd True a)
+          -*- (convertor :: Convertor v cd True a)
   {-# INLINE convertor #-}
 
-instance (ConvertorClass u cd p a, KnownRel n)
+instance (ConvertorClass u cd True a, PowClass p a, KnownRel n)
   => ConvertorClass (u -^- n) cd p a where
   convertor =
-    pow (convertor :: Convertor u cd p a)  (Proxy :: Proxy n)
+    pow (convertor :: Convertor u cd True a) (Proxy :: Proxy n)
   {-# INLINE convertor #-}
 
 
@@ -213,7 +213,7 @@ instance (ConvertorClass u cd p a, KnownRel n)
 -- @
 --
 nounit :: Convertor NoUnit cd p a
-nounit _ = id
+nounit _ _ = id
 {-# INLINE nounit #-}
 
 
@@ -237,11 +237,21 @@ nounit _ = id
 -- of  @'ConvertorClass'@. If you want to contribute, this is fairly simple to
 -- do although very repetitive.
 --
-per :: forall u v cd p a. Num a =>
-  Convertor u cd p a -> Convertor v cd (Not p) a -> Convertor (u -/- v) cd p a
-per u g _ a = runConvertor u a
-            * runConvertor (coerceConvertor g :: Convertor v cd (Not p) a) 1
-infix 6 `per`
+class Fractional a => PerClass p a where
+  per ::
+    Convertor u cd True a -> Convertor v cd True a -> Convertor (u -/- v) cd p a
+  infix 6 `per`
+
+instance Fractional a => PerClass True a where
+  per u v _ _ _ = unitMultiplier u / unitMultiplier v
+  {-# INLINE per #-}
+
+instance Fractional a =>  PerClass False a where
+  per u v _ _ a = a * unitMultiplier u / unitMultiplier v
+  {-# INLINE per #-}
+
+-- per :: forall u v cd p a. Fractional a =>
+
 
 -- | Infix synonym for @'per'@
 --
@@ -249,9 +259,9 @@ infix 6 `per`
 -- >>> (kilo meter -/- hour ~~> meter -/- second ) (5 :: Float) 1.388889 @
 -- @
 --
-(-/-) :: forall u v cd p a. Num a =>
-  Convertor u cd p a -> Convertor v cd (Not p) a -> Convertor (u -/- v) cd p a
-(u -/- g) a = per u g a
+(-/-) :: forall u v cd p a. PerClass p a  =>
+  Convertor u cd True a -> Convertor v cd True a -> Convertor (u -/- v) cd p a
+(u -/- v) a = per u v a
 {-# INLINE (-/-) #-}
 
 
@@ -308,29 +318,44 @@ infix 6 `per`
 --
 -- For now, it will stay like this
 --
-mul :: forall u v cd p a. Num a
-  => Convertor u cd p a -> Convertor v cd p a -> Convertor (u -*- v) cd p a
-mul u g _ = runConvertor u . runConvertor g
-{-# INLINE mul #-}
-infixl 7 `mul`
+class Num a => MulClass p a where
+  mul ::
+    Convertor u cd True a -> Convertor v cd True a -> Convertor (u -*- v) cd p a
+  infix 7 `mul`
+
+instance Num a => MulClass True a where
+  mul u v _ _ _ = unitMultiplier u * unitMultiplier v
+  {-# INLINE mul #-}
+
+instance Num a => MulClass False a where
+  mul u v _ _ a = a * unitMultiplier u * unitMultiplier v
+  {-# INLINE mul #-}
+
+-- mul :: forall u v cd p a. Num a
+--   => Convertor u cd True a -> Convertor v cd True a
+--   -> Convertor (u -*- v) cd p a
+-- mul u v _ = runConvertor u . runConvertor v
+-- {-# INLINE mul #-}
+-- infixl 7 `mul`
 
 
-(-*-) :: forall u v cd p a. Num a
-  => Convertor u cd p a -> Convertor v cd p a -> Convertor (u -*- v) cd p a
-(-*-) =mul
+(-*-) :: forall u v cd p a. MulClass p a
+  => Convertor u cd True a -> Convertor v cd True a
+  -> Convertor (u -*- v) cd p a
+(-*-) = mul
 {-# INLINE (-*-) #-}
 
 
-timesFun  :: Int -> (a -> a) -> a -> a
-timesFun 0 _ = id
-timesFun n u = u . timesFun (n - 1) u
-{-# INLINE timesFun #-}
+-- timesFun  :: Int -> (a -> a) -> a -> a
+-- timesFun 0 _ = id
+-- timesFun n u = u . timesFun (n - 1) u
+-- {-# INLINE timesFun #-}
 
-powConv :: forall u cd p a. Convertor u cd p a -> Int -> a -> a
-powConv u n | n >= 0     = timesFun n (runConvertor u)
-            | otherwise  = timesFun n
-              (runConvertor (coerceConvertor u :: Convertor u cd (Not p) a))
-{-# INLINE powConv #-}
+-- powConv :: forall u cd a. Convertor u cd True a -> Int -> a -> a
+-- powConv u n | n >= 0     = timesFun n (runConvertor u)
+--             | otherwise  = timesFun n
+--               (runConvertor (coerceConvertor u :: Convertor u cd  a))
+-- {-# INLINE powConv #-}
 
 
 p0 :: Proxy (Pos 0)
@@ -360,15 +385,30 @@ m3 = Proxy
 m4 :: Proxy (Neg 4)
 m4 = Proxy
 
+class Fractional a => PowClass p a where
+  pow :: KnownRel n =>
+    Convertor u cd True a -> Proxy n -> Convertor (u -^- n) cd p a
+  infix 8 `pow`
 
-pow :: forall u cd p n a. KnownRel n
-   => Convertor u cd p a -> Proxy n -> Convertor (u -^- n) cd p a
-pow f _ _ = powConv f $ fromInteger (relVal (Proxy :: Proxy n))
-{-# INLINE pow #-}
-infix 8 `pow`
+instance Fractional a => PowClass True a where
+  pow u n _ _ _ = unitMultiplier u ^^ fromInteger (relVal n)
+  {-# INLINE pow #-}
+
+instance Fractional a => PowClass False a where
+  pow u n _ _ a = a * unitMultiplier u ^^ fromInteger (relVal n)
+  {-# INLINE pow #-}
 
 
-(-^-) :: KnownRel n =>
-   Convertor u cd p a -> Proxy n -> Convertor (u -^- n) cd p a
+
+
+-- pow :: forall u cd p n a. KnownRel n
+--    => Convertor u cd p a -> Proxy n -> Convertor (u -^- n) cd p a
+-- pow f _ _ = powConv f $ fromInteger (relVal (Proxy :: Proxy n))
+-- {-# INLINE pow #-}
+-- infix 8 `pow`
+
+
+(-^-) :: (PowClass p a, KnownRel n) =>
+   Convertor u cd True a -> Proxy n -> Convertor (u -^- n) cd p a
 (-^-) = pow
 
