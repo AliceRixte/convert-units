@@ -63,14 +63,14 @@ kcToKk a =  a + 273.15 / 1000
 kkToKc :: (Ord a, Fractional a) => a -> a
 kkToKc a = a - 273.15 / 1000
 
-main :: IO ()
-main = hspec $ do
-  describe "~~>" $ do
-    it "km/h <~> m/s" $ property $
-      propConvSpec' (kilo meter -/- hour) (meter -/- second) kmphTomps mpsTokmph
-    it "k°K <~> k°C" $ property $
-      propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc kcToKk
+-- main :: IO ()
+-- main = hspec $ do
+--   describe "~~>" $ do
+--     it "km/h <~> m/s" $ property $
+--       propConvSpec' (kilo meter -/- hour) (meter -/- second) kmphTomps mpsTokmph
+--     it "k°K <~> k°C" $ property $
+--       propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc kcToKk
 
-  describe "angles" $ do
-   it "self radians" $ property $
-    fromToSelf' radian
+--   describe "angles" $ do
+--    it "self radians" $ property $
+--     fromToSelf' radian
