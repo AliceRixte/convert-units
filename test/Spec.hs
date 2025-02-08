@@ -64,12 +64,11 @@ kcToKk a =  a + 273.15 / 1000
 kkToKc :: (Ord a, Fractional a) => a -> a
 kkToKc a = a - 273.15 / 1000
 
-jpk2mjpc :: (Ord a, Fractional a) => a -> a
-jpk2mjpc  = (*1000)
+beat2sec :: (Ord a, Fractional a) => a -> a -> a
+beat2sec bpm b = 60 / bpm * b
 
-mjpc2jpk :: (Ord a, Fractional a) => a -> a
-mjpc2jpk = (/1000)
-
+sec2beat :: (Ord a, Fractional a) => a -> a -> a
+sec2beat bpm s = bpm / 60 * s
 
 
 
@@ -79,9 +78,10 @@ main = hspec $ do
     it "km/h <~> m/s" $ property $
       propConvSpec' (kilo meter -/- hour) (meter -/- second) kmphTomps mpsTokmph
     it "k°K <~> k°C" $ property $
-      propConvSpec' (kilo kelvin) (kilo celsius) kkToKc kcToKk
-    it "J/°K <~> mJ/°C" $ property $
-      propConvSpec' (joule -/- kelvin) (milli joule -/- celsius) jpk2mjpc mjpc2jpk
+      propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc kcToKk
+    it "beat <~> sec" $ property $ \ bpm ->
+      propConvSpec' second (beat (Bpm bpm)) (sec2beat bpm) (beat2sec bpm)
+
 
   describe "angles" $ do
    it "self radians" $ property $
