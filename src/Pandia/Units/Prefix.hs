@@ -16,47 +16,6 @@
 -- This modules provides support for metric prefixes from the International
 -- System of Units.
 --
--- * Usage
---
--- ** Simple conversion
---
--- To convert between to prefixes, use composition:
---
--- @
--- >>> ('milli' . 'toMicro') 1
--- 1000.0
--- >>> ('centi' . 'toKilo') 1
--- 1.0e-5
--- @
---
--- ** Newtypes for precision
---
--- Use newtypes to specify the unit prefix, and use @'coerce'@ to convert
--- between them.
---
--- @
--- >>> a = 1 :: 'Milli' Double
--- >>> ('coerce' . 'milli' . 'toMicro') a :: 'Micro' Double
--- Micro 1000.0
--- @
--- Thanks to @'coerce'@, there is no runtime overhead from using these newtypes
--- (see @'Data.Coerce'@ in base).
---
--- However, be careful with coerce, as the type system will not prevent you from
--- doing this :
---
--- @
--- >>> a = 1 :: 'Milli' Double
--- >>> ('coerce' . 'milli' . 'toKilo') a :: 'Micro' Double
--- Micro 1.0e-6
--- @
---
--- If you need such a conversion, you should probably define a function like
---
--- @
--- milliToMicro :: 'Milli' a -> 'Micro' a
--- milliToMicro = 'coerce' . 'milli' . 'toMicro'
--- @
 ------------------------------------------------------------------------------
 
 module Pandia.Units.Prefix
@@ -67,6 +26,74 @@ import Pandia.Units.Convertor
 import Pandia.Units.Dimension
 
 import Data.Kind
+
+------------------------------------ Nano ------------------------------------
+
+newtype Nano (u :: Type -> Type) a = Nano (u a)
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+
+instance HasDim syst u => HasDim syst (Nano u) where
+  type DimOf syst (Nano u) = DimOf syst u
+
+instance (Num a, ConvertorClass u cd p a, NanoClass u cd p a)
+  => ConvertorClass (Nano u) cd p a where
+  convertor = nano convertor
+  {-# INLINE convertor #-}
+
+class NanoClass u cd p a where
+  nano :: Convertor u cd p a -> Convertor (Nano u) cd p a
+
+instance Fractional a => NanoClass u 'ToDimSys 'False a where
+  nano u _ = runConvertor u . (/ 1000000000)
+  {-# INLINE nano #-}
+
+instance Fractional a => NanoClass u 'ToDimSys 'True a where
+  nano u _ _ = unitMultiplier u / 1000000000
+  {-# INLINE nano #-}
+
+instance Num a => NanoClass u 'FromDimSys 'False a where
+  nano u _ = (* 1000000000) . runConvertor u
+  {-# INLINE nano #-}
+
+instance Num a => NanoClass u 'FromDimSys 'True a where
+  nano u _ _ = unitMultiplier u * 1000000000
+  {-# INLINE nano #-}
+
+----------------------------------- Micro ------------------------------------
+
+newtype Micro (u :: Type -> Type) a = Micro (u a)
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+
+instance HasDim syst u => HasDim syst (Micro u) where
+  type DimOf syst (Micro u) = DimOf syst u
+
+instance (Num a, ConvertorClass u cd p a, MicroClass u cd p a)
+  => ConvertorClass (Micro u) cd p a where
+  convertor = micro convertor
+  {-# INLINE convertor #-}
+
+class MicroClass u cd p a where
+  micro :: Convertor u cd p a -> Convertor (Micro u) cd p a
+
+instance Fractional a => MicroClass u 'ToDimSys 'False a where
+  micro u _ = runConvertor u . (/ 1000000)
+  {-# INLINE micro #-}
+
+instance Fractional a => MicroClass u 'ToDimSys 'True a where
+  micro u _ _ = unitMultiplier u / 1000000
+  {-# INLINE micro #-}
+
+instance Num a => MicroClass u 'FromDimSys 'False a where
+  micro u _ = (* 1000000) . runConvertor u
+  {-# INLINE micro #-}
+
+instance Num a => MicroClass u 'FromDimSys 'True a where
+  micro u _ _ = unitMultiplier u * 1000000
+  {-# INLINE micro #-}
+
+
 
 ----------------------------------- Milli ------------------------------------
 
