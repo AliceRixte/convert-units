@@ -5,6 +5,8 @@ module Pandia.Units.Unit
   ) where
 
 import Data.Kind
+import Data.Coerce
+import Data.Proxy
 
 import Pandia.Units.Rel
 
@@ -32,10 +34,18 @@ newtype NoUnit a = NoUnit a
 -- type MyForceMoment a = (Newton -*- Meter) a
 -- @
 --
-newtype ((u :: Unit) -*- (g :: Unit)) a = MulDim (u (g a))
+newtype ((u :: Unit) -*- (v :: Unit)) a = MulUnit a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infixl 7 -*-
+
+-- | Multiply two quantities
+--
+(-*-) :: forall u v a. (Coercible a (u a), Coercible a (v a), Num a)
+ => u a -> v a -> (u -*- v) a
+u -*- v = coerce (coerce u * coerce v :: a)
+{-# INLINE (-*-) #-}
+
 
 -- | Division of two units.
 --
@@ -46,10 +56,18 @@ infixl 7 -*-
 --
 -- Notice that division has priority over division.
 --
-newtype ((u :: Unit) -/- (g :: Unit)) a = PerDim (u (g a))
+newtype ((u :: Unit) -/- (v :: Unit)) a = PerUnit a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infix 6 -/-
+
+-- | Divide two quantities
+--
+(-/-) :: forall u v a. (Coercible a (u a), Coercible a (v a), Fractional a)
+  => u a -> v a -> (u -/- v) a
+u -/- v = coerce (coerce u / coerce v :: a)
+{-# INLINE (-/-) #-}
+
 
 
 -- | Unit to the power of a positive natural number
@@ -61,10 +79,17 @@ infix 6 -/-
 -- type MyAcceleration a = (Meter -/- Second -^- 2) a
 -- @
 --
-newtype ((u :: Unit) -^- (n :: Rel)) a = PowDim (u a)
+newtype ((u :: Unit) -^- (n :: Rel)) a = PowUnit a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 infix 8 -^-
+
+-- | Raise a quantity to a power
+--
+(-^-) :: forall u n a. (Coercible a (u a), Num a)
+  => u a -> Proxy n -> (u -^- n) a
+u -^- _ = coerce u
+{-# INLINE (-^-) #-}
 
 
 
