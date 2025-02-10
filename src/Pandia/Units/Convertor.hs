@@ -32,7 +32,7 @@ module Pandia.Units.Convertor
   --  Convertor
   -- , FromSys, ToSys
   -- , fromSys'
-  -- , nounit, (-*-), (-/-), (-^-)
+  -- , nounit, (~*), (~/), (~^)
   -- , mul, per, pow
   -- , p0, p1, p2, p3, p4, m1, m2, m3, m4
   -- , ConvertorClass (..)
@@ -186,13 +186,13 @@ instance (ConvertorClass u cd True a, ConvertorClass v cd True a
         , PerClass p a)
   => ConvertorClass (u -/- v) cd p a where
   convertor = (convertor :: Convertor u cd True a)
-          -/- (convertor :: Convertor v cd True a)
+          ~/ (convertor :: Convertor v cd True a)
   {-# INLINE convertor #-}
 
 instance (ConvertorClass u cd True a, ConvertorClass v cd True a, MulClass p a)
   => ConvertorClass (u -*- v) cd p a where
   convertor = (convertor :: Convertor u cd True a)
-          -*- (convertor :: Convertor v cd True a)
+          ~* (convertor :: Convertor v cd True a)
   {-# INLINE convertor #-}
 
 instance (ConvertorClass u cd True a, PowClass p a, KnownRel n)
@@ -243,14 +243,14 @@ instance Fractional a =>  PerClass False a where
 -- | Infix synonym for @'per'@
 --
 -- @
--- >>> (kilo meter -/- hour ~~> meter -/- second ) (5 :: Float) 1.388889 @
+-- >>> (kilo meter ~/ hour ~~> meter ~/ second ) (5 :: Float) 1.388889 @
 -- @
 --
-(-/-) :: forall u v cd p a. PerClass p a  =>
+(~/) :: forall u v cd p a. PerClass p a  =>
   Convertor u cd True a -> Convertor v cd True a -> Convertor (u -/- v) cd p a
-(u -/- v) a = per u v a
-{-# INLINE (-/-) #-}
-infix 6 -/-
+(u ~/ v) a = per u v a
+{-# INLINE (~/) #-}
+infix 6 ~/
 
 
 
@@ -259,7 +259,7 @@ class Num a => MulClass p a where
   -- | Multiplication of convertors.
   --
   -- @
-  -- >>> ( meter -*- gram -*- second -^- m2  ~~> newton) 5
+  -- >>> ( meter ~* gram ~* second ~^ m2  ~~> newton) 5
   -- 5.0e-3
   -- @
   --
@@ -276,12 +276,12 @@ instance Num a => MulClass False a where
   {-# INLINE mul #-}
 
 
-(-*-) :: forall u v cd p a. MulClass p a
+(~*) :: forall u v cd p a. MulClass p a
   => Convertor u cd True a -> Convertor v cd True a
   -> Convertor (u -*- v) cd p a
-(-*-) = mul
-{-# INLINE (-*-) #-}
-infixl 7 -*-
+(~*) = mul
+{-# INLINE (~*) #-}
+infixl 7 ~*
 
 
 p0 :: Proxy (Pos 0)
@@ -326,8 +326,8 @@ instance Fractional a => PowClass False a where
 
 
 
-(-^-) :: (PowClass p a, KnownRel n) =>
+(~^) :: (PowClass p a, KnownRel n) =>
    Convertor u cd True a -> Proxy n -> Convertor (u -^- n) cd p a
-(-^-) = pow
-infix 8 -^-
+(~^) = pow
+infix 8 ~^
 
