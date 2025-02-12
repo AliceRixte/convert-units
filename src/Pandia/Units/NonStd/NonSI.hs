@@ -1,5 +1,5 @@
-module Pandia.Units.NonSI
-  ( module Pandia.Units.NonSI
+module Pandia.Units.NonStd.NonSI
+  ( module Pandia.Units.NonStd.NonSI
   ) where
 
 import Pandia.Units.Convertor

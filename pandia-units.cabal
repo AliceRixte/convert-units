@@ -30,7 +30,8 @@ library
       Pandia.Units
       Pandia.Units.Convertor
       Pandia.Units.Dimension
-      Pandia.Units.NonSI
+      Pandia.Units.NonStd
+      Pandia.Units.NonStd.NonSI
       Pandia.Units.Prefix
       Pandia.Units.Rel
       Pandia.Units.Sugar.AngleSI
