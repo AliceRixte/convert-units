@@ -4,12 +4,12 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PolyKinds#-}
 
-module Pandia.Units.Internal.Dimension
-  ( module Pandia.Units.Internal.Dimension
+module Pandia.Units.Core.Dimension
+  ( module Pandia.Units.Core.Dimension
   ) where
 
-import Pandia.Units.Internal.Rel
-import Pandia.Units.Internal.Unit
+import Pandia.Units.Core.Rel
+import Pandia.Units.Core.Unit
 
 import GHC.TypeLits
 

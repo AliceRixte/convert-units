@@ -29,13 +29,13 @@ library
       Pandia.Test
       Pandia.Units
       Pandia.Units.AngleSI
-      Pandia.Units.Internal.Convertor
-      Pandia.Units.Internal.Core
-      Pandia.Units.Internal.Dimension
-      Pandia.Units.Internal.Prefix
-      Pandia.Units.Internal.Rel
-      Pandia.Units.Internal.System
-      Pandia.Units.Internal.Unit
+      Pandia.Units.Core
+      Pandia.Units.Core.Convertor
+      Pandia.Units.Core.Dimension
+      Pandia.Units.Core.Prefix
+      Pandia.Units.Core.Rel
+      Pandia.Units.Core.System
+      Pandia.Units.Core.Unit
       Pandia.Units.NonStd
       Pandia.Units.NonStd.Angle
       Pandia.Units.NonStd.NonSI

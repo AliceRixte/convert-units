@@ -2,7 +2,7 @@ module Pandia.Units.NonStd.Angle
   ( module Pandia.Units.NonStd.Angle
   ) where
 
-import Pandia.Units.Internal.Core
+import Pandia.Units.Core
 
 
 

@@ -1,14 +1,14 @@
 {-# LANGUAGE DeriveFunctor #-}
 
-module Pandia.Units.Internal.Unit
-  ( module Pandia.Units.Internal.Unit
+module Pandia.Units.Core.Unit
+  ( module Pandia.Units.Core.Unit
   ) where
 
 import Data.Kind
 import Data.Coerce
 import Data.Proxy
 
-import Pandia.Units.Internal.Rel
+import Pandia.Units.Core.Rel
 
 ----------------------------- Unit construction ------------------------------
 

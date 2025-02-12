@@ -7,7 +7,7 @@ module Pandia.Units.AngleSI
 
 import Data.Coerce
 
-import Pandia.Units.Internal.Core
+import Pandia.Units.Core
 
 
 type family UnitToASI (u :: Unit) :: Unit where

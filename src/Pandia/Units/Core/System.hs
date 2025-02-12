@@ -1,14 +1,14 @@
-module Pandia.Units.Internal.System
-  ( module Pandia.Units.Internal.System
+module Pandia.Units.Core.System
+  ( module Pandia.Units.Core.System
   ) where
 
 import Data.Fixed
 
-import Pandia.Units.Internal.Convertor
-import Pandia.Units.Internal.Dimension
-import Pandia.Units.Internal.Prefix
-import Pandia.Units.Internal.Rel
-import Pandia.Units.Internal.Unit
+import Pandia.Units.Core.Convertor
+import Pandia.Units.Core.Dimension
+import Pandia.Units.Core.Prefix
+import Pandia.Units.Core.Rel
+import Pandia.Units.Core.Unit
 
 import Data.Proxy
 
@@ -73,6 +73,7 @@ instance HasDim sys Radian where
 
 instance ConvertorClass Radian cd p a
 
+-- | Convertor for angle in radians
 radian :: Convertor Radian cd p a
 radian = convertor
 {-# INLINE radian #-}

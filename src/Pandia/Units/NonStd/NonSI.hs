@@ -2,7 +2,7 @@ module Pandia.Units.NonStd.NonSI
   ( module Pandia.Units.NonStd.NonSI
   ) where
 
-import Pandia.Units.Internal.Core
+import Pandia.Units.Core
 
 import Data.Coerce
 

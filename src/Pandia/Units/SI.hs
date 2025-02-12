@@ -3,11 +3,13 @@
 
 module Pandia.Units.SI
   ( module Pandia.Units.SI
+  , module Pandia.Units.NonStd
   ) where
 
 import Data.Coerce
 
-import Pandia.Units.Internal.Core
+import Pandia.Units.Core
+import Pandia.Units.NonStd
 
 
 type family UnitToSI (u :: Unit) :: Unit where

@@ -1,12 +1,12 @@
 module Pandia.Units
   ( coerce
-  , module Pandia.Units.Internal.Core
+  , module Pandia.Units.Core
   , module Pandia.Units.NonStd
   ) where
 
 import Data.Coerce (coerce)
 
-import Pandia.Units.Internal.Core
+import Pandia.Units.Core
 import Pandia.Units.NonStd
 
 -- import Pandia.Units.Unit
