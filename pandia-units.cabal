@@ -38,7 +38,8 @@ library
       Pandia.Units.Core.Unit
       Pandia.Units.NonStd
       Pandia.Units.NonStd.Angle
-      Pandia.Units.NonStd.NonSI
+      Pandia.Units.NonStd.Temperature
+      Pandia.Units.NonStd.Time
       Pandia.Units.SI
   other-modules:
       Paths_pandia_units
