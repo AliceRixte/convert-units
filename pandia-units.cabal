@@ -38,6 +38,7 @@ library
       Pandia.Units.Core.Unit
       Pandia.Units.NonStd
       Pandia.Units.NonStd.Angle
+      Pandia.Units.NonStd.Frequency
       Pandia.Units.NonStd.Temperature
       Pandia.Units.NonStd.Time
       Pandia.Units.SI

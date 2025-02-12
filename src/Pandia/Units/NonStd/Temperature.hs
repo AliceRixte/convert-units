@@ -4,8 +4,6 @@ module Pandia.Units.NonStd.Temperature
 
 import Pandia.Units.Core
 
-import Data.Coerce
-
 newtype Celsius a = Celsius a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)

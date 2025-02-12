@@ -37,10 +37,7 @@ type family PrettyFail (d :: [Dim k]) (d' :: [Dim k]) (b :: Bool)
   PrettyFail d d' 'False = 'DimError d d'
 
 type family EqDim (l :: [Dim k]) (l' :: [Dim k]) :: DimCheck [Dim k] where
-  EqDim l l' = PrettyFail l l' (EqAllDim l l')
-
-
-
+  EqDim l l' = PrettyFail l l' (EqAllDim (ElimNegZero l) (ElimNegZero l'))
 
 
 type family MulOneDim (d :: Dim k) (d' :: Dim k)

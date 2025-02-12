@@ -10,6 +10,7 @@ import Test.QuickCheck
 import Pandia.Units.AngleSI
 import Pandia.Units
 
+
 approxEq :: (Ord a, Fractional a) => a -> a -> Bool
 approxEq a b = abs (a - b) < 1e-12
 
@@ -69,19 +70,27 @@ beat2sec bpm b = 60 / bpm * b
 sec2beat :: (Ord a, Fractional a) => a -> a -> a
 sec2beat bpm s = bpm / 60 * s
 
+midiToFreq :: (Ord a, Floating a) => a -> a
+midiToFreq m = 440 * 2 ** ((m - 69) / 12)
+
+freqToMidi :: (Ord a, Floating a) => a -> a
+freqToMidi f = 69 + 12 * logBase 2 (f / 440)
 
 
--- main :: IO ()
--- main = hspec $ do
---   describe "~~>" $ do
---     it "km/h <~> m/s" $ property $
---       propConvSpec' (kilo meter ~/ hour) (meter ~/ second) kmphTomps mpsTokmph
---     it "k°K <~> k°C" $ property $
---       propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc kcToKk
---     it "beat <~> sec" $ property $ \ bpm ->
---       propConvSpec' second (beat (Bpm bpm)) (sec2beat bpm) (beat2sec bpm)
+
+main :: IO ()
+main = hspec $ do
+  describe "~~>" $ do
+    it "km/h <~> m/s" $ property $
+      propConvSpec' (kilo meter ~/ hour) (meter ~/ second) kmphTomps mpsTokmph
+    it "k°K <~> k°C" $ property $
+      propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc kcToKk
+    it "beat <~> sec" $ property $ \ bpm ->
+      propConvSpec' second (beat (Bpm bpm)) (sec2beat bpm) (beat2sec bpm)
+    it "midi <~> hertz" $ property $
+      propConvSpec' midiPitch hertz midiToFreq freqToMidi
 
 
---   describe "angles" $ do
---    it "self radians" $ property $
---     fromToSelf' radian
+  describe "angles" $ do
+   it "self radians" $ property $
+    fromToSelf' radian

@@ -278,6 +278,12 @@ candela = convertor
 
 ------------------------------- Derived units -------------------------------
 
+type Hertz = Second -^- Neg 1
+
+hertz :: Convertor Hertz cd p a
+hertz _ = id
+{-# INLINE hertz #-}
+
 
 type Joule = Meter -*- Kilo Gram -^- Pos 2 -*- Second -^- Neg 2
 
