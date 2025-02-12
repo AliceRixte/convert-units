@@ -3,7 +3,6 @@
 module Pandia.Test
   ( module Pandia.Test
   ) where
-
 import Test.Hspec
 import Test.QuickCheck
 
@@ -34,18 +33,17 @@ fromToSelf' = fromToSelf
 sameFunc :: (Ord a, Fractional a) => (a -> a) -> (a -> a) -> a ->  Bool
 sameFunc f g a = f a `approxEq` g a
 
-propConvSpec :: (Ord a, Fractional a, SameDim AngleSI u v) =>
+propConvSpec :: (Ord a, Fractional a, SameDim AngleSI u v, SameDim AngleSI v u) =>
   Convertor u 'ToDimSys 'False a -> Convertor v 'FromDimSys 'False a
-    -> (a -> a) -> (a -> a) -> a -> Bool
-propConvSpec f g specfg specgf a =
+    -> (a -> a) -> a -> Bool
+propConvSpec f g specfg  a =
   sameFunc (coerceTo f  ~~> coerceFrom g) specfg a
-  -- && sameFunc (fromToNoCheck' (coerceTo g) (coerceFrom f)) specgf a
 
 
-propConvSpec' :: SameDim AngleSI u v =>
+propConvSpec' :: (SameDim AngleSI v u, SameDim AngleSI u v) =>
   Convertor u 'ToDimSys 'False Double -> Convertor v 'FromDimSys 'False Double
-  -> (Double -> Double) -> (Double -> Double) -> Double -> Bool
-propConvSpec'  = propConvSpec
+  -> (Double -> Double) -> Double -> Bool
+propConvSpec' = propConvSpec
 
 
 type Kmmph = Kilo Meter -/- Hour
@@ -65,10 +63,10 @@ kkToKc :: (Ord a, Fractional a) => a -> a
 kkToKc a = a - 273.15 / 1000
 
 beat2sec :: (Ord a, Fractional a) => a -> a -> a
-beat2sec bpm b = 60 / bpm * b
+beat2sec bpm b = b * 60 / bpm
 
 sec2beat :: (Ord a, Fractional a) => a -> a -> a
-sec2beat bpm s = bpm / 60 * s
+sec2beat bpm s = s * bpm / 60
 
 midiToFreq :: (Ord a, Floating a) => a -> a
 midiToFreq m = 440 * 2 ** ((m - 69) / 12)
@@ -81,14 +79,22 @@ freqToMidi f = 69 + 12 * logBase 2 (f / 440)
 main :: IO ()
 main = hspec $ do
   describe "~~>" $ do
-    it "km/h <~> m/s" $ property $
-      propConvSpec' (kilo meter ~/ hour) (meter ~/ second) kmphTomps mpsTokmph
-    it "k°K <~> k°C" $ property $
-      propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc kcToKk
-    it "beat <~> sec" $ property $ \ bpm ->
-      propConvSpec' second (beat (Bpm bpm)) (sec2beat bpm) (beat2sec bpm)
-    it "midi <~> hertz" $ property $
-      propConvSpec' midiPitch hertz midiToFreq freqToMidi
+    it "km/h ~~> m/s" $ property $
+      propConvSpec' (kilo meter ~/ hour) (meter ~/ second) kmphTomps
+    it "m/s ~~> km/h" $ property $
+      propConvSpec' (meter ~/ second) (kilo meter ~/ hour) mpsTokmph
+    it "k°K ~~> k°C" $ property $
+      propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc
+    it "k°C ~~> k°K" $ property $
+      propConvSpec' (kilo celsius) (kilo kelvin) kcToKk
+    it "beat ~~> sec" $ property $ \ bpm a ->
+      bpm == 0 || propConvSpec' second (beat (Bpm bpm)) (sec2beat bpm) a
+    it "sec ~~> beat" $ property $ \ bpm a ->
+      bpm == 0 || propConvSpec' (beat (Bpm bpm)) second (beat2sec bpm) a
+    it "midi ~~> hertz" $ property $
+      propConvSpec' midiPitch hertz midiToFreq
+    it "hertz ~~> midi" $ property $ \freq ->
+      freq <= 0 || propConvSpec' hertz midiPitch freqToMidi freq
 
 
   describe "angles" $ do

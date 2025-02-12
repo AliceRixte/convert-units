@@ -78,7 +78,7 @@ class BeatConvertor cd p a where
   beat :: Bpm a -> Convertor Beat cd p a
 
 instance Fractional a => BeatConvertor 'ToDimSys 'False a where
-  beat bpm  _ x = 60 * x / coerce bpm
+  beat bpm  _ x = x * 60 / coerce bpm
   {-# INLINE beat #-}
 
 instance Fractional a => BeatConvertor 'ToDimSys 'True a where
@@ -86,7 +86,7 @@ instance Fractional a => BeatConvertor 'ToDimSys 'True a where
   {-# INLINE beat #-}
 
 instance Fractional a => BeatConvertor 'FromDimSys 'False a where
-  beat bpm _ x = coerce bpm * x / 60
+  beat bpm _ x = x * coerce bpm / 60
   {-# INLINE beat #-}
 
 instance Fractional a => BeatConvertor 'FromDimSys 'True a where
