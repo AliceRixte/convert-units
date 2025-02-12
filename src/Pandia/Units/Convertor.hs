@@ -153,17 +153,6 @@ toSys _ u = coerce (runConvertor u)
 {-# INLINE toSys #-}
 
 
-
-
-
-
-
-
-
--- flipFromTo :: FromSys u a -> ToSys u a
--- flipFromTo = coerceConvertor
--- {-# INLINE flipFromTo #-}
-
 coerceTo :: Convertor u cd p a -> ToSys u a
 coerceTo u _ = u Proxy
 {-# INLINE coerceTo #-}

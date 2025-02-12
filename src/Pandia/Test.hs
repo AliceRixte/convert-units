@@ -71,17 +71,17 @@ sec2beat bpm s = bpm / 60 * s
 
 
 
--- main :: IO ()
--- main = hspec $ do
---   describe "~~>" $ do
---     it "km/h <~> m/s" $ property $
---       propConvSpec' (kilo meter -/- hour) (meter -/- second) kmphTomps mpsTokmph
---     it "k°K <~> k°C" $ property $
---       propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc kcToKk
---     it "beat <~> sec" $ property $ \ bpm ->
---       propConvSpec' second (beat (Bpm bpm)) (sec2beat bpm) (beat2sec bpm)
+main :: IO ()
+main = hspec $ do
+  describe "~~>" $ do
+    it "km/h <~> m/s" $ property $
+      propConvSpec' (kilo meter ~/ hour) (meter ~/ second) kmphTomps mpsTokmph
+    it "k°K <~> k°C" $ property $
+      propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc kcToKk
+    it "beat <~> sec" $ property $ \ bpm ->
+      propConvSpec' second (beat (Bpm bpm)) (sec2beat bpm) (beat2sec bpm)
 
 
---   describe "angles" $ do
---    it "self radians" $ property $
---     fromToSelf' radian
+  describe "angles" $ do
+   it "self radians" $ property $
+    fromToSelf' radian

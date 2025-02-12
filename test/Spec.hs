@@ -4,11 +4,10 @@
 module Main
   ( main
   ) where
-
 import Test.Hspec
 import Test.QuickCheck
 
-
+import Pandia.Units.Sugar.AngleSI
 import Pandia.Units
 
 approxEq :: (Ord a, Fractional a) => a -> a -> Bool
@@ -34,7 +33,7 @@ fromToSelf' = fromToSelf
 sameFunc :: (Ord a, Fractional a) => (a -> a) -> (a -> a) -> a ->  Bool
 sameFunc f g a = f a `approxEq` g a
 
-propConvSpec :: (Ord a, Fractional a, SameDim SI u v) =>
+propConvSpec :: (Ord a, Fractional a, SameDim AngleSI u v) =>
   Convertor u 'ToDimSys 'False a -> Convertor v 'FromDimSys 'False a
     -> (a -> a) -> (a -> a) -> a -> Bool
 propConvSpec f g specfg specgf a =
@@ -42,7 +41,7 @@ propConvSpec f g specfg specgf a =
   -- && sameFunc (fromToNoCheck' (coerceTo g) (coerceFrom f)) specgf a
 
 
-propConvSpec' :: SameDim SI u v =>
+propConvSpec' :: SameDim AngleSI u v =>
   Convertor u 'ToDimSys 'False Double -> Convertor v 'FromDimSys 'False Double
   -> (Double -> Double) -> (Double -> Double) -> Double -> Bool
 propConvSpec'  = propConvSpec
@@ -76,7 +75,7 @@ main :: IO ()
 main = hspec $ do
   describe "~~>" $ do
     it "km/h <~> m/s" $ property $
-      propConvSpec' (kilo meter -/- hour) (meter -/- second) kmphTomps mpsTokmph
+      propConvSpec' (kilo meter ~/ hour) (meter ~/ second) kmphTomps mpsTokmph
     it "k°K <~> k°C" $ property $
       propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc kcToKk
     it "beat <~> sec" $ property $ \ bpm ->

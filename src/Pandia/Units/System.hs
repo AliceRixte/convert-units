@@ -2,6 +2,8 @@ module Pandia.Units.System
   ( module Pandia.Units.System
   ) where
 
+import Data.Fixed
+
 import Pandia.Units.Convertor
 import Pandia.Units.Dimension
 import Pandia.Units.Prefix
@@ -74,6 +76,13 @@ instance ConvertorClass Radian cd p a
 radian :: Convertor Radian cd p a
 radian = convertor
 {-# INLINE radian #-}
+
+-- | Normalize an angle to the range ]-pi, pi]
+normalizeRadians :: (RealFrac a, Floating a) => Radian a -> Radian a
+normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
+  where
+    twoPi = 2 * pi
+    xmod = x `mod'` twoPi
 
 
 ----------------------------------- Length -----------------------------------
