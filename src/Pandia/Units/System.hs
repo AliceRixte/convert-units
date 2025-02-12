@@ -1,5 +1,5 @@
-module Pandia.Units.SI
-  ( module Pandia.Units.SI
+module Pandia.Units.System
+  ( module Pandia.Units.System
   ) where
 
 import Pandia.Units.Convertor

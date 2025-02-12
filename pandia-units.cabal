@@ -33,8 +33,8 @@ library
       Pandia.Units.NonSI
       Pandia.Units.Prefix
       Pandia.Units.Rel
-      Pandia.Units.SI
       Pandia.Units.Sugar
+      Pandia.Units.System
       Pandia.Units.Unit
   other-modules:
       Paths_pandia_units

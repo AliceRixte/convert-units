@@ -4,7 +4,7 @@ module Pandia.Units.NonSI
 
 import Pandia.Units.Convertor
 import Pandia.Units.Dimension
-import Pandia.Units.SI
+import Pandia.Units.System
 import Pandia.Units.Rel
 import Pandia.Units.Unit
 
