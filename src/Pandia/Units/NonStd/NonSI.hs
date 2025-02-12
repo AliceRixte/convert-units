@@ -2,10 +2,7 @@ module Pandia.Units.NonStd.NonSI
   ( module Pandia.Units.NonStd.NonSI
   ) where
 
-import Pandia.Units.Convertor
-import Pandia.Units.Dimension
-import Pandia.Units.System
-import Pandia.Units.Rel
+import Pandia.Units.Internal.Core
 
 import Data.Coerce
 

@@ -1,14 +1,14 @@
-module Pandia.Units.System
-  ( module Pandia.Units.System
+module Pandia.Units.Internal.System
+  ( module Pandia.Units.Internal.System
   ) where
 
 import Data.Fixed
 
-import Pandia.Units.Convertor
-import Pandia.Units.Dimension
-import Pandia.Units.Prefix
-import Pandia.Units.Rel
-import Pandia.Units.Unit
+import Pandia.Units.Internal.Convertor
+import Pandia.Units.Internal.Dimension
+import Pandia.Units.Internal.Prefix
+import Pandia.Units.Internal.Rel
+import Pandia.Units.Internal.Unit
 
 import Data.Proxy
 

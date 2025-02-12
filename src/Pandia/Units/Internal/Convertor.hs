@@ -27,8 +27,8 @@
 --
 ------------------------------------------------------------------------------
 
-module Pandia.Units.Convertor
-  ( module Pandia.Units.Convertor
+module Pandia.Units.Internal.Convertor
+  ( module Pandia.Units.Internal.Convertor
   --  Convertor
   -- , FromSys, ToSys
   -- , fromSys'
@@ -45,9 +45,9 @@ import Data.Coerce
 import Data.Proxy
 
 
-import Pandia.Units.Rel
-import Pandia.Units.Unit
-import Pandia.Units.Dimension
+import Pandia.Units.Internal.Rel
+import Pandia.Units.Internal.Unit
+import Pandia.Units.Internal.Dimension
 
 
 

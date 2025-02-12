@@ -5,7 +5,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Pandia.Units.Prefix
+-- Module      :  Pandia.Units.Internal.Prefix
 -- Description :  Metric prefixes from the International System of Units
 -- Copyright   :  (c) Alice Rixte 2024
 -- License:  LGPL 3
@@ -14,16 +14,16 @@
 -- Portability :  non-portable (GHC extensions)
 --
 -- This modules provides support for metric prefixes from the International
--- System of Units.
+-- System of Units.Internal.
 --
 ------------------------------------------------------------------------------
 
-module Pandia.Units.Prefix
-  ( module Pandia.Units.Prefix
+module Pandia.Units.Internal.Prefix
+  ( module Pandia.Units.Internal.Prefix
   ) where
 
-import Pandia.Units.Convertor
-import Pandia.Units.Dimension
+import Pandia.Units.Internal.Convertor
+import Pandia.Units.Internal.Dimension
 
 import Data.Kind
 

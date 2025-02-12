@@ -1,7 +1,7 @@
 {-# LANGUAGE NoStarIsType #-}
 {-# LANGUAGE ExistentialQuantification #-}
-module Pandia.Units.Rel
-  ( module Pandia.Units.Rel
+module Pandia.Units.Internal.Rel
+  ( module Pandia.Units.Internal.Rel
   ) where
 
 import GHC.TypeLits
