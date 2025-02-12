@@ -284,32 +284,7 @@ instance Num a => MulClass False a where
 infixl 7 ~*
 
 
-p0 :: Proxy (Pos 0)
-p0 = Proxy
 
-p1 :: Proxy (Pos 1)
-p1 = Proxy
-
-p2 :: Proxy (Pos 2)
-p2 = Proxy
-
-p3 :: Proxy (Pos 3)
-p3 = Proxy
-
-p4 :: Proxy (Pos 4)
-p4 = Proxy
-
-m1 :: Proxy (Neg 1)
-m1 = Proxy
-
-m2 :: Proxy (Neg 2)
-m2 = Proxy
-
-m3 :: Proxy (Neg 3)
-m3 = Proxy
-
-m4 :: Proxy (Neg 4)
-m4 = Proxy
 
 class Fractional a => PowClass p a where
   pow :: KnownRel n =>

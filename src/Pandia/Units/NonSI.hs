@@ -10,6 +10,15 @@ import Pandia.Units.Unit
 
 import Data.Coerce
 
+----------------------------------- Angle ------------------------------------
+
+newtype Degree a = Degree a
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
+          , Bounded, Enum, Semigroup, Monoid)
+
+instance HasDim syst Degree where
+  type DimOf syst Degree = DimA syst (Pos 1)
+
 ----------------------------------- Length -----------------------------------
 
 

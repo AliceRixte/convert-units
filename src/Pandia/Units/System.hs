@@ -24,30 +24,33 @@ type SI = '[
 
 type AngleSI = 'Dim "A" ': SI
 
-type family DimL (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
-  DimL syst n = MonoDim syst "L" n
+type family NoDim (sys :: DimSystem Symbol) :: [Dim Symbol] where
+  NoDim ('Dim k ': ds) = 'Dim k ('Pos 0) ': NoDim ds
 
-type family DimM (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
-  DimM syst n = MonoDim syst "M" n
+type family DimA (sys :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimA SI n = NoDim SI
+  DimA sys n = MonoDim sys "A" n
 
-type family DimT (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
-  DimT syst n = MonoDim syst "T" n
+type family DimL (sys :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimL sys n = MonoDim sys "L" n
 
-type family DimI (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
-  DimI syst n = MonoDim syst "I" n
+type family DimM (sys :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimM sys n = MonoDim sys "M" n
 
-type family DimTh (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
-  DimTh syst n = MonoDim syst "Th" n
+type family DimT (sys :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimT sys n = MonoDim sys "T" n
 
-type family DimN (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
-  DimN syst n = MonoDim syst "N" n
+type family DimI (sys :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimI sys n = MonoDim sys "I" n
 
-type family DimJ (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
-  DimJ syst n = MonoDim syst "J" n
+type family DimTh (sys :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimTh sys n = MonoDim sys "Th" n
 
-type family DimA (syst :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
-  DimA syst n = MonoDim syst "A" n
+type family DimN (sys :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimN sys n = MonoDim sys "N" n
 
+type family DimJ (sys :: DimSystem Symbol) (n :: Rel) :: [Dim Symbol] where
+  DimJ sys n = MonoDim sys "J" n
 
 ----------------------------------- Angle ------------------------------------
 
@@ -63,8 +66,8 @@ newtype Radian a = Radian a
 
 type instance BaseUnit "A" = Radian
 
-instance HasDim syst Radian where
-  type DimOf syst Radian = DimA syst (Pos 1)
+instance HasDim sys Radian where
+  type DimOf sys Radian = DimA sys (Pos 1)
 
 instance ConvertorClass Radian cd p a
 
@@ -84,8 +87,8 @@ newtype Length a = Length a
 
 type instance FlexQuantity "L" = Length
 
-instance HasDim syst Length where
-  type DimOf syst Length = DimL syst (Pos 1)
+instance HasDim sys Length where
+  type DimOf sys Length = DimL sys (Pos 1)
 
 -- | A quantity in meters
 --
@@ -96,8 +99,8 @@ newtype Meter a = Meter a
 
 type instance BaseUnit "L" = Meter
 
-instance HasDim syst Meter where
-  type DimOf syst Meter = DimL syst (Pos 1)
+instance HasDim sys Meter where
+  type DimOf sys Meter = DimL sys (Pos 1)
 
 instance ConvertorClass Meter cd p a
 
@@ -119,8 +122,8 @@ newtype Gram a = Gram a
 
 type instance BaseUnit "M" = Kilo Gram
 
-instance HasDim syst Gram where
-  type DimOf syst Gram = DimM syst (Pos 1)
+instance HasDim sys Gram where
+  type DimOf sys Gram = DimM sys (Pos 1)
 
 gram :: ConvertorClass Gram cd p a => Convertor Gram cd p a
 gram = convertor
@@ -157,8 +160,8 @@ newtype Second a = Second a
 
 type instance BaseUnit "T" = Second
 
-instance HasDim syst Second where
-  type DimOf syst Second = DimT syst (Pos 1)
+instance HasDim sys Second where
+  type DimOf sys Second = DimT sys (Pos 1)
 
 instance ConvertorClass Second cd p a
 
@@ -181,8 +184,8 @@ newtype Ampere a = Ampere a
 
 type instance BaseUnit "I" = Ampere
 
-instance HasDim syst Ampere where
-  type DimOf syst Ampere = DimI syst (Pos 1)
+instance HasDim sys Ampere where
+  type DimOf sys Ampere = DimI sys (Pos 1)
 
 
 instance ConvertorClass Ampere cd p a
@@ -205,8 +208,8 @@ newtype Kelvin a = Kelvin a
 
 type instance BaseUnit "Th" = Kelvin
 
-instance HasDim syst Kelvin where
-  type DimOf syst Kelvin = DimTh syst (Pos 1)
+instance HasDim sys Kelvin where
+  type DimOf sys Kelvin = DimTh sys (Pos 1)
 
 instance ConvertorClass Kelvin cd p a
 
@@ -229,8 +232,8 @@ newtype Mole a = Mole a
 
 type instance BaseUnit "N" = Mole
 
-instance HasDim syst Mole where
-  type DimOf syst Mole = DimN syst (Pos 1)
+instance HasDim sys Mole where
+  type DimOf sys Mole = DimN sys (Pos 1)
 
 instance ConvertorClass Mole cd p a
 
@@ -252,8 +255,8 @@ newtype Candela a = Candela a
 
 type instance BaseUnit "J" = Candela
 
-instance HasDim syst Candela where
-  type DimOf syst Candela = DimJ syst (Pos 1)
+instance HasDim sys Candela where
+  type DimOf sys Candela = DimJ sys (Pos 1)
 
 
 instance ConvertorClass Candela cd p a

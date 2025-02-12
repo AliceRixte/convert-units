@@ -7,7 +7,7 @@ module Pandia.Test
 import Test.Hspec
 import Test.QuickCheck
 
-
+import Pandia.Units.Sugar.AngleSI
 import Pandia.Units
 
 approxEq :: (Ord a, Fractional a) => a -> a -> Bool
