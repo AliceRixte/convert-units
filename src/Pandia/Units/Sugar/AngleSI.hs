@@ -1,8 +1,8 @@
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE NoStarIsType #-}
 
-module Pandia.Units.Sugar
-  ( module Pandia.Units.Sugar
+module Pandia.Units.Sugar.AngleSI
+  ( module Pandia.Units.Sugar.AngleSI
   ) where
 
 import Data.Coerce
@@ -13,66 +13,51 @@ import Pandia.Units.System
 import Pandia.Units.Unit
 
 
+type family UnitToASI (u :: Unit) :: Unit where
+  UnitToASI u = SimplifyUnit (DimToBaseUnit (DimOf AngleSI u))
 
-type family UnitToSI (u :: Unit) :: Unit where
-  UnitToSI u = SimplifyUnit (DimToBaseUnit (DimOf SI u))
-
-fromSI :: forall u a. Coercible a (u a)
+fromASI :: forall u a. Coercible a (u a)
   => FromSys u a -> a -> u a
-fromSI u = coerce (runConvertor u)
-{-# INLINE fromSI #-}
+fromASI u = coerce (runConvertor u)
+{-# INLINE fromASI #-}
 
 
 --  | This does NOT work ! Type inference will fail as soon as there is a negative exponent.
-toSI :: forall u a. Coercible a ((UnitToSI u) a)
-  => ToSys u a -> a -> (UnitToSI u) a
-toSI u = coerce (runConvertor u)
-{-# INLINE toSI #-}
+toASI :: forall u a. Coercible a ((UnitToASI u) a)
+  => ToSys u a -> a -> (UnitToASI u) a
+toASI u = coerce (runConvertor u)
+{-# INLINE toASI #-}
 
-asSI :: forall u a.
-  (Coercible a (u a), Coercible a ((UnitToSI u) a)
+asASI :: forall u a.
+  (Coercible a (u a), Coercible a ((UnitToASI u) a)
   , ConvertorClass u 'ToDimSys 'False a)
-  =>  u a -> (UnitToSI u) a
-asSI fa = toSI (convertor :: ToSys u a ) (coerce fa :: a)
-{-# INLINE asSI #-}
-
--- fromSys' :: FromSys u a  -> a -> a
--- fromSys' = runConvertor
--- {-# INLINE fromSys' #-}
-
--- toSys' :: ToSys u a -> a -> a
--- toSys'  = runConvertor
--- {-# INLINE toSys' #-}
-
-
-
+  =>  u a -> (UnitToASI u) a
+asASI fa = toASI (convertor :: ToSys u a ) (coerce fa :: a)
+{-# INLINE asASI #-}
 
 
 fromTo :: forall u v a.
-  (Coercible a (v a), Coercible a (u a), SameDim SI u v)
+  (Coercible a (v a), Coercible a (u a), SameDim AngleSI u v)
   => ToSys u a -> FromSys v a  -> u a -> v a
 fromTo = convertNoCheck
 {-# INLINE fromTo #-}
 
 
-fromTo' ::  forall u v a. SameDim SI u v
+fromTo' ::  forall u v a. SameDim AngleSI u v
   => ToSys u a -> FromSys v a  -> a -> a
 fromTo' = convertNoCheck'
 {-# INLINE fromTo' #-}
 infix 2 `fromTo'`
 
 
-
-
-
 (~>) :: forall u v a.
-  (Coercible a (v a), Coercible a (u a), SameDim SI u v)
+  (Coercible a (v a), Coercible a (u a), SameDim AngleSI u v)
   => ToSys u a -> FromSys v a  -> u a -> v a
 (~>) = fromTo
 {-# INLINE (~>) #-}
 infix 2 ~>
 
-(~~>) :: forall u v a. SameDim SI u v
+(~~>) :: forall u v a. SameDim AngleSI u v
   => ToSys u a -> FromSys v a  -> a -> a
 (~~>) = fromTo'
 {-# INLINE (~~>) #-}
@@ -99,7 +84,7 @@ infix 2 ~~>
 -- @
 as :: forall u v a.
   (Coercible a (u a), Coercible a (v a)
-  , ConvertorClass u 'ToDimSys 'False a, SameDim SI u v)
+  , ConvertorClass u 'ToDimSys 'False a, SameDim AngleSI u v)
   => u a -> FromSys v a  -> v a
 as = asNoCheck
 {-# INLINE as #-}

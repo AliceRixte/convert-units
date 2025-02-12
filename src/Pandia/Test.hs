@@ -33,7 +33,7 @@ fromToSelf' = fromToSelf
 sameFunc :: (Ord a, Fractional a) => (a -> a) -> (a -> a) -> a ->  Bool
 sameFunc f g a = f a `approxEq` g a
 
-propConvSpec :: (Ord a, Fractional a, SameDim SI u v) =>
+propConvSpec :: (Ord a, Fractional a, SameDim AngleSI u v) =>
   Convertor u 'ToDimSys 'False a -> Convertor v 'FromDimSys 'False a
     -> (a -> a) -> (a -> a) -> a -> Bool
 propConvSpec f g specfg specgf a =
@@ -41,7 +41,7 @@ propConvSpec f g specfg specgf a =
   -- && sameFunc (fromToNoCheck' (coerceTo g) (coerceFrom f)) specgf a
 
 
-propConvSpec' :: SameDim SI u v =>
+propConvSpec' :: SameDim AngleSI u v =>
   Convertor u 'ToDimSys 'False Double -> Convertor v 'FromDimSys 'False Double
   -> (Double -> Double) -> (Double -> Double) -> Double -> Bool
 propConvSpec'  = propConvSpec

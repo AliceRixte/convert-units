@@ -6,7 +6,7 @@ module Pandia.Units
   , module Pandia.Units.Dimension
   , module Pandia.Units.System
   , module Pandia.Units.NonSI
-  , module Pandia.Units.Sugar
+  , module Pandia.Units.Sugar.AngleSI
   ) where
 
 import Data.Coerce (coerce)
@@ -17,6 +17,6 @@ import Pandia.Units.Prefix
 import Pandia.Units.Dimension
 import Pandia.Units.System
 import Pandia.Units.NonSI
-import Pandia.Units.Sugar
+import Pandia.Units.Sugar.AngleSI
 
 
