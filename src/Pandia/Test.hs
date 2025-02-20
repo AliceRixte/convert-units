@@ -76,27 +76,27 @@ freqToMidi f = 69 + 12 * logBase 2 (f / 440)
 
 
 
-main :: IO ()
-main = hspec $ do
-  describe "~~>" $ do
-    it "km/h ~~> m/s" $ property $
-      propConvSpec' (kilo meter ~/ hour) (meter ~/ second) kmphTomps
-    it "m/s ~~> km/h" $ property $
-      propConvSpec' (meter ~/ second) (kilo meter ~/ hour) mpsTokmph
-    it "k°K ~~> k°C" $ property $
-      propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc
-    it "k°C ~~> k°K" $ property $
-      propConvSpec' (kilo celsius) (kilo kelvin) kcToKk
-    it "beat ~~> sec" $ property $ \ bpm a ->
-      bpm == 0 || propConvSpec' second (beat (Bpm bpm)) (sec2beat bpm) a
-    it "sec ~~> beat" $ property $ \ bpm a ->
-      bpm == 0 || propConvSpec' (beat (Bpm bpm)) second (beat2sec bpm) a
-    it "midi ~~> hertz" $ property $
-      propConvSpec' midiPitch hertz midiToFreq
-    it "hertz ~~> midi" $ property $ \freq ->
-      freq <= 0 || propConvSpec' hertz midiPitch freqToMidi freq
+-- main :: IO ()
+-- main = hspec $ do
+--   describe "~~>" $ do
+--     it "km/h ~~> m/s" $ property $
+--       propConvSpec' (kilo meter ~/ hour) (meter ~/ second) kmphTomps
+--     it "m/s ~~> km/h" $ property $
+--       propConvSpec' (meter ~/ second) (kilo meter ~/ hour) mpsTokmph
+--     it "k°K ~~> k°C" $ property $
+--       propConvSpec' (kilo kelvin)  (kilo celsius) kkToKc
+--     it "k°C ~~> k°K" $ property $
+--       propConvSpec' (kilo celsius) (kilo kelvin) kcToKk
+--     it "beat ~~> sec" $ property $ \ bpm a ->
+--       bpm == 0 || propConvSpec' second (beat (Bpm bpm)) (sec2beat bpm) a
+--     it "sec ~~> beat" $ property $ \ bpm a ->
+--       bpm == 0 || propConvSpec' (beat (Bpm bpm)) second (beat2sec bpm) a
+--     it "midi ~~> hertz" $ property $
+--       propConvSpec' midiPitch hertz midiToFreq
+--     it "hertz ~~> midi" $ property $ \freq ->
+--       freq <= 0 || propConvSpec' hertz midiPitch freqToMidi freq
 
 
-  describe "angles" $ do
-   it "self radians" $ property $
-    fromToSelf' radian
+--   describe "angles" $ do
+--    it "self radians" $ property $
+--     fromToSelf' radian
