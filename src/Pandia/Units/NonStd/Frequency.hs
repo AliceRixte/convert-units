@@ -7,9 +7,16 @@ import Data.Proxy
 
 import Pandia.Units.Core
 
+import Data.Shiftable
+
 newtype Tet (n :: Nat) (s :: Rel) a = Tet a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
+
+instance Num a => Origin (Tet n s a) where
+  origin = 0
+  {-# INLINE origin #-}
+
 
 instance HasDim syst (Tet n s) where
   type DimOf syst (Tet n s) = DimT syst (Neg 1)
