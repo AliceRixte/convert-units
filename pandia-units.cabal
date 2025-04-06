@@ -26,7 +26,6 @@ source-repository head
 
 library
   exposed-modules:
-      Pandia.Test
       Pandia.Units
       Pandia.Units.AngleSI
       Pandia.Units.Core
