@@ -7,7 +7,10 @@ import Data.Proxy
 
 import Pandia.Units.Core
 
+import Data.Monoid
+
 import Data.Shiftable
+import Data.Act.Generated
 
 newtype Tet (n :: Nat) (s :: Rel) a = Tet a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
@@ -16,6 +19,10 @@ newtype Tet (n :: Nat) (s :: Rel) a = Tet a
 instance Num a => Origin (Tet n s a) where
   origin = 0
   {-# INLINE origin #-}
+
+instance Num a => RActCyclic (Tet n offs a) (Last (Tet n offs a)) where
+  rorigin' = 0
+  rshift = Last . Just
 
 
 instance HasDim syst (Tet n s) where
