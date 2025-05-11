@@ -30,6 +30,7 @@ resolver: lts-23.21
 #   - wai
 packages:
 - .
+- ../lr-acts
 - ../pandia-monoids
 
 # Dependency packages to be pulled from upstream that are not in the resolver.
