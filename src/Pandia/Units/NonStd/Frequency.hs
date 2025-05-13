@@ -10,7 +10,7 @@ import Pandia.Units.Core
 import Data.Monoid
 
 import Data.Shiftable
-import Data.Act.Generated
+import Data.Act
 
 newtype Tet (n :: Nat) (s :: Rel) a = Tet a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
