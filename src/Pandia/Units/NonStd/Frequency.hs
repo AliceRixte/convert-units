@@ -24,6 +24,10 @@ instance Num a => RActCyclic (Tet n offs a) (Last (Tet n offs a)) where
   rorigin' = 0
   rshift = Last . Just
 
+instance Num a => LActCyclic (Tet n offs a) (First (Tet n offs a)) where
+  lorigin' = 0
+  lshift = First . Just
+
 
 instance HasDim syst (Tet n s) where
   type DimOf syst (Tet n s) = DimT syst (Neg 1)
