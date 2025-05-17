@@ -35,6 +35,8 @@ library:
   ghc-options:
   - -O2 #TODO change
   default-extensions:
+    - StandaloneDeriving
+    - DerivingVia
     - GeneralizedNewtypeDeriving
     - TypeOperators
     - PolyKinds

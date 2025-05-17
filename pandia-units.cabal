@@ -46,6 +46,8 @@ library
   hs-source-dirs:
       src
   default-extensions:
+      StandaloneDeriving
+      DerivingVia
       GeneralizedNewtypeDeriving
       TypeOperators
       PolyKinds

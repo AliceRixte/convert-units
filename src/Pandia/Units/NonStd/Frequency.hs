@@ -16,6 +16,10 @@ newtype Tet (n :: Nat) (s :: Rel) a = Tet a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
+deriving via (ActSelf' (Product a)) instance Num a =>
+  LAct (Tet b offs a) (Product a)
+
+
 instance Num a => Origin (Tet n s a) where
   origin = 0
   {-# INLINE origin #-}
