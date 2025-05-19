@@ -20,10 +20,6 @@ deriving via (ActSelf' (Product a)) instance Num a =>
   LAct (Tet b offs a) (Product a)
 
 
-instance Num a => Origin (Tet n s a) where
-  origin = 0
-  {-# INLINE origin #-}
-
 instance Num a => RActCyclic (Tet n offs a) (Last (Tet n offs a)) where
   rorigin' = 0
   rshift = Last . Just
