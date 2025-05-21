@@ -7,26 +7,14 @@ import Data.Proxy
 
 import Pandia.Units.Core
 
-import Data.Monoid
-
-import Data.Shiftable
-import Data.Act
+import Data.Default
 
 newtype Tet (n :: Nat) (s :: Rel) a = Tet a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
-deriving via (ActSelf' (Product a)) instance Num a =>
-  LAct (Tet b offs a) (Product a)
-
-
-instance Num a => RActCyclic (Tet n offs a) (Last (Tet n offs a)) where
-  rorigin' = 0
-  rshift = Last . Just
-
-instance Num a => LActCyclic (Tet n offs a) (First (Tet n offs a)) where
-  lorigin' = 0
-  lshift = First . Just
+instance Num a => Default (Tet n offs a) where
+  def = 0
 
 
 instance HasDim syst (Tet n s) where
