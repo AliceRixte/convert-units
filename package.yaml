@@ -26,6 +26,7 @@ dependencies:
 - QuickCheck
 - data-default
 - convertible
+- newtype
 
 ghc-options:
 - -Wall

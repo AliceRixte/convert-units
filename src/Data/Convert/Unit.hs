@@ -7,10 +7,107 @@ module Data.Convert.Unit
 import Data.Kind
 import Data.Coerce
 import Data.Proxy
+import Data.Type.Bool
+import Data.Type.Ord
+import GHC.TypeLits
+import GHC.TypeError
+
+import Control.Newtype
 
 import Pandia.Units.Core.Rel
 
 import Data.Convert.FromTo
+
+
+
+
+type family Dimension (u :: Unit) :: Symbol
+
+type instance Dimension (u -^- n) = Dimension u
+
+type family ApplyStandard u :: Unit where
+  ApplyStandard ((u -*- v) a) = ApplyStandard (u a) -*- ApplyStandard (v a)
+  ApplyStandard ((u -^- n) a) = ApplyStandard (u a) -^- n
+  ApplyStandard (u a) = GetUnitCons (Standard (u a))
+  ApplyStandard u = TypeError (
+    Text "The type family ApplyStandard should be called with a unit 'u a'"
+    :$$: Text "but '"
+    :<>: ShowType u
+    :<>: Text "' is not of the form 'u a'."
+    )
+
+type family GetUnitCons u :: Unit where
+  GetUnitCons (u a) = u
+  GetUnitCons u = TypeError (
+    Text "The type family GetUnitCons should be called with a unit 'u a'"
+    :$$: Text "but '"
+    :<>: ShowType u
+    :<>: Text "' is not of the form 'u a'."
+    )
+
+
+--------------------------------------------------------------------------------
+
+type family StandardizeUnit u where
+  StandardizeUnit (u -*- NoUnit) = StandardizeUnit u
+  StandardizeUnit (NoUnit -*- v) = StandardizeUnit v
+  StandardizeUnit (u -*- v) = Insert (StandardizeUnit u) (StandardizeUnit v)
+  StandardizeUnit (NoUnit -^- n) = NoUnit
+  StandardizeUnit ((u -*- v) -^- n) = StandardizeUnit (u -^- n -*- v -^- n)
+  StandardizeUnit ((u -^- n) -^- m) = StandardizeUnit (u -^- MulRel n m)
+  StandardizeUnit (u -^- n) = NormalExp (u -^- n)
+  StandardizeUnit u = u
+
+type family Insert u v where
+  Insert NoUnit v = v
+  Insert u NoUnit = u
+  Insert u (v -*- w) =
+    InsertCmp (Compare (Dimension u) (Dimension v)) u (v -*- w)
+  Insert u v =
+    CombineCmp (Compare (Dimension u) (Dimension v)) u v
+
+type family InsertCmp cmp u v where
+  InsertCmp 'LT u (v -*- w) = u -*- v -*- w
+  InsertCmp 'GT u (v -*- w) = v -*- Insert u w
+  InsertCmp 'EQ u (v -*- w) = SameDim u v -*- w
+  InsertCmp c u v = TypeError (
+        Text  "InsertCmp must be called with arguments of"
+   :<>: Text "the form InsertCmp cmp u (v -*- w)"
+   :$$: Text "  instead, it was called with InsertCmp "
+   :<>: ShowType c
+   :<>: Text " ("
+   :<>: ShowType u
+   :<>: Text ") ("
+   :<>: ShowType v
+   :<>: Text ")"
+   )
+
+type family CombineCmp cmp u v where
+  CombineCmp 'LT u v = u -*- v
+  CombineCmp 'GT u v = v -*- u
+  CombineCmp 'EQ u v = SameDim u v
+
+type family SameDim u v where
+  SameDim (u -^- n) (u -^- m) = NormalExp (u -^- SumRel n m)
+  SameDim u (u -^- m) = NormalExp (u -^- SumRel (Pos 1) m)
+  SameDim (u -^- n) u = NormalExp (u -^- SumRel n (Pos 1))
+  SameDim u u = NormalExp (u -^- Pos 2)
+  SameDim u v = TypeError (
+         Text "Two standard units must have different dimensions"
+    :$$: Text "  but here, both "
+    :<>: ShowType u
+    :<>: Text " and "
+    :<>: ShowType v
+    :<>: Text " have the same dimension"
+    :<>: Text (Dimension u)
+    :<>: Text "."
+    )
+
+type family NormalExp u where
+  NormalExp (u -^- Pos 1) = u
+  NormalExp (u -^- Pos 0) = NoUnit
+  NormalExp (u -^- Neg 0) = NoUnit
+  NormalExp u = u
 
 ----------------------------- Unit construction ------------------------------
 
@@ -29,21 +126,23 @@ newtype NoUnit a = NoUnit a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
--- type family Insert u v = Compare u v
-
--- type instance Standard ((u -*- v) a) =
---   Insert (u a) (Standard (v a))
+type instance Dimension NoUnit = ""
+type instance Standard (NoUnit a) = NoUnit a
 
 -- | Multiplication of two units.
 --
 -- @
--- type MyForceMoment a = (Newton -*- Meter) a
+-- type MyForceMoment = Newton -*- Meter
 -- @
 --
 newtype ((u :: Unit) -*- (v :: Unit)) a = MulUnit a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
-infixl 7 -*-
+infixr 7 -*-
+
+type instance Standard ((u -*- v) a) =
+  StandardizeUnit (ApplyStandard ((u -*- v) a)) a
+
 
 -- | Multiply two quantities
 --
@@ -51,6 +150,12 @@ infixl 7 -*-
  => u a -> v a -> (u -*- v) a
 u -*- v = coerce (coerce u * coerce v :: a)
 {-# INLINE (-*-) #-}
+
+type family InverseUnit u where
+  InverseUnit (u -*- v) = InverseUnit u -*- InverseUnit v
+  InverseUnit (u -^- n) = NormalExp (u -^- NegateRel n)
+  InverseUnit NoUnit = NoUnit
+  InverseUnit u = u -^- Neg 1
 
 
 -- | Division of two units.
@@ -60,11 +165,11 @@ u -*- v = coerce (coerce u * coerce v :: a)
 -- type MyMolarEntropy a = (Joule -/- Mole -*- Kelvin) a
 -- @
 --
--- Notice that division has priority over division.
+-- Notice that multiplication has priority over division.
 --
-newtype ((u :: Unit) -/- (v :: Unit)) a = PerUnit a
-  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+type family u -/- v where
+  u -/- v = u -*- InverseUnit v
+
 infix 6 -/-
 
 -- | Divide two quantities
@@ -78,11 +183,8 @@ u -/- v = coerce (coerce u / coerce v :: a)
 
 -- | Unit to the power of a positive natural number
 --
--- Negative exponents are not supported. Use division and @'NoUnit'@ if you need
--- them.
---
 -- @
--- type MyAcceleration a = (Meter -/- Second -^- 2) a
+-- type MyAcceleration a = (Meter -*- Second -^- Neg 2) a
 -- @
 --
 newtype ((u :: Unit) -^- (n :: Rel)) a = PowUnit a
@@ -96,32 +198,3 @@ infix 8 -^-
   => u a -> Proxy n -> (u -^- n) a
 u -^- _ = coerce u
 {-# INLINE (-^-) #-}
-
-
-
-type family ElimDiv (u :: Unit) :: Unit where
-    ElimDiv (u -*- v) = ElimDiv u -*- ElimDiv v
-    ElimDiv (u -^- n) = ElimDiv u -^- n
-    ElimDiv (u -/- u) = NoUnit
-    ElimDiv (u -/- v) = ElimDiv u -*- ElimDiv v -^- Neg 1
-    ElimDiv u = u
-
-type family ElimPow (u :: Unit) :: Unit where
-  ElimPow (u -/- v) = ElimPow u -/- ElimPow v
-  ElimPow (u -*- v) = ElimPow u -*- ElimPow v
-  ElimPow (u -^- Pos 0) = NoUnit
-  ElimPow (u -^- Neg 0) = NoUnit
-  ElimPow (u -^- Pos 1) = ElimPow u
-  ElimPow ((u -^- n) -^- m) = ElimPow (u -^- (n `MulRel` m))
-  ElimPow ((u -*- v) -^- n) = ElimPow (u -^- n -*- v -^- n)
-  ElimPow u = u
-
-type family ElimNoUnit (u :: Unit) :: Unit where
-  ElimNoUnit (NoUnit -*- u) = ElimNoUnit u
-  ElimNoUnit (u -*- NoUnit) = ElimNoUnit u
-  ElimNoUnit (u -*- v) = ElimNoUnit u -*- ElimNoUnit v
-  ElimNoUnit u = u
-
-type family SimplifyUnit (u :: Unit) :: Unit where
-  SimplifyUnit u =  ElimNoUnit (ElimNoUnit (ElimPow (ElimDiv u)))
-  -- we need to apply ElimNoUnit twice because there can be one trailing at the end
