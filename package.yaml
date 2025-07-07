@@ -25,6 +25,7 @@ dependencies:
 - hspec
 - QuickCheck
 - data-default
+- convertible
 
 ghc-options:
 - -Wall

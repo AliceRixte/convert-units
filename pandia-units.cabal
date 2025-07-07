@@ -26,6 +26,9 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Convert.FromTo
+      Data.Convert.SI
+      Data.Convert.Unit
       Pandia.Units
       Pandia.Units.AngleSI
       Pandia.Units.Core
@@ -62,6 +65,7 @@ library
   build-depends:
       QuickCheck
     , base >=4.18 && <5
+    , convertible
     , data-default
     , hspec
   default-language: Haskell2010
@@ -77,6 +81,7 @@ test-suite pandia-units-test
   build-depends:
       QuickCheck >=2.14
     , base >=4.18 && <5
+    , convertible
     , data-default
     , hspec >=2.11
     , pandia-units
@@ -93,6 +98,7 @@ benchmark pandia-units-bench
   build-depends:
       QuickCheck
     , base >=4.18 && <5
+    , convertible
     , criterion >=1.6
     , data-default
     , hspec
