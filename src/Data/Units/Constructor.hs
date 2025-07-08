@@ -103,6 +103,11 @@ infix 8 -^-
 
 type instance DimensionId (u -^- n) = DimensionId u
 
+type a -^+ b = a -^- Pos b
+infix 8 -^+
+
+type a -^~ b = a -^- Neg b
+infix 8 -^~
 
 -- | Raise a quantity to a power
 --
@@ -159,7 +164,7 @@ type family Insert u v where
 type family InsertCmp cmp u v where
   InsertCmp 'LT u (v -*- w) = u -*- v -*- w
   InsertCmp 'GT u (v -*- w) = v -*- Insert u w
-  InsertCmp 'EQ u (v -*- w) = SameDim u v -*- w
+  InsertCmp 'EQ u (v -*- w) = SameDimPow u v -*- w
   InsertCmp c u v = TypeError (
         Text  "InsertCmp must be called with arguments of"
    :<>: Text "the form InsertCmp cmp u (v -*- w)"
@@ -175,14 +180,14 @@ type family InsertCmp cmp u v where
 type family CombineCmp cmp u v where
   CombineCmp 'LT u v = u -*- v
   CombineCmp 'GT u v = v -*- u
-  CombineCmp 'EQ u v = SameDim u v
+  CombineCmp 'EQ u v = SameDimPow u v
 
-type family SameDim u v where
-  SameDim (u -^- n) (u -^- m) = NormalExp (u -^- Add n m)
-  SameDim u (u -^- m) = NormalExp (u -^- Add (Pos 1) m)
-  SameDim (u -^- n) u = NormalExp (u -^- Add n (Pos 1))
-  SameDim u u = NormalExp (u -^- Pos 2)
-  SameDim u v = TypeError (
+type family SameDimPow u v where
+  SameDimPow (u -^- n) (u -^- m) = NormalExp (u -^- Add n m)
+  SameDimPow u (u -^- m) = NormalExp (u -^- Add (Pos 1) m)
+  SameDimPow (u -^- n) u = NormalExp (u -^- Add n (Pos 1))
+  SameDimPow u u = NormalExp (u -^- Pos 2)
+  SameDimPow u v = TypeError (
          Text "Two standard units must have different dimensions"
     :$$: Text "  but here, both "
     :<>: ShowType u
@@ -195,8 +200,7 @@ type family SameDim u v where
 
 type family NormalExp u where
   NormalExp (u -^- Pos 1) = u
-  NormalExp (u -^- Pos 0) = NoUnit
-  NormalExp (u -^- Neg 0) = NoUnit
+  NormalExp (u -^- Zero) = NoUnit
   NormalExp u = u
 
 

@@ -20,8 +20,11 @@ data Signed a = Pos a | Neg a | Zero
 -- ZZ represents the mathematical font for the set of integers
 type ZZ = Signed Nat
 
+
+
 type instance Compare (a :: Signed k) (b :: Signed k) = CmpSigned a b
 
+-- | Compare Signed kinds when those kinds are comparable.
 type family CmpSigned a b where
   CmpSigned (Neg a) (Neg b) = FlipOrdering (Compare a b)
   CmpSigned (Neg a) b = 'LT
@@ -30,6 +33,13 @@ type family CmpSigned a b where
   CmpSigned Zero (Pos a) = 'GT
   CmpSigned (Pos a) (Pos b) = Compare a b
   CmpSigned (Pos a) b = 'GT
+
+-- | Always use @Zero@ instead of @Pos 0@ or @Neg 0@.
+type family NormalizeInt (a :: ZZ) :: ZZ where
+  NormalizeInt (Pos 0) = Zero
+  NormalizeInt (Neg 0) = Zero
+  NormalizeInt n = n
+
 
 -- | Reverse the order of an Ordering
 --
