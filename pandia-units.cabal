@@ -27,10 +27,12 @@ source-repository head
 library
   exposed-modules:
       Data.Convert.FromTo
-      Data.Convert.Prefix
-      Data.Convert.SI
-      Data.Convert.Unit
       Data.Type.Int
+      Data.Units.Constructor
+      Data.Units.Convert
+      Data.Units.Dimension
+      Data.Units.Prefix
+      Data.Units.SI
       Pandia.Units
       Pandia.Units.AngleSI
       Pandia.Units.Core

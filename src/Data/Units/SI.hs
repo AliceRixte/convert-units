@@ -1,11 +1,11 @@
-module Data.Convert.SI
-  ( module Data.Convert.SI
+module Data.Units.SI
+  ( module Data.Units.SI
   ) where
 
 import Control.Newtype
 
 import Data.Convert.FromTo
-import Data.Convert.Unit
+import Data.Units.Constructor
 
 
 -- | A quantity in meters

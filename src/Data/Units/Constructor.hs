@@ -1,18 +1,15 @@
 {-# LANGUAGE DeriveFunctor #-}
 
-module Data.Convert.Unit
-  ( module Data.Convert.Unit
+module Data.Units.Constructor
+  ( module Data.Units.Constructor
   ) where
 
 import Data.Kind
 import Data.Coerce
 import Data.Proxy
-import Data.Type.Bool
 import Data.Type.Ord
 import GHC.TypeLits
-import GHC.TypeError
 
-import Control.Newtype
 
 import Pandia.Units.Core.Rel
 

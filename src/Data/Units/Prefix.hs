@@ -1,9 +1,9 @@
 {-# LANGUAGE TypeApplications #-}
 
-module Data.Convert.Prefix where
+module Data.Units.Prefix where
 
 import Data.Convert.FromTo
-import Data.Convert.Unit
+import Data.Units.Constructor
 
 newtype Kilo (u :: Unit) a = Kilo (u a)
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
