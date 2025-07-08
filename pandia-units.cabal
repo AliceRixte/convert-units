@@ -30,7 +30,6 @@ library
       Data.Type.Int
       Data.Units.Constructor
       Data.Units.Convert
-      Data.Units.Dimension
       Data.Units.Prefix
       Data.Units.SI
       Pandia.Units

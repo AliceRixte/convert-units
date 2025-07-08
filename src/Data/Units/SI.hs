@@ -17,7 +17,7 @@ newtype Metre a = Metre a
 
 
 type instance Standard (Metre a) = Metre a
-type instance Dimension Metre = "1"
+type instance DimensionId Metre = "1"
 
 instance Num a => Dimensional (Metre a) a where
   factor = 1
@@ -32,5 +32,5 @@ instance Newtype (Sec a) a
 type instance Standard (Sec a) = Sec a
 
 -- instance Fractional a => Dimensional (Sec a) a where
-type instance Dimension Sec = "2"
+type instance DimensionId Sec = "2"
   -- factor = 1
