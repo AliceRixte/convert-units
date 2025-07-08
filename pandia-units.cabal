@@ -30,6 +30,7 @@ library
       Data.Convert.Prefix
       Data.Convert.SI
       Data.Convert.Unit
+      Data.Type.Int
       Pandia.Units
       Pandia.Units.AngleSI
       Pandia.Units.Core

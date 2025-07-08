@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+
 module Data.Convert.Prefix where
 
 import Data.Convert.FromTo
@@ -12,4 +14,3 @@ type instance Standard (Kilo u a) = u a
 instance (Num a, Dimensional (u a) a)
   => Dimensional (Kilo u a) a where
   factor = 1000
-

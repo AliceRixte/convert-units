@@ -8,8 +8,6 @@ module Data.Convert.FromTo
   ) where
 
 import Data.Coerce
-import Control.Newtype
-import GHC.TypeLits
 
 
 class (Coercible u a, Coercible (Standard u) a) =>
@@ -22,23 +20,27 @@ type family Standard a
 class From u where
   from :: u -> Standard u
 
-instance {-# OVERLAPPABLE #-} (Fractional a, Dimensional u a)
+instance {-# OVERLAPPABLE #-} (Num a, Dimensional u a)
   => From u where
-  from u = coerce $ coerce u / factor @u
+  from u = coerce $ coerce u * factor @u
 
 class To a where
   to :: Standard a -> a
 
-instance {-# OVERLAPPABLE #-} (Num a, Dimensional u a)
+instance {-# OVERLAPPABLE #-} (Fractional a, Dimensional u a)
   => To u where
-  to u = coerce $ coerce u * factor @u
+  to u = coerce $ coerce u / factor @u
 
-class (Standard a ~ Standard b) => FromTo a b where
-  fromTo :: a -> b
+convert :: (Standard a ~ Standard b, From a, To b) => a -> b
+convert = to . from
 
-instance {-# OVERLAPPABLE #-} (Standard a ~ Standard b, From a, To b)
-  => FromTo a b where
-  fromTo = to . from
-  {-# INLINE fromTo #-}
+convert' :: forall u v a.
+  ( Dimensional (u a) a, Dimensional (v a) a
+  , Standard (u a) ~ Standard (v a)
+  , Fractional a
+  )
+  => u a -> v a
+convert' u = coerce $ (coerce u :: a) * (factor @(u a) / factor @(v a))
+
 
 

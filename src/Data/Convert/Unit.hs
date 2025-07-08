@@ -18,9 +18,6 @@ import Pandia.Units.Core.Rel
 
 import Data.Convert.FromTo
 
-
-
-
 type family Dimension (u :: Unit) :: Symbol
 
 type instance Dimension (u -^- n) = Dimension u
