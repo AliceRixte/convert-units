@@ -10,8 +10,6 @@ import Data.Coerce
 import Data.Kind
 import Data.Proxy
 import Data.Type.Ord
-import Data.Type.Bool
-import Data.Type.Equality
 import GHC.TypeLits
 
 import Data.Type.Int
@@ -56,14 +54,19 @@ showsUnit = showsUnitPrec @u 0
 newtype StdUnit (u :: StandardUnit) a = StdUnit a
 
 instance (Show a, ShowUnit u) => Show (StdUnit u a) where
-  showsPrec d (StdUnit a) = showParen (d > 9) $
-    shows a . showString " ~~= \"" . showString (showUnit @u) . showString "\""
+  showsPrec d (StdUnit a) = showParen (d > 10) $
+    showString "checkUnit " . shows a . showString " \""
+    . showString (showUnit @u) . showString "\""
 
 -- | This is just the constant function. It allows to pretty print the unit using Show
-(~~=) :: a -> b -> a
-a ~~= b = a
-
-infix 9 ~~=
+checkUnit :: forall u a. ShowUnit u => u a -> String -> u a
+checkUnit u s =
+  if s == showUnit @u then
+    u
+  else
+    error $ "Current unit \"" ++ showUnit @u
+          ++  "\" does not match expected unit \""
+          ++ s ++ "\""
 
 instance IsUnit (StdUnit u) where
   type StdUnitOf (StdUnit u) = u
@@ -249,13 +252,4 @@ type family u -/- v where
   u -/- v = u -*- InverseUnit v
 
 infix 6 -/-
-
-
-
-
-
-
-
-
-
 
