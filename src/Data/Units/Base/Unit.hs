@@ -2,6 +2,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE QuantifiedConstraints #-}
 
 module Data.Units.Base.Unit where
 
@@ -26,8 +27,15 @@ type StandardUnit = Type -> Type
 
 type family DimOf (u :: StandardUnit) :: Dim
 
-class IsUnit (u :: Unit) where
+class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where
   type StdUnitOf u :: StandardUnit
+
+forgetUnit :: IsUnit u => u a -> a
+forgetUnit = coerce
+
+toUnit :: forall u a. IsUnit u => a -> u a
+toUnit = coerce
+
 
 
 class ShowUnit (u :: Unit) where
@@ -102,7 +110,7 @@ instance (ShowUnit u, ShowUnit v) => ShowUnit (u -*- v) where
 
 
 instance (IsUnit u, IsUnit v) => IsUnit (u -*- v) where
-  type StdUnitOf (u -*- v) = NormalizeUnit (u -*- v)
+  type StdUnitOf (u -*- v) = StandardizeUnit (u -*- v)
 
 
 
@@ -125,7 +133,7 @@ type instance DimOf (u -^- n) = DimOf u -^- n
 type instance DimId (d -^- n) = DimId d
 
 instance IsUnit u => IsUnit (u -^- n) where
-  type StdUnitOf (u -^- n) = NormalizeUnit (u -^- n)
+  type StdUnitOf (u -^- n) = StandardizeUnit (u -^- n)
 
 
 instance (ShowUnit u, KnownInt n) => ShowUnit (u -^- n) where
@@ -154,17 +162,17 @@ toSuperscript a = a
 --------------------------------------------------------------------------------
 
 
-type family NormalizeUnit u where
-  NormalizeUnit (u -*- NoUnit) = NormalizeUnit u
-  NormalizeUnit (NoUnit -*- v) = NormalizeUnit v
-  NormalizeUnit ((u -*- v) -*- w) =
-    Insert (NormalizeUnit u) (NormalizeUnit (v -*- w))
-  NormalizeUnit (u -*- v) = Insert (NormalizeUnit u) (NormalizeUnit v)
-  NormalizeUnit (NoUnit -^- n) = NoUnit
-  NormalizeUnit ((u -*- v) -^- n) = NormalizeUnit (u -^- n -*- v -^- n)
-  NormalizeUnit ((u -^- n) -^- m) = NormalizeUnit (u -^- Mul n m)
-  NormalizeUnit (u -^- n) = NormalizeExp (u -^- n)
-  NormalizeUnit u = u
+type family StandardizeUnit u where
+  StandardizeUnit (u -*- NoUnit) = StandardizeUnit u
+  StandardizeUnit (NoUnit -*- v) = StandardizeUnit v
+  StandardizeUnit ((u -*- v) -*- w) =
+    Insert (StandardizeUnit u) (StandardizeUnit (v -*- w))
+  StandardizeUnit (u -*- v) = Insert (StandardizeUnit u) (StandardizeUnit v)
+  StandardizeUnit (NoUnit -^- n) = NoUnit
+  StandardizeUnit ((u -*- v) -^- n) = StandardizeUnit (u -^- n -*- v -^- n)
+  StandardizeUnit ((u -^- n) -^- m) = StandardizeUnit (u -^- Mul n m)
+  StandardizeUnit (u -^- n) = NormalizeExp (u -^- n)
+  StandardizeUnit u = StdUnitOf u
 
 type family Insert u v where
   Insert NoUnit v = v

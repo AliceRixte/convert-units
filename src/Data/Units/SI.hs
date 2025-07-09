@@ -22,8 +22,8 @@ newtype Metre a = Metre a
           , Bounded, Enum, Semigroup, Monoid)
   deriving Show via StdUnit Metre a
 
-instance Fractional a => IsQuantity (Metre a) a where
-  convFactor = 1
+instance Fractional a => ConvFactor Metre a where
+  factorFrom = 1
 
 instance IsUnit Metre where
   type StdUnitOf Metre = Metre
@@ -48,8 +48,8 @@ newtype Sec a = Sec a
           , Bounded, Enum, Semigroup, Monoid)
 
 
-instance Fractional a => IsQuantity (Sec a) a where
-  convFactor = 1
+instance Fractional a => ConvFactor Sec a where
+  factorFrom = 1
 
 instance ShowUnit Sec where
   showUnit = "s"
