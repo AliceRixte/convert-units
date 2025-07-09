@@ -1,5 +1,7 @@
 
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE TypeOperators #-}
+
 
 
 module Data.Units.Base.Constructor

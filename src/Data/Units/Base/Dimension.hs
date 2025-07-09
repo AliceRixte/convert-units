@@ -9,7 +9,7 @@ import GHC.TypeLits
 type Dim = Type -> Type
 
 type family DimId (d:: Dim) :: Nat
-type family DimName (d :: Dim) :: Symbol
+type family ShowDim (d :: Dim) :: ErrorMessage
 
 
 -- | The dimension of non dimensional quantities
@@ -20,4 +20,4 @@ newtype NoDim a = NoDim a
 
 
 type instance DimId NoDim = 0
-type instance DimName NoDim = "nodim"
+type instance ShowDim NoDim = Text "NoDim"

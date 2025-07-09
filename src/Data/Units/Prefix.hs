@@ -9,29 +9,25 @@ import Data.Convert.FromTo
 import Data.Units.Base
 
 
-type Prefix = Unit -> Type -> Type
-
-class ShowPrefix (p :: Prefix) where
-  showPrefix :: String
-
-newtype MetaPrefix (p :: Prefix) a = MetaPrefix a
-
--- instance (ShowUnit u, ShowPrefix p) => IsUnit (MetaPrefix (p u)) where
---   type StdUnitOf (MetaPrefix (p u)) = u
-
-
-
-instance ShowUnit u => IsUnit (MetaPrefix (p u)) where
-  type StdUnitOf (MetaPrefix (p u)) = u
 
 newtype Kilo (u :: Unit) a = Kilo (u a)
-  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Eq, Ord, Num, Fractional, Floating, Real
             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
-
 
 instance IsUnit u => IsUnit (Kilo u) where
   type StdUnitOf (Kilo u) = u
 
+showsPrecPrefix :: forall u. ShowUnit u => String -> Int -> ShowS
+showsPrecPrefix s d = showParen (d > 10) $
+    showString s . showsUnit @u
+
+instance (ShowUnit u, IsUnit u) => ShowUnit (Kilo u) where
+  type ShowUnitType (Kilo u) = Text "k" :<>: ShowUnitType u
+  showsPrecUnit = showsPrecPrefix @u "k"
+
+instance (ShowUnit u, Show a) =>  Show (Kilo u a) where
+  showsPrec = showsPrecQuantity @(Kilo u)
+
 instance (Num a, ConvFactor u a)
   => ConvFactor (Kilo u) a where
-  factorFrom = 1000
+  factorFrom = 1000 * factorFrom @u

@@ -12,7 +12,7 @@ newtype Length a = Length a
           , Bounded, Enum, Semigroup, Monoid)
 
 type instance DimId Length = 300
-type instance DimName Length = "L"
+type instance ShowDim Length = Text "L"
 
 -- | A quantity in meters
 --
@@ -29,6 +29,7 @@ instance IsUnit Metre where
   type StdUnitOf Metre = Metre
 
 instance ShowUnit Metre where
+  type ShowUnitType Metre = Text "m"
   showUnit = "m"
 
 
@@ -40,7 +41,7 @@ newtype Time a = Time a
           , Bounded, Enum, Semigroup, Monoid)
 
 type instance DimId Time = 400
-type instance DimName Time = "T"
+type instance ShowDim Time = Text "T"
 
 -- This is the base unit of the length dimension in the SI system.
 newtype Sec a = Sec a
@@ -52,6 +53,7 @@ instance Fractional a => ConvFactor Sec a where
   factorFrom = 1
 
 instance ShowUnit Sec where
+  type ShowUnitType Sec = Text "s"
   showUnit = "s"
 
 instance IsUnit Sec where

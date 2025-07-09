@@ -45,23 +45,22 @@ instance (ConvFactor u a, KnownInt n)
 
 type SameStdUnit u v = (StdUnitOf u ~ StdUnitOf v, DimEq u v)
 
-
 type family DimEq (u :: Unit) (v :: Unit) :: Constraint where
   DimEq u v = If (StdUnitOf u == StdUnitOf v) (() :: Constraint)
     (TypeError (
-        Text "Cannot convert unit "
-        :<>: ShowType u
-        :<>: Text " to unit "
-        :<>: ShowType v
-        :<>: Text " because their dimensions do not match."
-        :$$: Text "Dimension of "
-        :<>: ShowType u
-        :<>: Text " is: "
-        :<>: Text (DimName (DimOf (StdUnitOf u)))
-        :$$: Text "Dimension of "
-        :<>: ShowType v
-        :<>: Text " is: "
-        :<>: Text (DimName (DimOf (StdUnitOf v)))
+        Text "Cannot convert unit ‘"
+        :<>: ShowUnitType u
+        :<>: Text "’ to unit ‘"
+        :<>: ShowUnitType v
+        :<>: Text "’ because their dimensions do not match."
+        :$$: Text "Dimension of ‘"
+        :<>: ShowUnitType u
+        :<>: Text "’ is: "
+        :<>: ShowDim (DimOf (StdUnitOf u))
+        :$$: Text "Dimension of ‘"
+        :<>: ShowUnitType v
+        :<>: Text "’ is: "
+        :<>: ShowDim (DimOf (StdUnitOf v))
     ))
 
 

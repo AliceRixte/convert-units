@@ -4,12 +4,18 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 
-module Data.Units.Base.Unit where
+module Data.Units.Base.Unit
+  ( module Data.Units.Base.Unit
+  , module GHC.TypeError
+  )
+  where
 
 import Data.Coerce
 import Data.Kind
 import Data.Proxy
 import Data.Type.Ord
+import Data.Type.Bool
+import GHC.TypeError
 import GHC.TypeLits
 
 import Data.Type.Int
@@ -35,28 +41,44 @@ toUnit :: forall u a. IsUnit u => a -> u a
 toUnit = coerce
 
 
+class IsUnit u => ShowUnit (u :: Unit) where
+  type ShowUnitType u :: ErrorMessage
 
-class ShowUnit (u :: Unit) where
-  showsUnitPrec ::  Int -> ShowS
-  showsUnitPrec _ = (showUnit @u ++)
+  showsPrecUnit :: Int -> ShowS
+  showsPrecUnit _ = (showUnit @u ++)
 
   showUnit :: String
   showUnit = showsUnit @u ""
 
 
 showsUnit :: forall u. ShowUnit u => ShowS
-showsUnit = showsUnitPrec @u 0
+showsUnit = showsPrecUnit @u 0
+
+showsPrecQuantity :: forall u a. (ShowUnit u, Show a) => Int -> u a -> ShowS
+showsPrecQuantity d u = showParen (d > 10) $
+    showString "checkUnit " . shows (coerce u :: a) . showString " \""
+      . showString (showUnit @u) . showString "\""
+
+showsQuantity :: (ShowUnit u, Show a) => u a -> ShowS
+showsQuantity  = showsPrecQuantity 0
+
+showQuantity :: (ShowUnit u, Show a) => u a -> String
+showQuantity u = showsQuantity u ""
 
 
 
 --------------------------------------------------------------------------------
 
+
+
 newtype StdUnit (u :: StandardUnit) a = StdUnit a
 
+instance ShowUnit u => ShowUnit (StdUnit u) where
+  type ShowUnitType (StdUnit u) = ShowUnitType u
+  showsPrecUnit = showsPrecUnit @u
+
 instance (Show a, ShowUnit u) => Show (StdUnit u a) where
-  showsPrec d (StdUnit a) = showParen (d > 10) $
-    showString "checkUnit " . shows a . showString " \""
-    . showString (showUnit @u) . showString "\""
+  showsPrec = showsPrecQuantity
 
 -- | This is just the constant function. It allows to pretty print the unit using Show
 checkUnit :: forall u a. ShowUnit u => u a -> String -> u a
@@ -106,10 +128,15 @@ newtype ((u :: Unit) -*- (v :: Unit)) a = MulUnit a
 infixr 7 -*-
 
 type instance DimOf (u -*- v) = DimOf u -*- DimOf v
+type instance ShowDim (u -*- v) = ShowDim u :<>: Text "." :<>: ShowDim v
 
 instance (ShowUnit u, ShowUnit v) => ShowUnit (u -*- v) where
-  showsUnitPrec d = showParen (d > 7) $
-    showsUnitPrec @u 7 . showString "." .  showsUnitPrec @v 7
+  type ShowUnitType (u -*- v) =
+         Text "(" :<>: ShowUnitType u
+    :<>: Text "." :<>: ShowUnitType v
+    :<>: Text ")"
+  showsPrecUnit d = showParen (d > 7) $
+    showsPrecUnit @u 7 . showString "." .  showsPrecUnit @v 7
 
 
 instance (IsUnit u, IsUnit v) => IsUnit (u -*- v) where
@@ -134,14 +161,37 @@ infix 8 -^-
 
 type instance DimOf (u -^- n) = DimOf u -^- n
 type instance DimId (d -^- n) = DimId d
+type instance ShowDim (d -^- n) = ShowDim d :<>: ShowIntExponent n
+
+type family ShowIntExponent (n :: ZZ) :: ErrorMessage where
+  ShowIntExponent (Pos n) =
+      If (n <=? 9) (ShowDigitExponent n) (Text "^" :<>: ShowType n)
+  ShowIntExponent Zero = Text "⁰"
+  ShowIntExponent (Neg n) =
+      If (n <=? 9) (Text "⁻" :<>: ShowDigitExponent n)
+                   (Text "^-" :<>: ShowType n)
+
+type family ShowDigitExponent (n :: Nat) :: ErrorMessage where
+  ShowDigitExponent 0 = Text "⁰"
+  ShowDigitExponent 1 = Text "¹"
+  ShowDigitExponent 2 = Text "²"
+  ShowDigitExponent 3 = Text "³"
+  ShowDigitExponent 4 = Text "⁴"
+  ShowDigitExponent 5 = Text "⁵"
+  ShowDigitExponent 6 = Text "⁶"
+  ShowDigitExponent 7 = Text "⁷"
+  ShowDigitExponent 8 = Text "⁸"
+  ShowDigitExponent 9 = Text "⁹"
 
 instance IsUnit u => IsUnit (u -^- n) where
   type StdUnitOf (u -^- n) = StandardizeUnit (u -^- n)
 
 
 instance (ShowUnit u, KnownInt n) => ShowUnit (u -^- n) where
-  showsUnitPrec d = showParen (d >= 8) $
-    showsUnitPrec @u 8 .  showString (toSuperscript <$> show (intVal (Proxy :: Proxy n)))
+  type ShowUnitType (u -^- n) =
+         ShowUnitType u :<>: ShowIntExponent n
+  showsPrecUnit d = showParen (d >= 8) $
+    showsPrecUnit @u 8 .  showString (toSuperscript <$> show (intVal (Proxy :: Proxy n)))
 
 toSuperscript :: Char -> Char
 toSuperscript '0' = '⁰'
