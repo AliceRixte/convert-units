@@ -7,9 +7,8 @@
 
 module Data.Units.Base.Arithmetic
   (
-   Unit
   -- ** Addition
-  , (-+~)
+    (-+~)
   , (~+-)
   , (~+~)
   -- ** Subtraction
