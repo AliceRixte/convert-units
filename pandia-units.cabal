@@ -28,9 +28,10 @@ library
   exposed-modules:
       Data.Convert.FromTo
       Data.Type.Int
+      Data.Type.Int.Proxy
       Data.Units
       Data.Units.Base
-      Data.Units.Base.Constructor
+      Data.Units.Base.Arithmetic
       Data.Units.Base.Convert
       Data.Units.Base.Dimension
       Data.Units.Base.Quantity

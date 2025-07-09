@@ -56,7 +56,7 @@ showsUnit = showsPrecUnit @u 0
 
 showsPrecQuantity :: forall u a. (ShowUnit u, Show a) => Int -> u a -> ShowS
 showsPrecQuantity d u = showParen (d > 10) $
-    showString "checkUnit " . shows (coerce u :: a) . showString " \""
+    showString "ofUnit " . shows (coerce u :: a) . showString " \""
       . showString (showUnit @u) . showString "\""
 
 showsQuantity :: (ShowUnit u, Show a) => u a -> ShowS
@@ -80,9 +80,15 @@ instance ShowUnit u => ShowUnit (StdUnit u) where
 instance (Show a, ShowUnit u) => Show (StdUnit u a) where
   showsPrec = showsPrecQuantity
 
--- | This is just the constant function. It allows to pretty print the unit using Show
-checkUnit :: forall u a. ShowUnit u => u a -> String -> u a
-checkUnit u s =
+-- | Check whether a unit has the same unit as the one represented by a String.
+--
+-- This will fail if the units do not match and is the constant function if the
+-- units match.
+--
+-- This is mainly useful for pretty printing units.
+--
+ofUnit :: forall u a. ShowUnit u => u a -> String -> u a
+ofUnit u s =
   if s == showUnit @u then
     u
   else
@@ -125,6 +131,7 @@ newtype ((u :: Unit) -*- (v :: Unit)) a = MulUnit a
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
   deriving Show via StdUnit (u -*- v) a
+
 infixr 7 -*-
 
 type instance DimOf (u -*- v) = DimOf u -*- DimOf v
@@ -158,6 +165,12 @@ newtype ((u :: Unit) -^- (n :: ZZ)) a = PowUnit a
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
   deriving Show via StdUnit (u -^- n) a
 infix 8 -^-
+
+type a -^+ b = a -^- Pos b
+infix 8 -^+
+
+type a -^~ b = a -^- Neg b
+infix 8 -^~
 
 type instance DimOf (u -^- n) = DimOf u -^- n
 type instance DimId (d -^- n) = DimId d
@@ -227,6 +240,7 @@ type family StandardizeUnit u where
   StandardizeUnit (u -^- n) = NormalizeExp (u -^- n)
   StandardizeUnit u = StdUnitOf u
 
+
 type family Insert u v where
   Insert NoUnit v = v
   Insert u NoUnit = u
@@ -263,14 +277,16 @@ type family MulSameDim u v where
   MulSameDim (u -^- n) u = NormalizeExp (u -^- Add n (Pos 1))
   MulSameDim u u = u -^- Pos 2
   MulSameDim u v = TypeError (
-         Text "Two standard units must have different dimensions"
-    :$$: Text "  but here, both "
-    :<>: ShowType u
-    :<>: Text " and "
-    :<>: ShowType v
-    :<>: Text " have the same dimension"
-    :<>: ShowType (DimOf u)
-    :<>: Text "."
+         Text "Failed to multiply two different units ‘"
+    :<>: ShowUnitType u
+    :<>: Text "’ and ‘"
+    :<>: ShowUnitType v
+    :<>: Text "’ with the same dimension ‘"
+    :<>: ShowDim (DimOf u)
+    :<>: Text "’."
+    :$$: Text "Hint : Did you try to multiply via (-*-) two quantities with"
+    :$$: Text "       the same dimension but different units ?"
+    :$$: Text "If so, you might want to use (~*-), (-*~) or (~*~) instead. "
     )
 
 type family NormalizeExp u where
@@ -278,7 +294,41 @@ type family NormalizeExp u where
   NormalizeExp (u -^- Zero) = NoUnit
   NormalizeExp u = u
 
+--------------------------------------------------------------------------------
 
+-- | Same as StandardizeUnit but does not convert to standard units. This can
+-- result in rectangle units.
+type family NormalizeUnit u where
+  NormalizeUnit (u -*- NoUnit) = NormalizeUnit u
+  NormalizeUnit (NoUnit -*- v) = NormalizeUnit v
+  NormalizeUnit ((u -*- v) -*- w) =
+    InsertForNormalize (NormalizeUnit u) (NormalizeUnit (v -*- w))
+  NormalizeUnit (u -*- v) = InsertForNormalize (NormalizeUnit u) (NormalizeUnit v)
+  NormalizeUnit (NoUnit -^- n) = NoUnit
+  NormalizeUnit ((u -*- v) -^- n) = NormalizeUnit (u -^- n -*- v -^- n)
+  NormalizeUnit ((u -^- n) -^- m) = NormalizeUnit (u -^- Mul n m)
+  NormalizeUnit (u -^- n) = NormalizeExp (u -^- n)
+  NormalizeUnit u = u -- ^ This is the only difference with StandardizeUnit
+
+-- | Same as StandardizeUnit but does not convert to standard units. This can
+-- result in rectangle units.
+type family InsertForNormalize u v where
+  InsertForNormalize NoUnit v = v
+  InsertForNormalize u NoUnit = u
+  InsertForNormalize u (v -*- w) =
+    InsertCmp (Compare
+                  -- We need to standardize to get the dimension (not necessary
+                  -- in StandardizeUnit becaus units are already standardized)
+                  (DimId (DimOf (StandardizeUnit u)))
+                  (DimId (DimOf (StandardizeUnit v)))
+              ) u (v -*- w)
+  InsertForNormalize u v =
+    SwapCmp (Compare
+                  -- We need to standardize to get the dimension (not necessary
+                  -- in StandardizeUnit becaus units are already standardized)
+                  (DimId (DimOf (StandardizeUnit u)))
+                  (DimId (DimOf (StandardizeUnit v)))
+            ) u v
 
 
 --------------------------------------------------------------------------------

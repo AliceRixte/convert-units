@@ -124,33 +124,3 @@ instance KnownNat n => KnownInt (Neg n) where
   intVal _  = -natVal (Proxy :: Proxy n)
 
 
-pos0 :: Proxy (Pos 0)
-pos0 = Proxy
-
-pos1 :: Proxy (Pos 1)
-pos1 = Proxy
-
-pos2 :: Proxy (Pos 2)
-pos2 = Proxy
-
-pos3 :: Proxy (Pos 3)
-pos3 = Proxy
-
-pos4 :: Proxy (Pos 4)
-pos4 = Proxy
-
-neg1 :: Proxy (Neg 1)
-neg1 = Proxy
-
-neg2 :: Proxy (Neg 2)
-neg2 = Proxy
-
-neg3 :: Proxy (Neg 3)
-neg3 = Proxy
-
-neg4 :: Proxy (Neg 4)
-neg4 = Proxy
-
-
-
-

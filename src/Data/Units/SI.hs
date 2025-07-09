@@ -2,7 +2,6 @@ module Data.Units.SI
   ( module Data.Units.SI
   ) where
 
-import Data.Proxy
 import GHC.TypeLits
 
 import Data.Units.Base
@@ -17,23 +16,23 @@ type instance ShowDim Length = Text "L"
 -- | A quantity in meters
 --
 -- This is the base unit of the length dimension in the SI system.
-newtype Metre a = Metre a
+newtype Meter a = Meter a
   deriving ( Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
-  deriving Show via StdUnit Metre a
+  deriving Show via StdUnit Meter a
 
-instance Fractional a => ConvFactor Metre a where
+instance Fractional a => ConvFactor Meter a where
   factorFrom = 1
 
-instance IsUnit Metre where
-  type StdUnitOf Metre = Metre
+instance IsUnit Meter where
+  type StdUnitOf Meter = Meter
 
-instance ShowUnit Metre where
-  type ShowUnitType Metre = Text "m"
+instance ShowUnit Meter where
+  type ShowUnitType Meter = Text "m"
   showUnit = "m"
 
 
-type instance DimOf Metre = Length
+type instance DimOf Meter = Length
 
 
 newtype Time a = Time a
@@ -44,24 +43,24 @@ type instance DimId Time = 400
 type instance ShowDim Time = Text "T"
 
 -- This is the base unit of the length dimension in the SI system.
-newtype Sec a = Sec a
+newtype Second a = Second a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
 
 
-instance Fractional a => ConvFactor Sec a where
+instance Fractional a => ConvFactor Second a where
   factorFrom = 1
 
-instance ShowUnit Sec where
-  type ShowUnitType Sec = Text "s"
+instance ShowUnit Second where
+  type ShowUnitType Second = Text "s"
   showUnit = "s"
 
-instance IsUnit Sec where
-  type StdUnitOf Sec = Sec
+instance IsUnit Second where
+  type StdUnitOf Second = Second
 
 
-type instance DimOf Sec = Time
+type instance DimOf Second = Time
 
--- instance Fractional a => Dimensional (Sec a) a where
-type instance DimId Sec = 400
+-- instance Fractional a => Dimensional (Second a) a where
+type instance DimId Second = 400
   -- factor = 1
