@@ -27,7 +27,7 @@ type instance ShowDim Length = Text "L"
 newtype Meter a = Meter a
   deriving ( Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid)
-  deriving Show via StdUnit Meter a
+  deriving Show via MetaUnit Meter a
 
 instance Fractional a => ConvFactor Meter a where
   factorFrom = 1

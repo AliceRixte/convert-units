@@ -51,6 +51,7 @@ fromTo = to . from
 --------------------------------------------------------------------------------
 
 class (From u a, To u a, Fractional a) => ConvFactor u a where
+  {-# MINIMAL factorFrom | factorTo #-}
   factorFrom :: a
   factorFrom = 1 / factorTo @u
   {-# INLINE factorFrom #-}
@@ -59,7 +60,7 @@ class (From u a, To u a, Fractional a) => ConvFactor u a where
   factorTo = 1 / factorFrom @u
   {-# INLINE factorTo #-}
 
-instance (IsUnit u, Fractional a) => ConvFactor (StdUnit u) a where
+instance (IsUnit u, Fractional a) => ConvFactor (MetaUnit u) a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
 

@@ -8,7 +8,7 @@ import Data.Units.SI
 newtype Celsius a = Celsius a
   deriving (Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
           , Bounded, Enum, Semigroup, Monoid, Functor)
-  deriving Show via (NonStdUnit Celsius a)
+  deriving Show via (MetaUnit Celsius a)
 
 instance IsUnit Celsius where
   type StdUnitOf Celsius = Kelvin

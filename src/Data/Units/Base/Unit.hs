@@ -42,6 +42,7 @@ toUnit = coerce
 
 
 class IsUnit u => ShowUnit (u :: Unit) where
+  {-# MINIMAL showUnit |  showsPrecUnit #-}
   type ShowUnitType u :: ErrorMessage
 
   showsPrecUnit :: Int -> ShowS
@@ -71,13 +72,15 @@ showQuantity u = showsQuantity u ""
 
 
 
-newtype StdUnit (u :: StandardUnit) a = StdUnit a
+newtype MetaUnit (u :: StandardUnit) a = MetaUnit a
+  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
-instance ShowUnit u => ShowUnit (StdUnit u) where
-  type ShowUnitType (StdUnit u) = ShowUnitType u
+instance ShowUnit u => ShowUnit (MetaUnit u) where
+  type ShowUnitType (MetaUnit u) = ShowUnitType u
   showsPrecUnit = showsPrecUnit @u
 
-instance (Show a, ShowUnit u) => Show (StdUnit u a) where
+instance (Show a, ShowUnit u) => Show (MetaUnit u a) where
   showsPrec = showsPrecQuantity
 
 -- | Check whether a unit has the same unit as the one represented by a String.
@@ -96,11 +99,9 @@ ofUnit u s =
           ++  "\" does not match expected unit \""
           ++ s ++ "\""
 
-instance IsUnit (StdUnit u) where
-  type StdUnitOf (StdUnit u) = u
+instance IsUnit (MetaUnit u) where
+  type StdUnitOf (MetaUnit u) = u
 
-newtype NonStdUnit (u :: Unit) a = NonStdUnit a
-  deriving Show via StdUnit u a
 
 
 --------------------------------------------------------------------------------
@@ -130,7 +131,7 @@ instance IsUnit NoUnit where
 newtype ((u :: Unit) -*- (v :: Unit)) a = MulUnit a
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
-  deriving Show via StdUnit (u -*- v) a
+  deriving Show via MetaUnit (u -*- v) a
 
 infixr 7 -*-
 
@@ -154,7 +155,7 @@ instance (IsUnit u, IsUnit v) => IsUnit (u -*- v) where
 --------------------------------------------------------------------------------
 
 
--- | Unit to the power of a positive natural number
+-- | Exponentiation of a unit
 --
 -- @
 -- type MyAcceleration a = (Meter -*- Second -^- Neg 2) a
@@ -163,7 +164,7 @@ instance (IsUnit u, IsUnit v) => IsUnit (u -*- v) where
 newtype ((u :: Unit) -^- (n :: ZZ)) a = PowUnit a
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
-  deriving Show via StdUnit (u -^- n) a
+  deriving Show via MetaUnit (u -^- n) a
 infix 8 -^-
 
 type a -^+ b = a -^- Pos b

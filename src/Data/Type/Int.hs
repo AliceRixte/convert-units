@@ -96,18 +96,13 @@ type family Mul (a :: ZZ) (b :: ZZ) :: ZZ where
   Mul (Neg a) (Neg b) = Pos (a * b)
 
 
--- | To the power of a natural number
+-- | Exponentiation
 type family Pow (a :: ZZ) (n :: Nat) :: ZZ where
   Pow Zero 0 = Pos 1 -- Following Nat from Base : 0^0 :: Natural = 1
   Pow Zero n = Zero
   Pow (Pos a) n = Pos (a ^ n)
   Pow (Neg a) n = If (Mod n 2 == 0) (Pos (a^n)) (Neg (a^n))
 
--- | Lifting of singleton type for Nat to type
-type family SInt (a :: ZZ) where
-  SInt (Neg a) = 'Neg (SNat a)
-  SInt Zero = 'Zero
-  SInt (Pos a) = 'Pos (SNat a)
 
 -- | Gives the integer associated to a type-level integer.
 class KnownInt (r :: ZZ) where

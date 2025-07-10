@@ -20,7 +20,8 @@ class (forall (u :: Unit). IsUnit u => IsUnit (p u))
 instance (forall (u :: Unit). IsUnit u => IsUnit (p u))
   => IsPrefix (p :: Prefix)
 
-class (Fractional a, IsPrefix p) => PrefixFactor p a where
+class (Fractional a, IsPrefix p) => PrefixFactor (p :: Prefix) a where
+  {-# MINIMAL prefixFactorFrom | prefixFactorTo #-}
   prefixFactorFrom :: a
   prefixFactorFrom = 1 / prefixFactorTo @p
   {-# INLINE prefixFactorFrom #-}
@@ -30,6 +31,7 @@ class (Fractional a, IsPrefix p) => PrefixFactor p a where
   {-# INLINE prefixFactorTo #-}
 
 class IsPrefix p => ShowPrefix (p :: Prefix) where
+  {-# MINIMAL showPrefix |  showsPrecPrefix #-}
   type ShowPrefixType p :: ErrorMessage
   showsPrecPrefix :: Int -> ShowS
   showsPrecPrefix _ = (showPrefix @p ++)
@@ -43,7 +45,7 @@ showsPrefix = showsPrecPrefix @p 0
 
 
 newtype MetaPrefix (p :: Prefix) (u :: Unit) a = MetaPrefix (p u a)
-  deriving Show via (StdUnit (p u) a)
+  deriving Show via (MetaUnit (p u) a)
 
 instance PrefixFactor p a => PrefixFactor (MetaPrefix p) a where
   prefixFactorFrom = prefixFactorFrom @p
@@ -64,13 +66,13 @@ instance (PrefixFactor p a, From u a, StdUnitOf (p u) ~ StdUnitOf u)
   from (MetaPrefix a) = prefixFrom @p @u a
   {-# INLINE from #-}
 
-prefixFrom :: forall p u a.
+prefixFrom :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, From u a, StdUnitOf (p u) ~ StdUnitOf u)
   => p u a -> StdUnitOf u a
 prefixFrom a = from @u (coerce (prefixFactorFrom @p * coerce a :: a) :: u a)
 {-# INLINE prefixFrom #-}
 
-prefixTo :: forall p u a.
+prefixTo :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, To u a, StdUnitOf (p u) a ~ StdUnitOf u a)
   => StdUnitOf (p u) a -> p u a
 prefixTo a = coerce (coerce (to a :: u a) * prefixFactorTo @p :: a)
