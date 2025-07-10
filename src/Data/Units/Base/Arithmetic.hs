@@ -26,7 +26,6 @@ module Data.Units.Base.Arithmetic
   -- ** Exponentiation
   , (-^-)
   , (~^-)
-
   ) where
 
 
@@ -44,20 +43,17 @@ import Data.Units.Base.Convert
 -- >>> Kilo (Meter 5) -+~ Meter 80
 -- ofUnit 5.08 "km"
 --
---
 -- >>> Meter 2 -+~ Second 3
---     • Failed to multiply two different units ‘m’ and ‘km’ with the same dimension ‘L’.
---      Hint : Did you try to multiply via (-*-) two quantities with
---             the same dimension but different units ?
---      If so, you might want to use (~*-), (-*~) or (~*~) instead.
+--  • Cannot convert unit ‘s’ to unit ‘m’ because their dimensions do not match.
+--      Dimension of ‘s’ is: T
+--      Dimension of ‘m’ is: L
 --
 (-+~) :: forall u v a.
-  ( DimEq u v
-  , ConvFactor v a, ConvFactor u a
+  ( FromTo v u a
   , Num a
   )
  => u a -> v a -> u a
-u -+~ v = coerce (coerce u + coerce v * factorFrom @v * factorTo @u :: a)
+u -+~ v = coerce (coerce u + coerce (fromTo v :: u a) :: a)
 {-# INLINE (-+~) #-}
 
 infixr 5 -+~
@@ -68,12 +64,11 @@ infixr 5 -+~
 -- ofUnit 5080.0 "m"
 --
 (~+-) :: forall u v a.
-  ( DimEq u v
-  , ConvFactor v a, ConvFactor u a
+  ( FromTo u v a
   , Num a
   )
  => u a -> v a -> v a
-u ~+- v = coerce (coerce u * factorFrom @u * factorTo @v + coerce v :: a)
+(~+-) = flip (-+~)
 {-# INLINE (~+-) #-}
 
 infixr 5 ~+-
@@ -85,12 +80,11 @@ infixr 5 ~+-
 --
 (~+~) :: forall u v a.
   ( DimEq u v
-  , IsUnit (StandardizeUnit u)
-  , ConvFactor v a, ConvFactor u a
+  , From u a, From v a
   , Num a
   )
- => u a -> v a -> (StandardizeUnit u) a
-u ~+~ v = coerce (coerce u * factorFrom @u + coerce v * factorFrom @v :: a)
+ => u a -> v a -> (StdUnitOf u) a
+u ~+~ v = coerce (coerce (from u) + coerce (from v) :: a)
 {-# INLINE (~+~) #-}
 
 infixr 5 ~+~
@@ -119,12 +113,12 @@ infixr 5 --~
 -- ofUnit 4920.0 "m"
 --
 (~--) :: forall u v a.
-  ( DimEq u v
+  ( DimEq v u
   , ConvFactor v a, ConvFactor u a
   , Num a
   )
  => u a -> v a -> v a
-u ~-- v = coerce (coerce u * factorFrom @u * factorTo @v - coerce v :: a)
+(~--) = flip (--~)
 -- {-# INLINE (~--) #-}
 
 infixr 5 ~--
@@ -213,14 +207,14 @@ infix 7 -*~
 -- >>> Kilo (Meter 3) ~*- Meter 2
 -- ofUnit 6000.0 "m²"
 --
-(~*-) :: forall u v u2 a.
-  ( u2 ~ NormalizeUnit (u -^+ 2), IsUnit u2
-  , DimEq u v
+(~*-) :: forall u v v2 a.
+  ( v2 ~ NormalizeUnit (v -^+ 2), IsUnit v2
+  , DimEq v u
   , ConvFactor u a, ConvFactor v a
   , Num a
   )
- => u a -> v a -> u2 a
-u ~*- v = coerce (coerce u * coerce v * factorFrom @u * factorTo @v :: a)
+ => u a -> v a -> v2 a
+(~*-) = flip (-*~)
 {-# INLINE (~*-) #-}
 
 infix 7 ~*-
@@ -306,7 +300,7 @@ infix 8 -^-
 -- ofUnit 5.0e-4 "m⁻¹"
 --
 (~^-) :: forall (n :: ZZ) proxy u a.
-  (IsUnit u, KnownInt n, ConvFactor u a, Fractional a)
+  (KnownInt n, ConvFactor u a, Fractional a)
   => u a -> proxy n -> (StandardizeUnit u -^- n) a
 u ~^- p = coerce $ (coerce u * factorFrom @u :: a ) ^^ intVal p
 {-# INLINE (~^-) #-}

@@ -168,3 +168,23 @@ divDiffDimSpec :: forall u v a.
 divDiffDimSpec =  it (showUnit @u ++ " -/- " ++ showUnit @v)
   $ divDiffDimProp @u @v @a
 
+
+-------------------------- Arithmetic same dimension ---------------------------
+
+addLeft :: forall u v a.
+  ( ConvFactor u a, ConvFactor v a
+  , From (u a)
+  , IsUnit (StdUnit u)
+  , DimEq u v
+  )
+  => a -> a -> a
+addLeft u v = coerce $ (coerce u :: u a) ~+- (coerce v :: v a)
+
+addLeftProp :: forall u v a.
+  ( From (u a), To (v a)
+  , DimEq u v
+  )
+  => Property
+addLeftProp = property (\a b ->
+  aboutEqual (coerce (fromTo (coerce a :: u a) :: v a) + b)
+             (mulDiffDim @u @v @a a b) )

@@ -46,6 +46,7 @@ default-extensions:
   - UndecidableInstances
   - MultiParamTypeClasses
   - FlexibleContexts
+  - DeriveFunctor
 
 library:
   ghc-options:

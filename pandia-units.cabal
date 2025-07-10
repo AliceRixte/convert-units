@@ -26,7 +26,6 @@ source-repository head
 
 library
   exposed-modules:
-      Data.Convert.FromTo
       Data.Type.Int
       Data.Type.Int.Proxy
       Data.Units
@@ -34,8 +33,8 @@ library
       Data.Units.Base.Arithmetic
       Data.Units.Base.Convert
       Data.Units.Base.Dimension
-      Data.Units.Base.Quantity
       Data.Units.Base.Unit
+      Data.Units.NonStd.Temperature
       Data.Units.Prefix
       Data.Units.SI
       Pandia.Units
@@ -71,6 +70,7 @@ library
       UndecidableInstances
       MultiParamTypeClasses
       FlexibleContexts
+      DeriveFunctor
   ghc-options: -Wall -threaded -O2
   build-depends:
       QuickCheck
@@ -105,6 +105,7 @@ test-suite pandia-units-test
       UndecidableInstances
       MultiParamTypeClasses
       FlexibleContexts
+      DeriveFunctor
   ghc-options: -Wall -threaded -O0 -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck >=2.14
@@ -138,6 +139,7 @@ benchmark pandia-units-bench
       UndecidableInstances
       MultiParamTypeClasses
       FlexibleContexts
+      DeriveFunctor
   ghc-options: -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck

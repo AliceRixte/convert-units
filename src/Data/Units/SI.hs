@@ -7,8 +7,7 @@ import GHC.TypeLits
 import Data.Units.Base
 
 newtype Length a = Length a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
+  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat)
 
 type instance DimId Length = 300
 type instance ShowDim Length = Text "L"
@@ -39,7 +38,7 @@ instance ShowUnit Meter where
 
 newtype Time a = Time a
   deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
+          , Bounded, Enum, Semigroup, Monoid, Functor)
 
 type instance DimId Time = 400
 

@@ -5,7 +5,6 @@ module Data.Units.Prefix where
 
 import Data.Kind
 
-import Data.Convert.FromTo
 import Data.Units.Base
 
 
