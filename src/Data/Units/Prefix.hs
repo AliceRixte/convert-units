@@ -5,9 +5,6 @@
 
 module Data.Units.Prefix where
 
-import Data.Kind
-import Data.Coerce
-
 
 import Data.Units.Base
 

@@ -1,7 +1,6 @@
 module Data.Units.PrefixSpec (spec) where
 
 import Test.Hspec
-import Test.QuickCheck
 
 import Data.Units.Common
 

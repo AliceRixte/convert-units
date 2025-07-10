@@ -6,9 +6,7 @@
 
 module Data.Units.Base.Prefix where
 
-import Data.Kind
 import Data.Coerce
-
 
 import Data.Units.Base.Unit
 import Data.Units.Base.Convert
