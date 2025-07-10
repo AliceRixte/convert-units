@@ -80,7 +80,12 @@ convertUnit = to . from
 convertUnit' :: forall u v a.
   (DimEq u v, ConvFactor u a, ConvFactor v a)
   => u a -> v a
-convertUnit' q = coerce (coerce q * (factorFrom @u * factorTo @v) :: a)
+convertUnit' = fromTo'
+
+fromTo' :: forall u v a.
+  (DimEq u v, ConvFactor u a, ConvFactor v a)
+  => u a -> v a
+fromTo' q = coerce (coerce q * (factorFrom @u * factorTo @v) :: a)
 
 --------------------------------------------------------------------------------
 

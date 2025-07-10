@@ -237,7 +237,7 @@ type family StandardizeUnit u where
   StandardizeUnit (NoUnit -^- n) = NoUnit
   StandardizeUnit ((u -*- v) -^- n) = StandardizeUnit (u -^- n -*- v -^- n)
   StandardizeUnit ((u -^- n) -^- m) = StandardizeUnit (u -^- Mul n m)
-  StandardizeUnit (u -^- n) = NormalizeExp (u -^- n)
+  StandardizeUnit (u -^- n) = NormalizeExp (StdUnitOf u -^- n)
   StandardizeUnit u = StdUnitOf u
 
 

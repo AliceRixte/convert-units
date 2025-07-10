@@ -29,8 +29,6 @@ instance (ShowUnit u, IsUnit u) => ShowUnit (Milli u) where
   type ShowUnitType (Milli u) = Text "k" :<>: ShowUnitType u
   showsPrecUnit = showsPrecPrefix @u "k"
 
-
-
 instance (ShowUnit u, Show a) =>  Show (Milli u a) where
   showsPrec = showsPrecQuantity @(Milli u)
 

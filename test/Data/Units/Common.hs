@@ -1,0 +1,170 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE TypeApplications #-}
+
+module Data.Units.Common where
+import Data.Coerce
+
+
+import Data.Epsilon
+
+import Test.QuickCheck
+import Test.Hspec
+
+import Data.Convert.FromTo
+import Data.Units
+
+------------------------------------ toFrom ------------------------------------
+
+toFrom :: forall u a.
+  (From (u a), To (u a), Coercible (StandardOf (u a)) a)
+  => a -> a
+toFrom a = coerce
+  (from (to (coerce a :: StandardOf (u a)) :: u a) :: StandardOf (u a))
+
+toFromProp :: forall u a.
+  ( From (u a), To (u a)
+  , Coercible (StandardOf (u a)) a
+  , Arbitrary a, Show a, Epsilon a
+  )
+  => Property
+toFromProp = property (isApproxId (toFrom @u @a))
+
+toFromSpec :: forall u a.
+  ( ShowUnit u
+  , From (u a), To (u a)
+  , Coercible (StandardOf (u a)) a
+  , Arbitrary a, Show a, Epsilon a
+  )
+  => Spec
+toFromSpec =
+  it ("toFrom " ++ showUnit @u) (toFromProp @u @a)
+
+
+------------------------------------ fromTo ------------------------------------
+
+fromToRoundtrip :: forall u v a.
+  ( IsUnit u, IsUnit v
+  , From (u a), To (u a), From (v a), To (v a)
+  , StdEq (u a) (v a)
+  , StdEq (v a) (u a)
+  )
+  => a -> a
+fromToRoundtrip a = coerce (fromTo (fromTo (coerce a :: u a) :: v a) :: u a)
+
+fromToProp :: forall u v a.
+  ( ShowUnit u, ShowUnit v
+  , From (u a), To (u a), From (v a), To (v a)
+  , StdEq (u a) (v a)
+  , StdEq (v a) (u a)
+  , Arbitrary a, Show a, Epsilon a
+  )
+  => Property
+fromToProp = property $ isApproxId (fromToRoundtrip @u @v @a)
+
+fromToSpec :: forall u v a.
+  ( ShowUnit u, ShowUnit v
+  , From (u a), To (u a), From (v a), To (v a)
+  , StdEq (u a) (v a)
+  , StdEq (v a) (u a)
+  , Arbitrary a, Show a, Epsilon a
+  )
+  => Spec
+fromToSpec =
+  it ("From `" ++ showUnit @u ++ "` to `" ++ showUnit @v ++ "`")
+    $ fromToProp @u @v @a
+
+
+----------------------------------- fromTo' ------------------------------------
+
+fromToRoundtrip' :: forall u v a.
+  ( ConvFactor u a, ConvFactor v a
+  , DimEq u v
+  , DimEq v u
+  )
+  => a -> a
+fromToRoundtrip' a = coerce (fromTo' (fromTo' (coerce a :: u a) :: v a) :: u a)
+
+fromToProp' :: forall u v a.
+  ( ShowUnit u, ShowUnit v
+  , ConvFactor u a, ConvFactor v a
+  , Arbitrary a, Show a, Epsilon a
+  , DimEq u v
+  , DimEq v u
+  )
+  => Property
+fromToProp' = property $ isApproxId (fromToRoundtrip' @u @v @a)
+
+
+fromToSpec' :: forall u v a.
+  ( ShowUnit u, ShowUnit v
+  , ConvFactor u a, ConvFactor v a
+  , Arbitrary a, Show a, Epsilon a
+  , DimEq u v
+  , DimEq v u
+  )
+  => Spec
+fromToSpec' =
+  it ("From' `" ++ showUnit @u ++ "` to' `" ++ showUnit @v ++ "`")
+    $ fromToProp' @u @v @a
+
+------------------ Arithmetic with two different dimensions  -------------------
+
+mulDiffDim :: forall u v a.
+  ( ConvFactor u a, ConvFactor v a
+  , IsUnit (NormalizeUnit (u -*- v))
+  )
+  => a -> a -> a
+mulDiffDim u v = coerce $ (coerce u :: u a) -*- (coerce v :: v a)
+
+mulDiffDimProp :: forall u v a.
+  ( ConvFactor u a, ConvFactor v a
+  , IsUnit (NormalizeUnit (u -*- v))
+  , Coercible a (StandardOf (NormalizeUnit (u -*- v) a))
+  , ConvFactor (NormalizeUnit (u -*- v)) a
+  , Arbitrary a, Show a, Epsilon a
+  )
+  => Property
+mulDiffDimProp =
+  property (\a b -> aboutEqual (a * b) (mulDiffDim @u @v @a a b) )
+  .&&. toFromProp @(NormalizeUnit (u -*- v)) @a
+
+mulDiffDimSpec :: forall u v a.
+  ( ConvFactor u a, ConvFactor v a
+  , IsUnit (NormalizeUnit (u -*- v))
+  , Coercible a (StandardOf (NormalizeUnit (u -*- v) a))
+  , ConvFactor (NormalizeUnit (u -*- v)) a
+  , Arbitrary a, Show a, Epsilon a
+  , ShowUnit u, ShowUnit v
+  )
+  => Spec
+mulDiffDimSpec = it (showUnit @u ++ " -*- " ++ showUnit @v)
+    $ mulDiffDimProp @u @v @a
+
+divDiffDim :: forall u v a.
+  ( ConvFactor u a, ConvFactor v a
+  )
+  => a -> a -> a
+divDiffDim u v = coerce $ (coerce u :: u a) -/- (coerce v :: v a)
+
+divDiffDimProp :: forall u v a.
+  ( ConvFactor u a, ConvFactor (InverseUnit v) a, ConvFactor v a
+  , IsUnit (StdUnitOf (u -/- v))
+  , Arbitrary a, Show a, Epsilon a, Eq a
+  )
+  => Property
+divDiffDimProp =
+  property (\a b -> b == 0 || aboutEqual (a / b) (divDiffDim @u @v @a a b) )
+  .&&. toFromProp @(u -/- v) @a
+
+divDiffDimSpec :: forall u v a.
+  ( ConvFactor u a, ConvFactor (InverseUnit v) a, ConvFactor v a
+  , IsUnit (StdUnitOf (u -/- v))
+  , Arbitrary a, Show a, Epsilon a, Eq a
+  , ShowUnit u, ShowUnit v
+  )
+  => Spec
+divDiffDimSpec =  it (showUnit @u ++ " -/- " ++ showUnit @v)
+  $ divDiffDimProp @u @v @a
+

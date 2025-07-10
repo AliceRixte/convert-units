@@ -32,22 +32,24 @@ ghc-options:
 - -Wall
 - -threaded
 
+default-extensions:
+  - TypeApplications
+  - StandaloneDeriving
+  - DerivingVia
+  - GeneralizedNewtypeDeriving
+  - TypeOperators
+  - PolyKinds
+  - ScopedTypeVariables
+  - DataKinds
+  - TypeFamilies
+  - FlexibleInstances
+  - UndecidableInstances
+  - MultiParamTypeClasses
+  - FlexibleContexts
+
 library:
   ghc-options:
   - -O2 #TODO change
-  default-extensions:
-    - StandaloneDeriving
-    - DerivingVia
-    - GeneralizedNewtypeDeriving
-    - TypeOperators
-    - PolyKinds
-    - ScopedTypeVariables
-    - DataKinds
-    - TypeFamilies
-    - FlexibleInstances
-    - UndecidableInstances
-    - MultiParamTypeClasses
-    - FlexibleContexts
 
   source-dirs: src
 
@@ -59,6 +61,7 @@ tests:
     dependencies:
     - hspec >= 2.11
     - QuickCheck >= 2.14
+    - linear
     - pandia-units
     ghc-options:
     - -O0
