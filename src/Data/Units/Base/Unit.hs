@@ -115,12 +115,13 @@ instance IsUnit (MetaUnit u) where
 --
 newtype NoUnit a = NoUnit a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+           , RealFrac, RealFloat, Functor)
 
 type instance DimOf NoUnit = NoDim
 
 instance IsUnit NoUnit where
   type StdUnitOf NoUnit = NoUnit
+
 
 -- | Multiplication of two units.
 --
@@ -130,7 +131,7 @@ instance IsUnit NoUnit where
 --
 newtype ((u :: Unit) -*- (v :: Unit)) a = MulUnit a
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+           , RealFrac, RealFloat, Functor)
   deriving Show via MetaUnit (u -*- v) a
 
 infixr 7 -*-
@@ -163,7 +164,7 @@ instance (IsUnit u, IsUnit v) => IsUnit (u -*- v) where
 --
 newtype ((u :: Unit) -^- (n :: ZZ)) a = PowUnit a
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+           , RealFrac, RealFloat, Functor)
   deriving Show via MetaUnit (u -^- n) a
 infix 8 -^-
 

@@ -158,7 +158,6 @@ divDiffDimSpec =  it (showUnit @u ++ " -/- " ++ showUnit @v)
 addLeft :: forall u v a.
   ( ConvFactor u a, ConvFactor v a
   , From u a
-  , IsUnit (StdUnit u)
   , DimEq u v
   )
   => a -> a -> a

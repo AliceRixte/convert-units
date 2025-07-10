@@ -11,7 +11,7 @@ import Data.Units.Base
 
 newtype Milli (u :: Unit) a = Milli (u a)
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
-            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+           , RealFrac, RealFloat, Functor)
   deriving Show via MetaPrefix Milli u a
   deriving ShowUnit via MetaPrefix Milli u
 
@@ -42,7 +42,7 @@ instance ConvFactor u a => ConvFactor (Milli u) a where
 
 newtype Kilo (u :: Unit) a = Kilo (u a)
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
-            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+           , RealFrac, RealFloat, Functor)
   deriving Show via MetaPrefix Kilo u a
   deriving ShowUnit via MetaPrefix Kilo u
 

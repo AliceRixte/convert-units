@@ -6,8 +6,8 @@ import Data.Units.Base
 import Data.Units.SI
 
 newtype Celsius a = Celsius a
-  deriving (Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid, Functor)
+  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Functor)
   deriving Show via (MetaUnit Celsius a)
 
 instance IsUnit Celsius where

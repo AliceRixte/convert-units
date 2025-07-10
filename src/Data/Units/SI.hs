@@ -15,7 +15,8 @@ import Data.Units.Base
 --  This may contain a length quantity with unspecified unit.
 --
 newtype Length a = Length a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat)
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Functor)
 
 type instance DimId Length = 300
 type instance ShowDim Length = Text "L"
@@ -25,8 +26,8 @@ type instance ShowDim Length = Text "L"
 -- This is the base unit of the length dimension in the SI system.
 --
 newtype Meter a = Meter a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
+  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Functor)
   deriving Show via MetaUnit Meter a
 
 instance Fractional a => ConvFactor Meter a where
@@ -48,8 +49,8 @@ instance ShowUnit Meter where
 --  This may contain a length quantity with unspecified unit.
 --
 newtype Time a = Time a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid, Functor)
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Functor)
 
 type instance DimId Time = 400
 
@@ -60,8 +61,9 @@ type instance ShowDim Time = Text "T"
 -- This is the base unit of the time dimension in the SI system.
 --
 newtype Second a = Second a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
+  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Functor)
+  deriving Show via MetaUnit Second a
 
 instance Fractional a => ConvFactor Second a where
   factorFrom = 1
@@ -82,8 +84,8 @@ instance ShowUnit Second where
 --  This may contain a temperature quantity with unspecified unit.
 --
 newtype Temperature a = Temperature a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid, Functor)
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Functor)
 
 type instance DimId Temperature = 500
 type instance ShowDim Temperature = Text "Θ"
@@ -94,8 +96,10 @@ type instance ShowDim Temperature = Text "Θ"
 -- system.
 --
 newtype Kelvin a = Kelvin a
-  deriving (Show, Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat
-          , Bounded, Enum, Semigroup, Monoid)
+  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Functor)
+  deriving Show via MetaUnit Kelvin a
+
 
 instance Fractional a => ConvFactor Kelvin a where
   factorFrom = 1
