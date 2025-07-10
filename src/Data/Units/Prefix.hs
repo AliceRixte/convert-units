@@ -1,75 +1,74 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE QuantifiedConstraints #-}
+{-# LANGUAGE InstanceSigs #-}
 
 module Data.Units.Prefix where
 
 import Data.Kind
+import Data.Coerce
+
 
 import Data.Units.Base
-
-
-showsPrecPrefix :: forall u. ShowUnit u => String -> Int -> ShowS
-showsPrecPrefix s d = showParen (d > 10) $
-    showString s . showsUnit @u
 
 
 newtype Milli (u :: Unit) a = Milli (u a)
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+  deriving Show via MetaPrefix Milli u a
+  deriving ShowUnit via MetaPrefix Milli u
 
-instance IsUnit u => IsUnit (Milli u) where
-  type StdUnitOf (Milli u) = u
+deriving via MetaPrefix Milli u instance IsUnit u => IsUnit (Milli u )
 
-instance (Num a, ConvFactor u a)
-  => ConvFactor (Milli u) a where
-  factorTo = 1000 * factorTo @u
+instance ShowPrefix Milli where
+  type ShowPrefixType Milli = Text "m"
+  showPrefix = "m"
 
-instance (ShowUnit u, IsUnit u) => ShowUnit (Milli u) where
-  type ShowUnitType (Milli u) = Text "k" :<>: ShowUnitType u
-  showsPrecUnit = showsPrecPrefix @u "k"
+instance Fractional a => PrefixFactor Milli a where
+  prefixFactorTo = 1000
+  {-# INLINE prefixFactorTo #-}
 
-instance (ShowUnit u, Show a) =>  Show (Milli u a) where
-  showsPrec = showsPrecQuantity @(Milli u)
+instance (To u a, Fractional a) => To (Milli u) a where
+  to = prefixTo
+  {-# INLINE to #-}
 
---------------------------------------------------------------------------------
+instance (From u a, Fractional a) => From (Milli u) a where
+  from = prefixFrom
+  {-# INLINE from #-}
 
+instance ConvFactor u a => ConvFactor (Milli u) a where
+  factorFrom = factorFrom @(MetaPrefix Milli u)
+  {-# INLINE factorFrom #-}
 
-newtype Hecto (u :: Unit) a = Hecto (u a)
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
-            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
-
-instance IsUnit u => IsUnit (Hecto u) where
-  type StdUnitOf (Hecto u) = u
-
-instance (Num a, ConvFactor u a)
-  => ConvFactor (Hecto u) a where
-  factorFrom = 10 * factorFrom @u
-
-instance (ShowUnit u, IsUnit u) => ShowUnit (Hecto u) where
-  type ShowUnitType (Hecto u) = Text "k" :<>: ShowUnitType u
-  showsPrecUnit = showsPrecPrefix @u "k"
-
-instance (ShowUnit u, Show a) =>  Show (Hecto u a) where
-  showsPrec = showsPrecQuantity @(Hecto u)
 
 --------------------------------------------------------------------------------
+
 newtype Kilo (u :: Unit) a = Kilo (u a)
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
             , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+  deriving Show via MetaPrefix Kilo u a
+  deriving ShowUnit via MetaPrefix Kilo u
 
-instance IsUnit u => IsUnit (Kilo u) where
-  type StdUnitOf (Kilo u) = u
+deriving via MetaPrefix Kilo u instance IsUnit u => IsUnit (Kilo u )
 
-instance (Num a, ConvFactor u a)
-  => ConvFactor (Kilo u) a where
-  factorFrom = 1000 * factorFrom @u
+instance ShowPrefix Kilo where
+  type ShowPrefixType Kilo = Text "k"
+  showPrefix = "k"
 
-instance (ShowUnit u, IsUnit u) => ShowUnit (Kilo u) where
-  type ShowUnitType (Kilo u) = Text "k" :<>: ShowUnitType u
-  showsPrecUnit = showsPrecPrefix @u "k"
+instance Fractional a => PrefixFactor Kilo a where
+  prefixFactorFrom = 1000
+  {-# INLINE prefixFactorFrom #-}
 
+instance (To u a, Fractional a) => To (Kilo u) a where
+  to = prefixTo
+  {-# INLINE to #-}
 
-instance (ShowUnit u, Show a) =>  Show (Kilo u a) where
-  showsPrec = showsPrecQuantity @(Kilo u)
+instance (From u a, Fractional a) => From (Kilo u) a where
+  from = prefixFrom
+  {-# INLINE from #-}
+
+instance ConvFactor u a => ConvFactor (Kilo u) a where
+  factorFrom = factorFrom @(MetaPrefix Kilo u)
+  {-# INLINE factorFrom #-}
 
 

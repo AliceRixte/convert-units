@@ -110,8 +110,9 @@ to' :: forall u a. (ConvFactor u a, Coercible a (StdUnitOf u a))
   => StdUnitOf u a -> u a
 to' q = coerce (coerce q * factorTo @u :: a)
 
+type FromTo' u v a = (DimEq u v, ConvFactor u a, ConvFactor v a)
 fromTo' :: forall u v a.
-  (DimEq u v, ConvFactor u a, ConvFactor v a)
+  FromTo' u v a
   => u a -> v a
 fromTo' q = coerce (coerce q * (factorFrom @u * factorTo @v) :: a)
 

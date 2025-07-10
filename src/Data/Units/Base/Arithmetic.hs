@@ -49,11 +49,11 @@ import Data.Units.Base.Convert
 --      Dimension of ‘m’ is: L
 --
 (-+~) :: forall u v a.
-  ( FromTo v u a
+  ( FromTo' v u a
   , Num a
   )
  => u a -> v a -> u a
-u -+~ v = coerce (coerce u + coerce (fromTo v :: u a) :: a)
+u -+~ v = coerce (coerce u + coerce (fromTo' v :: u a) :: a)
 {-# INLINE (-+~) #-}
 
 infixr 5 -+~
@@ -64,7 +64,7 @@ infixr 5 -+~
 -- ofUnit 5080.0 "m"
 --
 (~+-) :: forall u v a.
-  ( FromTo u v a
+  ( FromTo' u v a
   , Num a
   )
  => u a -> v a -> v a
@@ -80,11 +80,11 @@ infixr 5 ~+-
 --
 (~+~) :: forall u v a.
   ( DimEq u v
-  , From u a, From v a
+  , ConvFactor u a, ConvFactor v a
   , Num a
   )
  => u a -> v a -> (StdUnitOf u) a
-u ~+~ v = coerce (coerce (from u) + coerce (from v) :: a)
+u ~+~ v = coerce (coerce (from' u) + coerce (from' v) :: a)
 {-# INLINE (~+~) #-}
 
 infixr 5 ~+~
@@ -97,12 +97,11 @@ infixr 5 ~+~
 -- ofUnit 4.92 "km"
 --
 (--~) :: forall u v a.
-  ( DimEq u v
-  , ConvFactor v a, ConvFactor u a
+  ( FromTo' v u a
   , Num a
   )
  => u a -> v a -> u a
-u --~ v = coerce (coerce u - coerce v * factorFrom @v * factorTo @u :: a)
+u --~ v = coerce (coerce u - coerce (fromTo' v :: u a) :: a)
 {-# INLINE (--~) #-}
 
 infixr 5 --~
@@ -113,8 +112,7 @@ infixr 5 --~
 -- ofUnit 4920.0 "m"
 --
 (~--) :: forall u v a.
-  ( DimEq v u
-  , ConvFactor v a, ConvFactor u a
+  ( FromTo' u v a
   , Num a
   )
  => u a -> v a -> v a
@@ -130,12 +128,11 @@ infixr 5 ~--
 --
 (~-~) :: forall u v a.
   ( DimEq u v
-  , IsUnit (StandardizeUnit u)
   , ConvFactor v a, ConvFactor u a
   , Num a
   )
- => u a -> v a -> (StandardizeUnit u) a
-u ~-~ v = coerce (coerce u * factorFrom @u - coerce v * factorFrom @v :: a)
+ => u a -> v a -> (StdUnitOf u) a
+u ~-~ v = coerce (coerce (from' u) - coerce (from' v) :: a)
 {-# INLINE (~-~) #-}
 
 infixr 5 ~-~
@@ -190,11 +187,11 @@ infixr 7 -*-
 (-*~) :: forall u v u2 a.
   ( u2 ~ NormalizeUnit (u -^+ 2) , IsUnit u2
   , DimEq u v
-  , ConvFactor u a, ConvFactor v a
+  , FromTo' v u a
   , Num a
   )
  => u a -> v a -> u2 a
-u -*~ v = coerce (coerce u * coerce v * factorFrom @v * factorTo @u :: a)
+u -*~ v = coerce (coerce u * coerce (fromTo' v :: u a) :: a)
 {-# INLINE (-*~) #-}
 
 infix 7 -*~
@@ -210,7 +207,7 @@ infix 7 -*~
 (~*-) :: forall u v v2 a.
   ( v2 ~ NormalizeUnit (v -^+ 2), IsUnit v2
   , DimEq v u
-  , ConvFactor u a, ConvFactor v a
+  , FromTo' u v a
   , Num a
   )
  => u a -> v a -> v2 a
@@ -236,7 +233,7 @@ infix 7 ~*-
   , Num a
   )
  => u a -> v a -> u2 a
-u ~*~ v = coerce (coerce u * coerce v * factorFrom @u * factorFrom @v :: a)
+u ~*~ v = coerce (coerce (from' u) * coerce (from' v) :: a)
 {-# INLINE (~*~) #-}
 
 infix 7 ~*~
@@ -273,7 +270,7 @@ infix 6 -/-
   , ConvFactor u a, ConvFactor v a
   , Fractional a)
   => u a -> v a -> NoUnit a
-u ~/~ v = coerce (coerce u * factorFrom @u / (coerce v * factorFrom @v) :: a)
+u ~/~ v = coerce (coerce (from' u)  / coerce (from' v) :: a)
 {-# INLINE (~/~) #-}
 
 infix 6 ~/~
@@ -302,7 +299,7 @@ infix 8 -^-
 (~^-) :: forall (n :: ZZ) proxy u a.
   (KnownInt n, ConvFactor u a, Fractional a)
   => u a -> proxy n -> (StandardizeUnit u -^- n) a
-u ~^- p = coerce $ (coerce u * factorFrom @u :: a ) ^^ intVal p
+u ~^- p = coerce $ (coerce (from' u) :: a ) ^^ intVal p
 {-# INLINE (~^-) #-}
 
 infix 8 ~^-

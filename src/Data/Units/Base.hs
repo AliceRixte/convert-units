@@ -3,6 +3,7 @@ module Data.Units.Base
   , module Data.Units.Base.Dimension
   , module Data.Units.Base.Convert
   , module Data.Units.Base.Arithmetic
+  , module Data.Units.Base.Prefix
   , module Data.Type.Int
   , module Data.Type.Int.Proxy
   ) where
@@ -11,5 +12,6 @@ import Data.Units.Base.Unit
 import Data.Units.Base.Dimension
 import Data.Units.Base.Convert
 import Data.Units.Base.Arithmetic
+import Data.Units.Base.Prefix
 import Data.Type.Int
 import Data.Type.Int.Proxy

@@ -33,7 +33,9 @@ library
       Data.Units.Base.Arithmetic
       Data.Units.Base.Convert
       Data.Units.Base.Dimension
+      Data.Units.Base.Prefix
       Data.Units.Base.Unit
+      Data.Units.NonStd
       Data.Units.NonStd.Temperature
       Data.Units.Prefix
       Data.Units.SI
