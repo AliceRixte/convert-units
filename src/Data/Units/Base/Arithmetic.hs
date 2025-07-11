@@ -207,7 +207,7 @@ infix 7 ~*-
 --   Dimension of ‘s’ is: T
 --
 (~*~) :: forall u v u2 a.
-  ( u2 ~ StandardizeUnit u -^+ 2, IsUnit u2
+  ( u2 ~ StdUnitOf u -^+ 2, IsUnit u2
   , DimEq u v
   , ConvFactor u a, ConvFactor v a
   )

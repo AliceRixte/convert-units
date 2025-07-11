@@ -28,7 +28,6 @@ import Data.Units.Base.Dimension
 type Unit = Type -> Type
 type StandardUnit = Type -> Type
 
-
 type family DimOf (u :: StandardUnit) :: Dim
 
 class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where

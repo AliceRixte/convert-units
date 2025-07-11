@@ -16,9 +16,6 @@ import Data.Units
 import Data.Units.Base.ConvertProp
 
 
-
-
-
 ------------------------- Num and fractional instances -------------------------
 
 addNumProp :: forall u a.
@@ -459,13 +456,3 @@ expConvSpec :: forall u a.
 expConvSpec = it (showUnit @u ++ "~^- pos2  ," ++ showUnit @u ++ "~^- neg1") $
   exp2ConvProp @u @a .&&. expm1ConvProp @u @a
 
-
--- divDiffDimSpec :: forall u v a.
---   ( ConvFactor u a, ConvFactor (InverseUnit v) a, ConvFactor v a
---   , IsUnit (StdUnitOf (u -/- v))
---   , Arbitrary a, Show a, Epsilon a, Eq a
---   , ShowUnit u, ShowUnit v
---   )
---   => Spec
--- divDiffDimSpec =  it (showUnit @u ++ " -/- " ++ showUnit @v)
---   $ divDiffDimProp @u @v @a
