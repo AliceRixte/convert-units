@@ -103,6 +103,7 @@ test-suite pandia-units-test
       Data.Units.Base.ConvertProp
       Data.Units.BaseProp
       Data.Units.NonStd.AngleSpec
+      Data.Units.NonStd.FrequencySpec
       Data.Units.PrefixSpec
       Paths_pandia_units
   hs-source-dirs:
