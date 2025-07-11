@@ -12,7 +12,15 @@ import Data.Units.Base.ConvertProp
 
 spec :: Spec
 spec = do
-  describe "Angles" $ do
+  describe "Angle" $ do
+    toFromSpec @SI.Radian   @Double
+    toFromSpec @SI.Degree   @Double
+    toFromSpec @SI.Turn     @Double
+    toFromSpec @SI.Gradian  @Double
+    toFromSpec @A.Radian    @Double
+    toFromSpec @A.Degree    @Double
+    toFromSpec @A.Turn      @Double
+    toFromSpec @A.Gradian   @Double
     fromToAssert @Double (SI.Radian pi)     (SI.Degree 180)
     fromToAssert @Double (SI.Degree 90)     (SI.Gradian 100)
     fromToAssert @Double (SI.Turn (1 / 4))  (SI.Degree 90)
