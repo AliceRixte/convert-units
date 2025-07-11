@@ -3,7 +3,7 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE InstanceSigs #-}
 
-module Data.Units.Prefix where
+module Data.Units.SI.Prefixes where
 
 
 import Data.Units.Base

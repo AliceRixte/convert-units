@@ -67,6 +67,16 @@ fromToSpec =
   it ("From `" ++ showUnit @u ++ "` to `" ++ showUnit @v ++ "`")
     $ fromToProp @u @v @a
 
+fromToAssert :: forall a u v.
+  ( Show (u a), Show (v a)
+  , FromTo u v a
+  , Arbitrary a, Show a, Epsilon a
+  )
+  => u a -> v a -> Spec
+fromToAssert u v =
+  it ("`" ++ show u ++ "` should be  `" ++ show v ++ "`") $
+    aboutEqual (coerce (fromTo u :: v a) :: a) (coerce v :: a) `shouldBe` True
+
 
 ----------------------------------- fromTo' ------------------------------------
 

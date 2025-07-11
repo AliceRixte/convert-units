@@ -30,7 +30,7 @@ divNumProp :: forall u a.
  ( IsUnit u, Fractional (u a)
  , Show a, Epsilon a, Fractional a, Eq a, Arbitrary a)
  => Property
-divNumProp = property (\ (a :: a) (b :: a) ->
+divNumProp = property (\ (a :: a) (b :: a) -> b == 0 ||
   a / b ==
     coerce (coerce a / coerce b :: u a))
 

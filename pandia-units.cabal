@@ -29,6 +29,10 @@ library
       Data.Type.Int
       Data.Type.Int.Proxy
       Data.Units
+      Data.Units.AngleSI
+      Data.Units.AngleSI.Angle
+      Data.Units.AngleSI.NonStd
+      Data.Units.AngleSI.NonStd.Angle
       Data.Units.Base
       Data.Units.Base.Arithmetic
       Data.Units.Base.Convert
@@ -37,8 +41,13 @@ library
       Data.Units.Base.Unit
       Data.Units.NonStd
       Data.Units.NonStd.Temperature
-      Data.Units.Prefix
       Data.Units.SI
+      Data.Units.SI.Angle
+      Data.Units.SI.Dimensions
+      Data.Units.SI.NonStd
+      Data.Units.SI.NonStd.Angle
+      Data.Units.SI.Prefixes
+      Data.Units.SI.Units
       Pandia.Units
       Pandia.Units.AngleSI
       Pandia.Units.Core
@@ -91,6 +100,7 @@ test-suite pandia-units-test
       Data.Units.Base.ArithmeticProp
       Data.Units.Base.ConvertProp
       Data.Units.BaseProp
+      Data.Units.NonStd.AngleSpec
       Data.Units.PrefixSpec
       Paths_pandia_units
   hs-source-dirs:

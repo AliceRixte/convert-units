@@ -1,0 +1,77 @@
+--------------------------------------------------------------------------------
+-- |
+--
+-- Module      :  Data.Units.SI.NonStd.Angle
+-- Description :  Non standard angle units
+-- Copyright   :  (c) Alice Rixte 2025
+-- License     :  BSD 3
+-- Maintainer  :  alice.rixte@u-bordeaux.fr
+-- Stability   :  unstable
+-- Portability :  non-portable (GHC extensions)
+--
+-- Dimensionless non standard angle units.
+--
+--------------------------------------------------------------------------------
+
+
+module Data.Units.SI.NonStd.Angle where
+
+import Data.Units.Base
+
+-- | Angle in degrees.
+--
+newtype Degree a = Degree a
+  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Functor)
+  deriving Show via MetaUnit Degree a
+
+instance Floating a => ConvFactor Degree a where
+  factorFrom = pi / 180
+
+instance IsUnit Degree where
+  type StdUnitOf Degree = NoUnit
+
+instance ShowUnit Degree where
+  type ShowUnitType Degree = Text "°"
+  showUnit = "°"
+
+
+-- | Angle in complete turns (also called cycles or revolutions)
+--
+-- See https://en.wikipedia.org/wiki/Turn_(angle)
+--
+newtype Turn a = Turn a
+  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Functor)
+  deriving Show via MetaUnit Turn a
+
+instance Floating a => ConvFactor Turn a where
+  factorFrom = 2 * pi
+
+instance IsUnit Turn where
+  type StdUnitOf Turn = NoUnit
+
+instance ShowUnit Turn where
+  type ShowUnitType Turn = Text "tr"
+  showUnit = "tr"
+
+
+
+-- | Angle in gradians
+--
+-- See https://en.wikipedia.org/wiki/Gradian
+--
+newtype Gradian a = Gradian a
+  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Functor)
+  deriving Show via MetaUnit Gradian a
+
+instance Floating a => ConvFactor Gradian a where
+  factorFrom = pi / 200
+
+instance IsUnit Gradian where
+  type StdUnitOf Gradian = NoUnit
+
+instance ShowUnit Gradian where
+  type ShowUnitType Gradian = Text "grad"
+  showUnit = "grad"
