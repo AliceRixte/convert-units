@@ -40,9 +40,11 @@ library
       Data.Units.Base.Prefix
       Data.Units.Base.Unit
       Data.Units.NonStd
+      Data.Units.NonStd.Frequency
       Data.Units.NonStd.Temperature
       Data.Units.SI
       Data.Units.SI.Angle
+      Data.Units.SI.Derived
       Data.Units.SI.Dimensions
       Data.Units.SI.NonStd
       Data.Units.SI.NonStd.Angle
