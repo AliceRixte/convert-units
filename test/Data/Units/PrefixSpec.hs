@@ -2,13 +2,14 @@ module Data.Units.PrefixSpec (spec) where
 
 import Test.Hspec
 
-import Data.Units.Common
-
-import Data.Units.Prefix
 import Data.Units
 
+import Data.Units.BaseProp
+
 spec :: Spec
-spec =
+spec = do
+  describe "Units" $ do
+    sameDimSpec @Meter @Double
   describe "Prefix" $ do
     describe "Kilo" $ do
       fromToSpec @(Kilo Meter) @(Milli Meter) @Double

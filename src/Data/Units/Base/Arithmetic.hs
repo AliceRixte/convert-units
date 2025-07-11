@@ -98,8 +98,8 @@ infixr 5 --~
 -- >>> Kilo (Meter 5) ~-- Meter 80
 -- ofUnit 4920.0 "m"
 --
-(~--) :: FromTo' u v a => u a -> v a -> v a
-(~--) = flip (--~)
+(~--) :: forall u v a. FromTo' u v a => u a -> v a -> v a
+u ~-- v = coerce (coerce (fromTo' u :: v a) - coerce v :: a)
 -- {-# INLINE (~--) #-}
 
 infixr 5 ~--

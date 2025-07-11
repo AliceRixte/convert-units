@@ -88,7 +88,9 @@ test-suite pandia-units-test
   main-is: Spec.hs
   other-modules:
       Data.Epsilon
-      Data.Units.Common
+      Data.Units.Base.ArithmeticProp
+      Data.Units.Base.ConvertProp
+      Data.Units.BaseProp
       Data.Units.PrefixSpec
       Paths_pandia_units
   hs-source-dirs:
