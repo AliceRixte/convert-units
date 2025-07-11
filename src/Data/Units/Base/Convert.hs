@@ -26,6 +26,9 @@ import Data.Units.Base.Unit
 class (IsUnit u, IsUnit (StdUnitOf u)) => From u a where
   from :: u a -> StdUnitOf u a
 
+fromCoerce :: forall u a. From u a => a -> a
+fromCoerce a = coerce $ from (coerce a :: u a)
+{-# INLINE fromCoerce #-}
 
 instance {-# OVERLAPPABLE #-}
   (ConvFactor u a, IsUnit (StdUnitOf u), IsUnit u)

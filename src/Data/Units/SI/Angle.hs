@@ -18,6 +18,8 @@
 
 module Data.Units.SI.Angle where
 
+import Data.Fixed
+
 import Data.Units.Base
 
 -- | An angle in radians.
@@ -39,6 +41,12 @@ instance ShowUnit Radian where
   type ShowUnitType Radian = Text "rad"
   showUnit = "rad"
 
+-- | Normalize an angle to the range ]-pi, pi]
+normalizeRadians :: (RealFrac a, Floating a) => Radian a -> Radian a
+normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
+  where
+    twoPi = 2 * pi
+    xmod = x `mod'` twoPi
 
 -- | A solid angle in steradians.
 --
