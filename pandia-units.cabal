@@ -51,21 +51,6 @@ library
       Data.Units.SI.NonStd.Angle
       Data.Units.SI.Prefixes
       Data.Units.SI.Units
-      Pandia.Units
-      Pandia.Units.AngleSI
-      Pandia.Units.Core
-      Pandia.Units.Core.Convertor
-      Pandia.Units.Core.Dimension
-      Pandia.Units.Core.Prefix
-      Pandia.Units.Core.Rel
-      Pandia.Units.Core.System
-      Pandia.Units.Core.Unit
-      Pandia.Units.NonStd
-      Pandia.Units.NonStd.Angle
-      Pandia.Units.NonStd.Frequency
-      Pandia.Units.NonStd.Temperature
-      Pandia.Units.NonStd.Time
-      Pandia.Units.SI
   other-modules:
       Paths_pandia_units
   hs-source-dirs:
