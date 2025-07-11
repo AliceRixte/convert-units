@@ -38,6 +38,9 @@ instance {-# OVERLAPPABLE #-}
 class (IsUnit u, IsUnit (StdUnitOf u)) => To u a where
   to :: StdUnitOf u a -> u a
 
+toCoerce :: forall u a. To u a => a -> a
+toCoerce a = coerce (to (coerce a :: StdUnitOf u a) :: u a)
+
 instance {-# OVERLAPPABLE #-}
   (ConvFactor u a, IsUnit (StdUnitOf u), IsUnit u)
   => To u a where
@@ -49,6 +52,9 @@ type FromTo u v a = (DimEq u v, From u a, To v a)
 
 fromTo :: FromTo u v a => u a -> v a
 fromTo = to . from
+
+fromToCoerce :: forall u v a. FromTo u v a => a -> a
+fromToCoerce a = coerce (fromTo (coerce a :: u a) :: v a)
 
 
 --------------------------------------------------------------------------------

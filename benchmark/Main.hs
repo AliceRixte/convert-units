@@ -6,7 +6,8 @@ module Main (main) where
 
 import Criterion.Main
 
-import Pandia.Units
+import Data.Units
+import Data.Units.NonStd.Time
 
 mkBench f n = bench (show n) $ nf f n
 
@@ -15,7 +16,7 @@ iterations = [10, 100, 1000]
 
 
 kmphTomps :: Int -> Double
-kmphTomps n =  iterate (kilo meter -/- hour ~~> meter -/- second) 5 !! n
+kmphTomps n =  iterate (fromToCoerce @(Kilo Meter -/- Hour) @(Meter -/- Second)) 5 !! n
 
 multConv :: Int -> Double
 multConv n =  iterate (*3.6) (5 :: Double) !! n
