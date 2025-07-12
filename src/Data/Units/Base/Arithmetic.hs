@@ -1,9 +1,38 @@
-
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeApplications #-}
-
-
+--------------------------------------------------------------------------------
+-- |
+--
+-- Module      :  Data.Units.Base.Arithmetic
+-- Description :  Addition, multiplication and exponentiation of quantities
+-- Copyright   :  (c) Alice Rixte 2025
+-- License     :  BSD 3
+-- Maintainer  :  alice.rixte@u-bordeaux.fr
+-- Stability   :  unstable
+-- Portability :  non-portable (GHC extensions)
+--
+-- Addition, multiplication and exponentiation of quantities. Dimension analysis is done statically via the type system.
+--
+-- == Addition and multiplication of a quantity by a scalar
+--
+-- To add, multiply, divide, and so on, a quantity with a scalar , use its @'Fractional'@ instance :
+--
+-- >>> a = Milli (Second 5)
+-- >>> 3 * a
+-- ofUnit 15 "ms"
+--
+-- [Warning] These instances are provided because they are convenient, but be careful !  This means that you can write
+--
+-- >>> Second 2 * Second 3
+-- ofUnit 6 "s"
+--
+-- Which does not respect dimension analysis: the multiplication of two time
+-- quantities should be of dimension @T²@ and here it has dimension @T@.
+--
+-- All the operators proposed here solve this problem:
+--
+-- >>> Second 2 -*- Second 3
+-- ofUnit 6 "s²"
+--
+--------------------------------------------------------------------------------
 
 module Data.Units.Base.Arithmetic
   (
@@ -261,6 +290,7 @@ infix 6 ~/~
 -- This is meant to be used with @'Data.Type.Int.Proxy'@
 --
 -- >>> Kilo (Meter 2) ~^- pos2
+-- ofUnit 4000000.0 "m²"
 --
 (-^-) :: forall (n :: ZZ) proxy u a. (IsUnit u, KnownInt n, Fractional a)
   => u a -> proxy n -> (u -^- n) a
