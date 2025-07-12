@@ -6,7 +6,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.Base.Arithmetic
+-- Module      :  Data.Units.Base.Convert
 -- Description :  Conversion between units
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -181,6 +181,8 @@ type FromTo u v a = (DimEq u v, From u a, To v a)
 
 -- | Conversion between two quantities with the same dimension.
 --
+--  >>> fromTo @Celsius @Kelvin 0
+--  ofUnit 273.15 "K"
 -- >>> fromTo @(Milli Second) @Hour 1
 -- ofUnit 2.7777777777777776e-7 "hr"
 -- >>> fromTo (Milli (Second 1)) :: Hour Double
@@ -291,7 +293,24 @@ to' :: forall u a. ConvFactor u a
   => StdUnitOf u a -> u a
 to' q = quantity (unQuantity q * factorTo @u)
 
+-- | A constraint that is satisfied when both units have the same dimension and
+-- are such that @u@ can be converted to @v@ by using a conversion factor.
+--
 type FromTo' u v a = (DimEq u v, ConvFactor u a, ConvFactor v a)
+
+-- | Conversion, using conversion factors, between two quantities with the same dimension
+--
+-- >>> fromTo' @Celsius @Kelvin 0
+--  ofUnit 0.0 "K"
+-- >>> fromTo' @(Milli Second) @Hour 1
+-- ofUnit 2.7777777777777776e-7 "hr"
+-- >>> fromTo' (Milli (Second 1)) :: Hour Double
+-- ofUnit 2.7777777777777776e-7 "hr"
+-- >>> fromTo' @Turn @Degree (1/4) -- angle conversion
+-- ofUnit 90.0 "°"
+-- >>> fromTo' @(Kilo Meter -/- Hour) @(Milli Meter -/- Milli Second) 36
+-- ofUnit 10.0 "mm.ms⁻¹"
+--
 fromTo' :: forall u v a.
   FromTo' u v a
   => u a -> v a
