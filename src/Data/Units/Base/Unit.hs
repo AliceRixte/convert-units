@@ -33,11 +33,22 @@ type family DimOf (u :: StandardUnit) :: Dim
 class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where
   type StdUnitOf u :: StandardUnit
 
-forgetUnit :: IsUnit u => u a -> a
-forgetUnit = coerce
+-- | Make a quantity out of any numerical value (called the /magnitude/ of that
+-- quantity)
+--
+-- >>> quantity @(Meter -/- Second) 1
+-- ofUnit 1 "m.s⁻¹"
+quantity :: forall u a. IsUnit u => a -> u a
+quantity = coerce
+{-# INLINE quantity #-}
 
-toUnit :: forall u a. IsUnit u => a -> u a
-toUnit = coerce
+-- | Get the magnitude of a quantity.
+--
+--  @unQuantity (quantity @u a) === a @
+--
+unQuantity :: IsUnit u => u a -> a
+unQuantity = coerce
+{-# INLINE unQuantity #-}
 
 
 class IsUnit u => ShowUnit (u :: Unit) where
@@ -56,7 +67,7 @@ showsUnit = showsPrecUnit @u 0
 
 showsPrecQuantity :: forall u a. (ShowUnit u, Show a) => Int -> u a -> ShowS
 showsPrecQuantity d u = showParen (d > 10) $
-    showString "ofUnit " . shows (coerce u :: a) . showString " \""
+    showString "ofUnit " . shows (unQuantity u) . showString " \""
       . showString (showUnit @u) . showString "\""
 
 showsQuantity :: (ShowUnit u, Show a) => u a -> ShowS

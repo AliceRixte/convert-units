@@ -57,9 +57,6 @@ module Data.Units.Base.Arithmetic
   , (~^-)
   ) where
 
-
-import Data.Coerce
-
 import Data.Type.Int
 
 import Data.Units.Base.Unit
@@ -78,7 +75,7 @@ import Data.Units.Base.Convert
 --      Dimension of ‘m’ is: L
 --
 (-+~) :: forall u v a. FromTo' v u a => u a -> v a -> u a
-u -+~ v = coerce (coerce u + coerce (fromTo' v :: u a) :: a)
+u -+~ v = quantity (unQuantity u + unQuantity (fromTo' v :: u a))
 {-# INLINE (-+~) #-}
 
 infixr 5 -+~
@@ -99,12 +96,12 @@ infixr 5 ~+-
 -- >>> Kilo (Meter 1) ~+~ Milli (Meter 150)
 -- ofUnit 1000.15 "m"
 --
-(~+~) :: forall u v a.
+(~+~) ::
   ( DimEq u v
   , ConvFactor u a, ConvFactor v a
   )
  => u a -> v a -> (StdUnitOf u) a
-u ~+~ v = coerce (coerce (from' u) + coerce (from' v) :: a)
+u ~+~ v = quantity (unQuantity (from' u) + unQuantity (from' v))
 {-# INLINE (~+~) #-}
 
 infixr 5 ~+~
@@ -117,7 +114,7 @@ infixr 5 ~+~
 -- ofUnit 4.92 "km"
 --
 (--~) :: forall u v a. FromTo' v u a => u a -> v a -> u a
-u --~ v = coerce (coerce u - coerce (fromTo' v :: u a) :: a)
+u --~ v = quantity (unQuantity u - unQuantity (fromTo' v :: u a))
 {-# INLINE (--~) #-}
 
 infixr 5 --~
@@ -128,7 +125,7 @@ infixr 5 --~
 -- ofUnit 4920.0 "m"
 --
 (~--) :: forall u v a. FromTo' u v a => u a -> v a -> v a
-u ~-- v = coerce (coerce (fromTo' u :: v a) - coerce v :: a)
+u ~-- v = quantity (unQuantity (fromTo' u :: v a) - unQuantity v)
 -- {-# INLINE (~--) #-}
 
 infixr 5 ~--
@@ -138,12 +135,12 @@ infixr 5 ~--
 -- >>> Kilo (Meter 1) ~-~ Milli (Meter 150)
 -- ofUnit 999.85 "m"
 --
-(~-~) :: forall u v a.
+(~-~) ::
   ( DimEq u v
   , ConvFactor v a, ConvFactor u a
   )
  => u a -> v a -> (StdUnitOf u) a
-u ~-~ v = coerce (coerce (from' u) - coerce (from' v) :: a)
+u ~-~ v = quantity $ unQuantity (from' u) - unQuantity (from' v)
 {-# INLINE (~-~) #-}
 
 infixr 5 ~-~
@@ -170,13 +167,13 @@ infixr 5 ~-~
 --             the same dimension but different units ?
 --      If so, you might want to use (~*-), (-*~) or (~*~) instead.
 --
-(-*-) :: forall u v uv a.
+(-*-) ::
   ( uv ~ NormalizeUnit (u -*- v)
   , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
  => u a -> v a -> uv a
-u -*- v = coerce (coerce u * coerce v :: a)
+u -*- v = quantity $ unQuantity u * unQuantity v
 {-# INLINE (-*-) #-}
 
 infixr 7 -*-
@@ -201,7 +198,7 @@ infixr 7 -*-
   , FromTo' v u a
   )
  => u a -> v a -> u2 a
-u -*~ v = coerce (coerce u * coerce (fromTo' v :: u a) :: a)
+u -*~ v = quantity $ unQuantity u * unQuantity (fromTo' v :: u a)
 {-# INLINE (-*~) #-}
 
 infix 7 -*~
@@ -214,7 +211,7 @@ infix 7 -*~
 -- >>> Kilo (Meter 3) ~*- Meter 2
 -- ofUnit 6000.0 "m²"
 --
-(~*-) :: forall u v v2 a.
+(~*-) ::
   ( v2 ~ NormalizeUnit (v -^+ 2), IsUnit v2
   , DimEq v u
   , FromTo' u v a
@@ -235,13 +232,13 @@ infix 7 ~*-
 --   Dimension of ‘m’ is: L
 --   Dimension of ‘s’ is: T
 --
-(~*~) :: forall u v u2 a.
+(~*~) ::
   ( u2 ~ StdUnitOf u -^+ 2, IsUnit u2
   , DimEq u v
   , ConvFactor u a, ConvFactor v a
   )
  => u a -> v a -> u2 a
-u ~*~ v = coerce (coerce (from' u) * coerce (from' v) :: a)
+u ~*~ v = quantity $ unQuantity (from' u) * unQuantity (from' v)
 {-# INLINE (~*~) #-}
 
 infix 7 ~*~
@@ -257,9 +254,13 @@ infix 7 ~*~
 -- ofUnit 2.0 "m.s⁻¹"
 --
 --
-(-/-) :: forall u v a. (IsUnit u, IsUnit v, Fractional a)
-  => u a -> v a -> (u -/- v) a
-u -/- v = coerce (coerce u / coerce v :: a)
+(-/-) ::
+  (uv ~ NormalizeUnit (u -/- v)
+  , IsUnit u, IsUnit v, IsUnit uv
+  , Fractional a
+  )
+  => u a -> v a -> uv a
+u -/- v = quantity (unQuantity u / unQuantity v)
 {-# INLINE (-/-) #-}
 
 infix 6 -/-
@@ -273,12 +274,12 @@ infix 6 -/-
 -- ofUnit 2.0 "m.s⁻¹"
 --
 --
-(~/~) :: forall u v a.
+(~/~) ::
   ( DimEq u v
   , ConvFactor u a, ConvFactor v a
   )
   => u a -> v a -> NoUnit a
-u ~/~ v = coerce (coerce (from' u)  / coerce (from' v) :: a)
+u ~/~ v = quantity $ unQuantity (from' u)  / unQuantity (from' v)
 {-# INLINE (~/~) #-}
 
 infix 6 ~/~
@@ -294,7 +295,7 @@ infix 6 ~/~
 --
 (-^-) :: forall (n :: ZZ) proxy u a. (IsUnit u, KnownInt n, Fractional a)
   => u a -> proxy n -> (u -^- n) a
-u -^- p = coerce $ (coerce u :: a) ^^ intVal p
+u -^- p = quantity $ unQuantity u ^^ intVal p
 {-# INLINE (-^-) #-}
 
 infix 8 -^-
@@ -305,10 +306,10 @@ infix 8 -^-
 -- >>> Kilo (Meter 2) ~^- neg1
 -- ofUnit 5.0e-4 "m⁻¹"
 --
-(~^-) :: forall (n :: ZZ) proxy u a.
-  (KnownInt n, ConvFactor u a)
-  => u a -> proxy n -> (StandardizeUnit u -^- n) a
-u ~^- p = coerce $ (coerce (from' u) :: a ) ^^ intVal p
+(~^-) :: forall (n :: ZZ) proxy u un a.
+  (KnownInt n, ConvFactor u a, un ~ StdUnitOf u -^- n )
+  => u a -> proxy n -> un a
+u ~^- p = quantity @un $ unQuantity (from' u) ^^ intVal p
 {-# INLINE (~^-) #-}
 
 infix 8 ~^-

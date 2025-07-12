@@ -6,8 +6,6 @@
 
 module Data.Units.Base.Prefix where
 
-import Data.Coerce
-
 import Data.Units.Base.Unit
 import Data.Units.Base.Convert
 
@@ -69,13 +67,13 @@ instance (PrefixFactor p a, From u a, StdUnitOf (p u) ~ StdUnitOf u)
 prefixFrom :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, From u a, StdUnitOf (p u) ~ StdUnitOf u)
   => p u a -> StdUnitOf u a
-prefixFrom a = from @u (coerce (prefixFactorFrom @p * coerce a :: a) :: u a)
+prefixFrom u = from @u $ quantity @u (prefixFactorFrom @p * unQuantity u)
 {-# INLINE prefixFrom #-}
 
 prefixTo :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, To u a, StdUnitOf (p u) a ~ StdUnitOf u a)
   => StdUnitOf (p u) a -> p u a
-prefixTo a = coerce (coerce (to a :: u a) * prefixFactorTo @p :: a)
+prefixTo a = quantity  $ unQuantity (to @u a) * prefixFactorTo @p
 {-# INLINE prefixTo #-}
 
 

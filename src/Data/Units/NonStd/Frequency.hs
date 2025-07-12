@@ -1,7 +1,5 @@
 module Data.Units.NonStd.Frequency where
 
-import Data.Coerce
-
 import GHC.TypeLits
 import Data.Proxy
 
@@ -17,13 +15,13 @@ newtype Tet (b :: Nat) (offs :: ZZ) a = Tet a
   deriving Show via MetaUnit (Tet b offs) a
 
 instance (Floating a, KnownNat b, KnownInt offs) => From (Tet b offs) a where
-  from (Tet a) = coerce $ 440 * 2 ** ((a + offs) / b)
+  from (Tet a) = quantity $ 440 * 2 ** ((a + offs) / b)
     where
      b = fromIntegral $ natVal (Proxy :: Proxy b)
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100
 
 instance (Floating a, KnownNat b, KnownInt offs) => To (Tet b offs) a where
-  to a = Tet $ b * logBase 2 (coerce a/ 440) - offs
+  to a = Tet $ b * logBase 2 (unQuantity a/ 440) - offs
     where
      b = fromIntegral $ natVal (Proxy :: Proxy b)
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100
