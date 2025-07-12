@@ -20,18 +20,27 @@
 -- = Implementing conversions for custom units
 --
 -- Depending on how the custom unit is converted to its standard unit, there are
--- three ways to implement its conversion (more details on this below):
+-- three ways to implement its conversion summarized in the following table and
+-- described with further details afterwards:
 --
--- [Conversion factor:]Only declare its conversion factor @'ConvFactor'@.
---    @'From'@ and @'To'@ will be defaulted to multiplication and division by
---    that factor. In that case @'from'@, @'to'@ and @'fromTo'@ will be /the
---    same/ as @'from''@, @'to''@ and @'fromTo''@.
--- [Offseted units:] Instanciate all @'ConvFactor'@ and @'From'@ and @'To'@.
---    This is useful for offseted units. In that case @'from'@, @'to'@ and
---    @'fromTo'@ will be /different/ as @'from''@, @'to''@ and @'fromTo''@.
--- [Non linear units:] Instanciate only @'From'@ and @'To'@. This is useful for
---    instance for logarithmic unit or any non linear conversion. In this case,
---    @'from''@, @'to''@ and @'fromTo''@ will not be defined.
+--  +---------------------------+------------------------+---------------------+
+--  |                          | Which instances        | Note                 |
+--  |                          | to declare             |                      |
+--  +==========================+========================+======================+
+--  | Conversion factor        | Only @'ConvFactor'@    | @'from' == 'from''@, |
+--  |                          | (@'From'@ and @'To'@   | @'to' == 'to''@,     |
+--  |                          | have a default         | @'fromTo' == @       |
+--  |                          | overlappable instance) | @'fromTo''@          |
+--  +---------------------------+------------------------+---------------------+
+--  | Affine conversion        | @'ConvFactor'@,        | @'from' /= 'from''@, |
+--  |                          | @'From'@ and @'To'@    | @'to' /= 'to''@,     |
+--  |                          |                        | @'fromTo' /= @       |
+--  |                          |                        | @'fromTo''@          |
+--  +---------------------------+------------------------+---------------------+
+--  | Non linear conversion    |                        | @'from''@, @'to''@   |
+--  |                          | @'From'@ and @'To'@    | and @'fromTo''@      |
+--  |                          |                        | cannot be used       |
+--  +---------------------------+------------------------+---------------------+
 --
 --
 -- === Multiplication by a conversion factor
@@ -45,23 +54,23 @@
 --   actorFrom = 3600
 -- @
 --
--- You will get instances for @'From'@ and @'To' for free.
+-- You will get instances for @'From'@ and @'To'@ for free.
 --
 -- >>> from (Hour 1)
 -- ofUnit 3600.0 "s"
 -- >>> from' (Hour 1)
 -- ofUnit 3600.0 "s"
 --
--- === Conversion with an offset
+-- === Affine conversion (with an offset)
 --
 -- Some units cannot be conversed by a simple multiplication. For instance, the
--- conversion between Celsius degrees and Kelvin degrees involves subtraction
--- @x °C = x + 273.15 K)@.
+-- conversion between Celsius degrees and Kelvin degrees involves addition
+-- @x °C = x + 273.15 K@.
 --
--- However, when considered as /difference/ of temperatures, Celsius degrees are
--- converted to Kelvin degrees by a multiplication of @1@.
+-- However, when considered as /differences/ of temperatures, Celsius degrees
+-- are converted to Kelvin degrees by a multiplication of @1@.
 --
--- This can be expressed by the following:
+-- This can be expressed by the following instances:
 --
 -- @
 -- instance Fractional a => ConvFactor Celsius a where
