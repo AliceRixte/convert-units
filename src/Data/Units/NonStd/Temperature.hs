@@ -18,10 +18,10 @@ instance ShowUnit Celsius where
   showUnit = "°C"
 
 instance Fractional a => From Celsius a where
-  from (Celsius x) = Kelvin (x - 273.15)
+  from (Celsius x) = Kelvin (x + 273.15)
 
 instance Fractional a => To Celsius a where
-  to (Kelvin x) = Celsius (x + 273.15)
+  to (Kelvin x) = Celsius (x - 273.15)
 
 instance Fractional a => ConvFactor Celsius a where
   factorFrom = 1

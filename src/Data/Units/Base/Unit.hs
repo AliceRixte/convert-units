@@ -15,6 +15,7 @@ import Data.Kind
 import Data.Proxy
 import Data.Type.Ord
 import Data.Type.Bool
+import Data.Type.Equality
 import GHC.TypeError
 import GHC.TypeLits
 
@@ -67,7 +68,7 @@ showsUnit = showsPrecUnit @u 0
 
 showsPrecQuantity :: forall u a. (ShowUnit u, Show a) => Int -> u a -> ShowS
 showsPrecQuantity d u = showParen (d > 10) $
-    showString "ofUnit " . shows (unQuantity u) . showString " \""
+    showString "ofUnit " . showsPrec 11 (unQuantity u) . showString " \""
       . showString (showUnit @u) . showString "\""
 
 showsQuantity :: (ShowUnit u, Show a) => u a -> ShowS
@@ -365,3 +366,34 @@ type family u -/- v where
 
 infix 6 -/-
 
+
+--------------------------------------------------------------------------------
+
+type family DimEq (u :: Unit) (v :: Unit) :: Constraint where
+  DimEq u v = DimEqStd u v (StdUnitOf u) (StdUnitOf v)
+
+-- Avoid computing too many times StdUnitOf ? (I don't know if GHC would
+-- optimize it)
+type family DimEqStd (u :: Unit) (v :: Unit) (stdu :: Unit) (stdv :: Unit)
+  :: Constraint where
+  DimEqStd u v stdu stdv =
+    ( IsUnit u
+    , IsUnit v
+    , stdu ~ stdv
+    , IsUnit stdu
+    , If (stdu == stdv) (() :: Constraint)
+      (TypeError (
+          Text "Cannot convert unit ‘"
+          :<>: ShowUnitType u
+          :<>: Text "’ to unit ‘"
+          :<>: ShowUnitType v
+          :<>: Text "’ because their dimensions do not match."
+          :$$: Text "Dimension of ‘"
+          :<>: ShowUnitType u
+          :<>: Text "’ is: "
+          :<>: ShowDim (DimOf stdu)
+          :$$: Text "Dimension of ‘"
+          :<>: ShowUnitType v
+          :<>: Text "’ is: "
+          :<>: ShowDim (DimOf stdv)
+    )))
