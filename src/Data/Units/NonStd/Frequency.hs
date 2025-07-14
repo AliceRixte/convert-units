@@ -33,7 +33,10 @@ instance (KnownNat b, KnownInt offs) => ShowUnit (Tet b offs) where
   type ShowUnitType (Tet b offs) =
     Text "tet{b=" :<>: ShowType b
     :<>: Text ",offs=" :<>: ShowType offs :<>: Text "}"
-  showUnit = "tet{b=" ++ show (natVal (Proxy :: Proxy b))
+  showsUnitPrec d = showParen (d > 10) $
+    showString "Tet" . shows (natVal (Proxy :: Proxy b))
+                     . shows (intVal (Proxy :: Proxy offs))
+  prettyUnit = "tet{b=" ++ show (natVal (Proxy :: Proxy b))
             ++ ",offs=" ++ show (intVal (Proxy :: Proxy offs)) ++ "}"
 
 type MidiPitch = Tet 12 (Neg 6900)

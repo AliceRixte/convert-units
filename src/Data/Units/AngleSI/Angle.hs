@@ -50,7 +50,8 @@ instance IsUnit Radian where
 
 instance ShowUnit Radian where
   type ShowUnitType Radian = Text "rad"
-  showUnit = "rad"
+  showUnit = "Radian"
+  prettyUnit = "rad"
 
 -- | Normalize an angle to the range ]-pi, pi]
 normalizeRadians :: (RealFrac a, Floating a) => Radian a -> Radian a

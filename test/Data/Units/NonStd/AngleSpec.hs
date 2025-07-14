@@ -2,7 +2,6 @@ module Data.Units.NonStd.AngleSpec where
 
 import Test.Hspec
 
-import Data.Units.Base
 import qualified Data.Units.SI.Angle as SI
 import qualified Data.Units.SI.NonStd.Angle as SI
 import qualified Data.Units.AngleSI.Angle as A

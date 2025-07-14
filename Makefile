@@ -1,6 +1,6 @@
 # The following variables can be set in command line. For instance : "make run
 # exe=myExe"
-pkg = pandia-units
+pkg = convert-units
 trg = lib
 exe = $(pkg)-exe
 tst = $(pkg)-test

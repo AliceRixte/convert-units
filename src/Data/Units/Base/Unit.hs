@@ -31,6 +31,9 @@ type StandardUnit = Type -> Type
 
 type family DimOf (u :: StandardUnit) :: Dim
 
+-- | Any unit must have a corresponding standard unit. Additionally, a unit is a
+-- newtype constructor : a quantity @u a@ can always be coerced to its magnitude
+-- @a@.
 class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where
   type StdUnitOf u :: StandardUnit
 
@@ -51,32 +54,61 @@ unQuantity :: IsUnit u => u a -> a
 unQuantity = coerce
 {-# INLINE unQuantity #-}
 
-
+-- | Units that can be shown as a string, or as a type error message.
+--
 class IsUnit u => ShowUnit (u :: Unit) where
-  {-# MINIMAL showUnit |  showsPrecUnit #-}
+  {-# MINIMAL showUnit |  showsUnitPrec #-}
+
+  -- | Allows to print units in conversion error messages
+  --
+  -- >>> type ShowUnit Meter = "m"
+  --
   type ShowUnitType u :: ErrorMessage
 
-  showsPrecUnit :: Int -> ShowS
-  showsPrecUnit _ = (showUnit @u ++)
+  showsUnitPrec :: Int -> ShowS
+  showsUnitPrec _ = (showUnit @u ++)
 
   showUnit :: String
   showUnit = showsUnit @u ""
 
+  -- | Same as @'showsUnitPrec'@ but for pretty printing.
+  --
+  prettysUnitPrec :: Int -> ShowS
+  prettysUnitPrec _ = (prettyUnit @u ++)
+
+  -- | Same as @'showUnit'@ but for pretty printing
+  --
+  -- >>> putStrLn $ prettyUnit @(Kilo Meter -/- Second)
+  -- km.s⁻¹
+  --
+  prettyUnit :: String
+  prettyUnit = prettysUnit @u ""
+
 
 showsUnit :: forall u. ShowUnit u => ShowS
-showsUnit = showsPrecUnit @u 0
+showsUnit = showsUnitPrec @u 0
 
-showsPrecQuantity :: forall u a. (ShowUnit u, Show a) => Int -> u a -> ShowS
-showsPrecQuantity d u = showParen (d > 10) $
-    showString "ofUnit " . showsPrec 11 (unQuantity u) . showString " \""
-      . showString (showUnit @u) . showString "\""
+prettysUnit :: forall u. ShowUnit u => ShowS
+prettysUnit = prettysUnitPrec @u 0
+
+
+showsQuantityPrec :: forall u a. (ShowUnit u, Show a) => Int -> u a -> ShowS
+showsQuantityPrec d u = showParen (d > 10) $
+    showString "quantity @" . showsUnitPrec @u 11 . showString " " .
+      showsPrec 11 (unQuantity u)
 
 showsQuantity :: (ShowUnit u, Show a) => u a -> ShowS
-showsQuantity  = showsPrecQuantity 0
+showsQuantity  = showsQuantityPrec 0
 
 showQuantity :: (ShowUnit u, Show a) => u a -> String
 showQuantity u = showsQuantity u ""
 
+
+prettyQuantity :: forall u a. (ShowUnit u, Show a) => u a -> String
+prettyQuantity u  = show (unQuantity u) ++ " " ++  prettyUnit @u
+
+printQuantity :: (Show a, ShowUnit u) => u a -> IO ()
+printQuantity = putStr . showQuantity
 
 
 --------------------------------------------------------------------------------
@@ -89,10 +121,11 @@ newtype MetaUnit (u :: StandardUnit) a = MetaUnit a
 
 instance ShowUnit u => ShowUnit (MetaUnit u) where
   type ShowUnitType (MetaUnit u) = ShowUnitType u
-  showsPrecUnit = showsPrecUnit @u
+  prettysUnitPrec = prettysUnitPrec @u
+  showsUnitPrec = showsUnitPrec @u
 
 instance (Show a, ShowUnit u) => Show (MetaUnit u a) where
-  showsPrec = showsPrecQuantity
+  showsPrec = showsQuantityPrec
 
 -- | Check whether a unit has the same unit as the one represented by a String.
 --
@@ -155,8 +188,10 @@ instance (ShowUnit u, ShowUnit v) => ShowUnit (u -*- v) where
          Text "(" :<>: ShowUnitType u
     :<>: Text "." :<>: ShowUnitType v
     :<>: Text ")"
-  showsPrecUnit d = showParen (d > 7) $
-    showsPrecUnit @u 7 . showString "." .  showsPrecUnit @v 7
+  prettysUnitPrec d = showParen (d > 7) $
+    prettysUnitPrec @u 7 . showString "." .  prettysUnitPrec @v 7
+  showsUnitPrec d = showParen (d > 7) $
+    showsUnitPrec @u 7 . showString " -*- " .  showsUnitPrec @v 7
 
 
 instance (IsUnit u, IsUnit v) => IsUnit (u -*- v) where
@@ -216,8 +251,16 @@ instance IsUnit u => IsUnit (u -^- n) where
 instance (ShowUnit u, KnownInt n) => ShowUnit (u -^- n) where
   type ShowUnitType (u -^- n) =
          ShowUnitType u :<>: ShowIntExponent n
-  showsPrecUnit d = showParen (d >= 8) $
-    showsPrecUnit @u 8 .  showString (toSuperscript <$> show (intVal (Proxy :: Proxy n)))
+  prettysUnitPrec d = showParen (d >= 8) $
+    prettysUnitPrec @u 8 .  showString (toSuperscript <$> show (intVal (Proxy :: Proxy n)))
+  showsUnitPrec d = showParen (d >= 8) $
+    if n >= 0 then
+      showsUnitPrec @u 8 . showString " -^+ " . shows n
+    else
+      showsUnitPrec @u 8 . showString " -^~ " . shows (-n)
+    where
+      n = intVal (Proxy :: Proxy n)
+
 
 toSuperscript :: Char -> Char
 toSuperscript '0' = '⁰'

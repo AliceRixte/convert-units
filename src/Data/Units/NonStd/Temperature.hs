@@ -15,7 +15,8 @@ instance IsUnit Celsius where
 
 instance ShowUnit Celsius where
   type ShowUnitType Celsius = Text "°C"
-  showUnit = "°C"
+  showUnit = "Celsius"
+  prettyUnit = "°C"
 
 instance Fractional a => From Celsius a where
   from (Celsius x) = Kelvin (x + 273.15)

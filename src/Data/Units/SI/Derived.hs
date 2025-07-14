@@ -18,4 +18,5 @@ instance IsUnit Hertz where
 
 instance ShowUnit Hertz where
   type ShowUnitType Hertz = Text "Hz"
-  showUnit = "Hz"
+  showUnit = "Hertz"
+  prettyUnit = "Hz"

@@ -21,7 +21,6 @@ import Data.Units.Base
 
 import Data.Units.AngleSI.Angle
 
-
 -- | Angle in degrees.
 --
 newtype Degree a = Degree a
@@ -37,7 +36,8 @@ instance IsUnit Degree where
 
 instance ShowUnit Degree where
   type ShowUnitType Degree = Text "°"
-  showUnit = "°"
+  showUnit = "Degree"
+  prettyUnit = "°"
 
 
 -- | Angle in complete turns (also called cycles or revolutions)
@@ -57,7 +57,8 @@ instance IsUnit Turn where
 
 instance ShowUnit Turn where
   type ShowUnitType Turn = Text "tr"
-  showUnit = "tr"
+  showUnit = "Turn"
+  prettyUnit = "tr"
 
 
 
@@ -78,5 +79,5 @@ instance IsUnit Gradian where
 
 instance ShowUnit Gradian where
   type ShowUnitType Gradian = Text "grad"
-  showUnit = "grad"
-
+  showUnit = "Gradian"
+  prettyUnit = "grad"

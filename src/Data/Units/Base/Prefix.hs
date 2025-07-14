@@ -4,6 +4,22 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE InstanceSigs #-}
 
+--------------------------------------------------------------------------------
+-- |
+--
+-- Module      :  Data.Units.Base.Prefix
+-- Description :  Unit prefix for a system of units
+-- Copyright   :  (c) Alice Rixte 2025
+-- License     :  BSD 3
+-- Maintainer  :  alice.rixte@u-bordeaux.fr
+-- Stability   :  unstable
+-- Portability :  non-portable (GHC extensions)
+--
+-- Provides way to define prefixes for any system of units.
+--
+--------------------------------------------------------------------------------
+
+
 module Data.Units.Base.Prefix where
 
 import Data.Units.Base.Unit
@@ -12,36 +28,75 @@ import Data.Units.Base.Convert
 -- | A unit prefix, like Kilo, Milli, etc.
 type Prefix = Unit -> Unit
 
+-- | The application of a prefix to a unit must always be a unit.
 class (forall (u :: Unit). IsUnit u => IsUnit (p u))
   => IsPrefix (p :: Prefix)
 
 instance (forall (u :: Unit). IsUnit u => IsUnit (p u))
   => IsPrefix (p :: Prefix)
 
+-- | A prefix that has a conversion factor.
 class (Fractional a, IsPrefix p) => PrefixFactor (p :: Prefix) a where
   {-# MINIMAL prefixFactorFrom | prefixFactorTo #-}
+  -- | Prefix conversion factor from the prefixed unit to the corresponding
+  -- standard unit
+  --
+  -- >>> prefixFactorFrom @Kilo
+  -- 1000.0
+  --
   prefixFactorFrom :: a
   prefixFactorFrom = 1 / prefixFactorTo @p
   {-# INLINE prefixFactorFrom #-}
 
+  -- | Prefix conversion factor fromthe standard unit to the prefixed unit
+  --
+  -- >>> prefixFactorTo @Kilo
+  -- 1000.0
+  --
   prefixFactorTo :: a
   prefixFactorTo = 1 / prefixFactorFrom @p
   {-# INLINE prefixFactorTo #-}
 
+-- | Prefixes that can be shown as a string, or as a type error message.
 class IsPrefix p => ShowPrefix (p :: Prefix) where
-  {-# MINIMAL showPrefix |  showsPrecPrefix #-}
-  type ShowPrefixType p :: ErrorMessage
-  showsPrecPrefix :: Int -> ShowS
-  showsPrecPrefix _ = (showPrefix @p ++)
+  {-# MINIMAL showPrefix |  showsPrefixPrec #-}
 
+  -- | Allows to print units in conversion error messages
+  --
+  -- >>> type ShowPrefix Kilo = "k"
+  --
+  type ShowPrefixType p :: ErrorMessage
+
+  -- | TODO
+  showsPrefixPrec :: Int -> ShowS
+  showsPrefixPrec _ = (showPrefix @p ++)
+
+  -- | A string representing a prefix.
   showPrefix :: String
   showPrefix = showsPrefix @p ""
 
+  prettysPrefixPrec :: Int -> ShowS
+  prettysPrefixPrec _ = (prettyPrefix @p ++)
+
+  -- | A string representing a prefix.
+  prettyPrefix :: String
+  prettyPrefix = prettysPrefix @p ""
+
+-- | TODO
 showsPrefix :: forall p. ShowPrefix p => ShowS
-showsPrefix = showsPrecPrefix @p 0
+showsPrefix = showsPrefixPrec @p 0
+
+prettysPrefix :: forall p. ShowPrefix p => ShowS
+prettysPrefix = prettysPrefixPrec @p 0
+
+-- showsPrefixCons :: forall p. ShowPrefix p => ShowS
+-- showsPrefixCons = showsPrecPrefix @p 0
 
 
-
+-- | A prefix that can represent any prefix.
+--
+-- This can be used with the `deriving via` mechanism to derive some of the
+-- prefix instances.
 newtype MetaPrefix (p :: Prefix) (u :: Unit) a = MetaPrefix (p u a)
   deriving Show via (MetaUnit (p u) a)
 
@@ -79,8 +134,10 @@ prefixTo a = quantity  $ unQuantity (to @u a) * prefixFactorTo @p
 
 instance ShowPrefix p => ShowPrefix (MetaPrefix p) where
   type ShowPrefixType (MetaPrefix p)  = ShowPrefixType p
-  showsPrecPrefix = showsPrecPrefix @p
+  showsPrefixPrec = showsPrefixPrec @p
   showPrefix = showPrefix @p
+  prettysPrefixPrec = prettysPrefixPrec @p
+  prettyPrefix = prettyPrefix @p
 
 instance (IsPrefix p, IsUnit u)
   => IsUnit (MetaPrefix p u) where
@@ -89,6 +146,8 @@ instance (IsPrefix p, IsUnit u)
 instance (ShowPrefix p, ShowUnit u)
   => ShowUnit (MetaPrefix p u) where
   type ShowUnitType (MetaPrefix p u) = ShowPrefixType p :<>: ShowUnitType u
-  showsPrecUnit d = showParen (d > 10) $
-    showsPrefix @p . showsUnit @u
+  showsUnitPrec d = showParen (d > 10) $
+    showsPrefix @p . showString " " .  showsUnitPrec @u 11
+  prettysUnitPrec d = showParen (d > 10) $
+    prettysPrefix @p  . prettysUnit @u
 

@@ -50,7 +50,8 @@ deriving via MetaPrefix Kilo u instance IsUnit u => IsUnit (Kilo u )
 
 instance ShowPrefix Kilo where
   type ShowPrefixType Kilo = Text "k"
-  showPrefix = "k"
+  prettyPrefix = "k"
+  showPrefix = "Kilo"
 
 instance Fractional a => PrefixFactor Kilo a where
   prefixFactorFrom = 1000

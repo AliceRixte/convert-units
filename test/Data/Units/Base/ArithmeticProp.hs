@@ -355,26 +355,32 @@ mulDiffDimSpec :: forall u v a.
 mulDiffDimSpec = it (showUnit @u ++ " -*- " ++ showUnit @v)
     $ mulDiffDimProp @u @v @a
 
-divDiffDim :: forall u v a.
-  ( ConvFactor u a, ConvFactor v a
+divDiffDim :: forall u v a uv .
+  ( uv ~ NormalizeUnit (u -/- v)
+  , IsUnit u, IsUnit v, IsUnit uv
+  , Fractional a
   )
   => a -> a -> a
 divDiffDim u v = coerce $ (coerce u :: u a) -/- (coerce v :: v a)
 
-divDiffDimProp :: forall u v a.
-  ( ConvFactor u a, ConvFactor (InverseUnit v) a, ConvFactor v a
+divDiffDimProp :: forall u v a uv.
+  ( uv ~ NormalizeUnit (u -/- v)
+  , IsUnit u, IsUnit v, IsUnit uv
   , IsUnit (StdUnitOf (u -/- v))
-  , Arbitrary a, Show a, Epsilon a, Eq a
+  , From (u -/- v) a, To (u -/- v) a
+  , Arbitrary a, Show a, Epsilon a, Eq a, Fractional a
   )
   => Property
 divDiffDimProp =
   property (\a b -> b == 0 || aboutEqual (a / b) (divDiffDim @u @v @a a b) )
   .&&. toFromProp @(u -/- v) @a
 
-divDiffDimSpec :: forall u v a.
-  ( ConvFactor u a, ConvFactor (InverseUnit v) a, ConvFactor v a
+divDiffDimSpec :: forall u v a uv.
+  ( uv ~ NormalizeUnit (u -/- v)
+  , IsUnit u, IsUnit v, IsUnit uv
   , IsUnit (StdUnitOf (u -/- v))
-  , Arbitrary a, Show a, Epsilon a, Eq a
+  , From (u -/- v) a, To (u -/- v) a
+  , Arbitrary a, Show a, Epsilon a, Eq a, Fractional a
   , ShowUnit u, ShowUnit v
   )
   => Spec
@@ -415,7 +421,7 @@ expSpec :: forall u a.
   , Arbitrary a, Show a,  Eq a, Epsilon a
   )
   => Spec
-expSpec = it (showUnit @u ++ "-^- pos2  ," ++ showUnit @u ++ "-^- neg1") $
+expSpec = it (showUnit @u ++ " -^+ 2  ," ++ showUnit @u ++ " -^~ 1") $
   exp2Prop @u @a .&&. expm1Prop @u @a
 
 exp2Conv :: forall u a.

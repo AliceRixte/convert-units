@@ -28,7 +28,8 @@ instance IsUnit Meter where
 
 instance ShowUnit Meter where
   type ShowUnitType Meter = Text "m"
-  showUnit = "m"
+  prettyUnit = "m"
+  showUnit = "Meter"
 
 
 -- | A quantity in seconds, denotated @s@ in SI.
@@ -50,7 +51,8 @@ instance IsUnit Second where
 
 instance ShowUnit Second where
   type ShowUnitType Second = Text "s"
-  showUnit = "s"
+  prettyUnit = "s"
+  showUnit = "Second"
 
 -- | A quantity in Kelvin, denotated @K@ in SI.
 --

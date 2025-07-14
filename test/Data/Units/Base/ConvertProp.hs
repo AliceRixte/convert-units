@@ -71,11 +71,11 @@ fromToAssert :: forall a u v.
   ( Show (u a), Show (v a)
   , FromTo u v a
   , FromTo v u a
-  , Arbitrary a, Show a, Epsilon a
+  , Arbitrary a, ShowUnit u, ShowUnit v, Show a, Epsilon a
   )
   => u a -> v a -> Spec
 fromToAssert u v =
-  it ("`" ++ show u ++ "` should be  `" ++ show v ++ "`") $
+  it ("`" ++ prettyQuantity u ++ "` should be `" ++ prettyQuantity v ++ "`") $
     aboutEqual (coerce (fromTo u :: v a) :: a) (coerce v :: a)
       && aboutEqual (coerce (fromTo v :: u a) :: a) (coerce u :: a)
       `shouldBe` True

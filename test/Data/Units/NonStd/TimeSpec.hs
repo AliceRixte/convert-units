@@ -2,9 +2,7 @@ module Data.Units.NonStd.TimeSpec where
 
 import Test.Hspec
 
-import Data.Units.Base
 import Data.Units.NonStd.Time
-
 import Data.Units.Base.ConvertProp
 
 spec :: Spec

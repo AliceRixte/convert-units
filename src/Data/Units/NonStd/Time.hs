@@ -33,7 +33,8 @@ instance IsUnit Minute where
 
 instance ShowUnit Minute where
   type ShowUnitType Minute = Text "min"
-  showUnit = "min"
+  showUnit = "Minute"
+  prettyUnit = "min"
 
 
 instance Fractional a => ConvFactor Minute a where
@@ -51,7 +52,8 @@ instance IsUnit Hour where
 
 instance ShowUnit Hour where
   type ShowUnitType Hour = Text "hr"
-  showUnit = "hr"
+  showUnit = "Hour"
+  prettyUnit = "hr"
 
 instance Fractional a => ConvFactor Hour a where
   factorFrom = 3600
