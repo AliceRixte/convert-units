@@ -21,9 +21,8 @@ newtype Meter a = Meter a
 instance Fractional a => ConvFactor Meter a where
   factorFrom = 1
 
-type instance DimOf Meter = Length
-
 instance IsUnit Meter where
+  type DimOf Meter = Length
   type StdUnitOf Meter = Meter
 
 instance ShowUnit Meter where
@@ -44,9 +43,8 @@ newtype Second a = Second a
 instance Fractional a => ConvFactor Second a where
   factorFrom = 1
 
-type instance DimOf Second = Time
-
 instance IsUnit Second where
+  type DimOf Second = Time
   type StdUnitOf Second = Second
 
 instance ShowUnit Second where
@@ -68,9 +66,8 @@ newtype Kelvin a = Kelvin a
 instance Fractional a => ConvFactor Kelvin a where
   factorFrom = 1
 
-type instance DimOf Kelvin = Temperature
-
 instance IsUnit Kelvin where
+  type DimOf Kelvin = Temperature
   type StdUnitOf Kelvin = Kelvin
 
 instance ShowUnit Kelvin where

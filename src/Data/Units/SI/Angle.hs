@@ -32,9 +32,8 @@ newtype Radian a = Radian a
 instance Fractional a => ConvFactor Radian a where
   factorFrom = 1
 
-type instance DimOf Radian = NoDim
-
 instance IsUnit Radian where
+  type DimOf Radian = NoDim
   type StdUnitOf Radian = NoUnit
 
 instance ShowUnit Radian where
@@ -59,9 +58,10 @@ newtype Steradian a = Steradian a
 instance Fractional a => ConvFactor Steradian a where
   factorFrom = 1
 
-type instance DimOf Steradian = NoDim
+
 
 instance IsUnit Steradian where
+  type DimOf Steradian = NoDim
   type StdUnitOf Steradian = NoUnit
 
 instance ShowUnit Steradian where

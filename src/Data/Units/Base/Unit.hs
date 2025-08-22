@@ -29,13 +29,15 @@ import Data.Units.Base.Dimension
 type Unit = Type -> Type
 type StandardUnit = Type -> Type
 
-type family DimOf (u :: StandardUnit) :: Dim
+class IsDim (d :: Dim) where
+  type StdUnitOf' d
 
 -- | Any unit must have a corresponding standard unit. Additionally, a unit is a
 -- newtype constructor : a quantity @u a@ can always be coerced to its magnitude
 -- @a@.
 class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where
   type StdUnitOf u :: StandardUnit
+  type DimOf (u :: StandardUnit) :: Dim
 
 -- | Make a quantity out of any numerical value (called the /magnitude/ of that
 -- quantity)
@@ -161,9 +163,8 @@ newtype NoUnit a = NoUnit a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
 
-type instance DimOf NoUnit = NoDim
-
 instance IsUnit NoUnit where
+  type DimOf NoUnit = NoDim
   type StdUnitOf NoUnit = NoUnit
 
 
@@ -180,7 +181,6 @@ newtype ((u :: Unit) -*- (v :: Unit)) a = MulUnit a
 
 infixr 7 -*-
 
-type instance DimOf (u -*- v) = DimOf u -*- DimOf v
 type instance ShowDim (u -*- v) = ShowDim u :<>: Text "." :<>: ShowDim v
 
 instance (ShowUnit u, ShowUnit v) => ShowUnit (u -*- v) where
@@ -195,6 +195,7 @@ instance (ShowUnit u, ShowUnit v) => ShowUnit (u -*- v) where
 
 
 instance (IsUnit u, IsUnit v) => IsUnit (u -*- v) where
+  type DimOf (u -*- v) = DimOf u -*- DimOf v
   type StdUnitOf (u -*- v) = StandardizeUnit (u -*- v)
 
 
@@ -220,7 +221,6 @@ infix 8 -^+
 type a -^~ b = a -^- Neg b
 infix 8 -^~
 
-type instance DimOf (u -^- n) = DimOf u -^- n
 type instance DimId (d -^- n) = DimId d
 type instance ShowDim (d -^- n) = ShowDim d :<>: ShowIntExponent n
 
@@ -245,6 +245,7 @@ type family ShowDigitExponent (n :: Nat) :: ErrorMessage where
   ShowDigitExponent 9 = Text "⁹"
 
 instance IsUnit u => IsUnit (u -^- n) where
+  type DimOf (u -^- n) = DimOf u -^- n
   type StdUnitOf (u -^- n) = StandardizeUnit (u -^- n)
 
 

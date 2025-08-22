@@ -43,9 +43,8 @@ newtype Radian a = Radian a
 instance Fractional a => ConvFactor Radian a where
   factorFrom = 1
 
-type instance DimOf Radian = Angle
-
 instance IsUnit Radian where
+  type DimOf Radian = Angle
   type StdUnitOf Radian = Radian
 
 instance ShowUnit Radian where
