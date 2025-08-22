@@ -30,7 +30,6 @@ newtype Minute a = Minute a
 
 instance IsUnit Minute where
   type DimOf Minute = Time
-  type StdUnitOf Minute = Second
 
 instance ShowUnit Minute where
   type ShowUnitType Minute = Text "min"
@@ -50,7 +49,6 @@ newtype Hour a = Hour a
 
 instance IsUnit Hour where
   type DimOf Hour = Time
-  type StdUnitOf Hour = Second
 
 instance ShowUnit Hour where
   type ShowUnitType Hour = Text "hr"

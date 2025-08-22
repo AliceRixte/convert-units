@@ -29,7 +29,7 @@ import Data.Units.Base.Dimension
 type Unit = Type -> Type
 type StandardUnit = Type -> Type
 
-class IsDim (d :: Dim) where
+class IsUnit (StdUnitOf' d) => IsDim (d :: Dim) where
   type StdUnitOf' d :: Unit
 
 type family DimOf' (u :: Unit) :: Dim where
@@ -41,7 +41,7 @@ type family DimOf' (u :: Unit) :: Dim where
   DimOf' (NoUnit -^- n) = NoDim
   DimOf' ((u -*- v) -^- n) = DimOf' (u -^- n -*- v -^- n)
   DimOf' ((u -^- n) -^- m) = DimOf' (u -^- Mul n m)
-  DimOf' (u -^- n) = NormalizeExpDim (u -^- n)
+  DimOf' (u -^- n) = NormalizeExpDim (DimOf u -^- n)
   DimOf' u = DimOf u
 
 type family StandardizeDim d where
@@ -111,7 +111,6 @@ type family NormalizeExpDim u where
 -- newtype constructor : a quantity @u a@ can always be coerced to its magnitude
 -- @a@.
 class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where
-  type StdUnitOf u :: StandardUnit
   type DimOf u :: Dim
 
 -- | Make a quantity out of any numerical value (called the /magnitude/ of that
@@ -220,9 +219,12 @@ ofUnit u s =
           ++  "\" does not match expected unit \""
           ++ s ++ "\""
 
+type StdUnitOf u = StdUnitOf' (DimOf u)
+
 instance IsUnit u => IsUnit (MetaUnit u) where
   type DimOf (MetaUnit u) = DimOf u
-  type StdUnitOf (MetaUnit u) = u
+
+  -- type StdUnitOf (MetaUnit u) = u
 
 
 
@@ -241,7 +243,9 @@ newtype NoUnit a = NoUnit a
 
 instance IsUnit NoUnit where
   type DimOf NoUnit = NoDim
-  type StdUnitOf NoUnit = NoUnit
+
+instance IsDim NoDim where
+  type StdUnitOf' NoDim = NoUnit
 
 
 -- | Multiplication of two units.
@@ -272,7 +276,6 @@ instance (ShowUnit u, ShowUnit v) => ShowUnit (u -*- v) where
 
 instance (IsUnit u, IsUnit v) => IsUnit (u -*- v) where
   type DimOf (u -*- v) = DimOf' (u -*- v)
-  type StdUnitOf (u -*- v) = StandardizeUnit (u -*- v)
 
 instance (IsDim d, IsDim e) => IsDim (d -*- e) where
   type StdUnitOf' (d -*- e) = StdUnitOf' d -*- StdUnitOf' e
@@ -325,7 +328,6 @@ type family ShowDigitExponent (n :: Nat) :: ErrorMessage where
 
 instance IsUnit u => IsUnit (u -^- n) where
   type DimOf (u -^- n) = DimOf' (u -^- n)
-  type StdUnitOf (u -^- n) = StandardizeUnit (u -^- n)
 
 instance IsDim d  => IsDim (d -^- n) where
   type StdUnitOf' (d -^- n) = StdUnitOf' d -^- n

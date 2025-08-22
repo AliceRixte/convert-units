@@ -142,7 +142,6 @@ instance ShowPrefix p => ShowPrefix (MetaPrefix p) where
 instance (IsPrefix p, IsUnit u)
   => IsUnit (MetaPrefix p u) where
   type DimOf (MetaPrefix p u) = DimOf u
-  type StdUnitOf (MetaPrefix p u) = StdUnitOf u
 
 instance (ShowPrefix p, ShowUnit u)
   => ShowUnit (MetaPrefix p u) where

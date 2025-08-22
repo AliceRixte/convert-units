@@ -30,7 +30,6 @@ instance Floating a => ConvFactor Degree a where
 
 instance IsUnit Degree where
   type DimOf Degree = NoDim
-  type StdUnitOf Degree = NoUnit
 
 instance ShowUnit Degree where
   type ShowUnitType Degree = Text "°"
@@ -52,7 +51,6 @@ instance Floating a => ConvFactor Turn a where
 
 instance IsUnit Turn where
   type DimOf Turn = NoDim
-  type StdUnitOf Turn = NoUnit
 
 instance ShowUnit Turn where
   type ShowUnitType Turn = Text "tr"
@@ -75,7 +73,6 @@ instance Floating a => ConvFactor Gradian a where
 
 instance IsUnit Gradian where
   type DimOf Gradian = NoDim
-  type StdUnitOf Gradian = NoUnit
 
 instance ShowUnit Gradian where
   type ShowUnitType Gradian = Text "grad"

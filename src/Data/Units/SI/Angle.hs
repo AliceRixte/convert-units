@@ -34,7 +34,6 @@ instance Fractional a => ConvFactor Radian a where
 
 instance IsUnit Radian where
   type DimOf Radian = NoDim
-  type StdUnitOf Radian = NoUnit
 
 instance ShowUnit Radian where
   type ShowUnitType Radian = Text "rad"
@@ -62,7 +61,6 @@ instance Fractional a => ConvFactor Steradian a where
 
 instance IsUnit Steradian where
   type DimOf Steradian = NoDim
-  type StdUnitOf Steradian = NoUnit
 
 instance ShowUnit Steradian where
   type ShowUnitType Steradian = Text "sr"

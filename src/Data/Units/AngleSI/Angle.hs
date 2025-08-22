@@ -33,6 +33,9 @@ newtype Angle a = Angle a
 type instance DimId Angle = 100
 type instance ShowDim Angle = Text "A"
 
+instance IsDim Angle where
+  type StdUnitOf' Angle = Radian
+
 -- | An angle in radians.
 --
 newtype Radian a = Radian a
@@ -45,7 +48,6 @@ instance Fractional a => ConvFactor Radian a where
 
 instance IsUnit Radian where
   type DimOf Radian = Angle
-  type StdUnitOf Radian = Radian
 
 instance ShowUnit Radian where
   type ShowUnitType Radian = Text "rad"
