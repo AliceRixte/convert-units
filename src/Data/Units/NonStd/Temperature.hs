@@ -12,6 +12,7 @@ newtype Celsius a = Celsius a
 
 instance IsUnit Celsius where
   type StdUnitOf Celsius = Kelvin
+  type DimOf Celsius = Temperature
 
 instance ShowUnit Celsius where
   type ShowUnitType Celsius = Text "°C"

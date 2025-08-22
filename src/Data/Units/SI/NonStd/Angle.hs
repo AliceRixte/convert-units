@@ -29,6 +29,7 @@ instance Floating a => ConvFactor Degree a where
   factorFrom = pi / 180
 
 instance IsUnit Degree where
+  type DimOf Degree = NoDim
   type StdUnitOf Degree = NoUnit
 
 instance ShowUnit Degree where
@@ -50,6 +51,7 @@ instance Floating a => ConvFactor Turn a where
   factorFrom = 2 * pi
 
 instance IsUnit Turn where
+  type DimOf Turn = NoDim
   type StdUnitOf Turn = NoUnit
 
 instance ShowUnit Turn where
@@ -72,6 +74,7 @@ instance Floating a => ConvFactor Gradian a where
   factorFrom = pi / 200
 
 instance IsUnit Gradian where
+  type DimOf Gradian = NoDim
   type StdUnitOf Gradian = NoUnit
 
 instance ShowUnit Gradian where

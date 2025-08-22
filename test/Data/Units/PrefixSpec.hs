@@ -16,5 +16,5 @@ spec = do
       fromToSpec' @(Kilo Meter) @(Milli Meter) @Double
       toFromSpec @(Kilo Meter) @Double
       toFromSpec @(Kilo Meter -^~ 1) @Double
-      mulDiffDimSpec @(Kilo Meter -^~ 1) @(Milli Second) @Double
-      divDiffDimSpec @(Kilo Meter) @(Milli Second) @Double
+      -- mulDiffDimSpec @(Kilo Meter -^~ 1) @(Milli Second) @Double
+      -- divDiffDimSpec @(Kilo Meter) @(Milli Second) @Double

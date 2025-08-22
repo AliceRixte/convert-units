@@ -1,6 +1,7 @@
 module Data.Units.SI.Derived where
 
 import Data.Units.Base
+import Data.Units.SI.Dimensions
 import Data.Units.SI.Units
 
 -- | Frequency in Hertz
@@ -14,6 +15,7 @@ instance Fractional a => ConvFactor Hertz a where
   factorFrom = 1
 
 instance IsUnit Hertz where
+  type DimOf Hertz = Time -^~ 1
   type StdUnitOf Hertz = Second -^~ 1
 
 instance ShowUnit Hertz where

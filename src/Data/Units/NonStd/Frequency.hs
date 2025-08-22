@@ -5,6 +5,7 @@ import Data.Proxy
 
 import Data.Units.Base
 import Data.Units.SI.Units
+import Data.Units.SI.Dimensions
 
 
 -- | Frequency in Tone Equal Temperament
@@ -27,6 +28,7 @@ instance (Floating a, KnownNat b, KnownInt offs) => To (Tet b offs) a where
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100
 
 instance IsUnit (Tet b offs) where
+  type DimOf (Tet b offs) = Time -^~ 1
   type StdUnitOf (Tet b offs) = Second -^~ 1
 
 instance (KnownNat b, KnownInt offs) => ShowUnit (Tet b offs) where

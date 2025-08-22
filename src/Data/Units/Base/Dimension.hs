@@ -104,3 +104,9 @@ newtype NoDim a = NoDim a
 
 type instance DimId NoDim = 0
 type instance ShowDim NoDim = Text "NoDim"
+
+
+
+--------------------------------------------------------------------------------
+
+

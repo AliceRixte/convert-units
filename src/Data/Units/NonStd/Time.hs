@@ -29,6 +29,7 @@ newtype Minute a = Minute a
   deriving Show via (MetaUnit Minute a)
 
 instance IsUnit Minute where
+  type DimOf Minute = Time
   type StdUnitOf Minute = Second
 
 instance ShowUnit Minute where
@@ -48,6 +49,7 @@ newtype Hour a = Hour a
   deriving Show via (MetaUnit Hour a)
 
 instance IsUnit Hour where
+  type DimOf Hour = Time
   type StdUnitOf Hour = Second
 
 instance ShowUnit Hour where

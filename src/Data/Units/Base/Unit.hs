@@ -30,14 +30,89 @@ type Unit = Type -> Type
 type StandardUnit = Type -> Type
 
 class IsDim (d :: Dim) where
-  type StdUnitOf' d
+  type StdUnitOf' d :: Unit
+
+type family DimOf' (u :: Unit) :: Dim where
+  DimOf' (u -*- NoUnit) = DimOf' u
+  DimOf' (NoUnit -*- v) = DimOf' v
+  DimOf' ((u -*- v) -*- w) =
+    InsertDim (DimOf' u) (DimOf' (v -*- w))
+  DimOf' (u -*- v) = InsertDim (DimOf' u) (DimOf' v)
+  DimOf' (NoUnit -^- n) = NoDim
+  DimOf' ((u -*- v) -^- n) = DimOf' (u -^- n -*- v -^- n)
+  DimOf' ((u -^- n) -^- m) = DimOf' (u -^- Mul n m)
+  DimOf' (u -^- n) = NormalizeExpDim (u -^- n)
+  DimOf' u = DimOf u
+
+type family StandardizeDim d where
+  StandardizeDim (d -*- NoDim) = StandardizeDim d
+  StandardizeDim (NoDim -*- e) = StandardizeDim e
+  StandardizeDim ((d -*- e) -*- f) =
+    InsertDim (StandardizeDim d) (StandardizeDim (e -*- f))
+  StandardizeDim (d -*- e) = InsertDim (StandardizeDim d) (StandardizeDim e)
+  StandardizeDim (NoDim -^- n) = NoDim
+  StandardizeDim ((d -*- e) -^- n) = StandardizeDim (d -^- n -*- e -^- n)
+  StandardizeDim ((d -^- n) -^- m) = StandardizeDim (d -^- Mul n m)
+  StandardizeDim (d -^- n) = NormalizeExpDim (d -^- n)
+  StandardizeDim d = d
+
+type family MulDim (d :: Dim) (e :: Dim) where
+  MulDim d e = StandardizeDim (d -*- e)
+
+type family InsertDim d e where
+  InsertDim NoDim e = e
+  InsertDim d NoDim = d
+  InsertDim d (e -*- f) =
+    InsertCmpDim (Compare (DimId d) (DimId e)) d (e -*- f)
+  InsertDim d e =
+    InsertCmpDim (Compare (DimId d) (DimId e)) d e
+
+type family InsertCmpDim cmp d v where
+  InsertCmpDim 'LT d (e -*- f) = d -*- e -*- f
+  InsertCmpDim 'GT d (e -*- f) = e -*- InsertDim d f
+  InsertCmpDim 'EQ d (e -*- f) = MulNoDim (MulPowDim d e) f
+  InsertCmpDim 'LT d e = d -*- e
+  InsertCmpDim 'GT d e = e -*- d
+  InsertCmpDim 'EQ d e = MulPowDim d e
+
+type family MulNoDim d e where
+  MulNoDim NoDim e = e
+  MulNoDim d NoDim = d
+  MulNoDim d e = d -*- e
+
+type family MulPowDim d e where
+  MulPowDim (d -^- n) (d -^- m) = NormalizeExpDim (d -^- Add n m)
+  MulPowDim d (d -^- m) = NormalizeExpDim (d -^- Add (Pos 1) m)
+  MulPowDim (d -^- n) d = NormalizeExpDim (d -^- Add n (Pos 1))
+  MulPowDim d d = d -^- Pos 2
+  MulPowDim d e = TypeError (
+         Text "Failed to multiply two different units ‘"
+    :<>: ShowUnitType d
+    :<>: Text "’ and ‘"
+    :<>: ShowUnitType e
+    :<>: Text "’ with the same dimension ‘"
+    :<>: ShowDim (DimOf d)
+    :<>: Text "’."
+    :$$: Text "Hint : Did you try to multiply via (-*-) two quantities with"
+    :$$: Text "       the same dimension but different units ?"
+    :$$: Text "If so, you might want to use (~*-), (-*~) or (~*~) instead. "
+    )
+
+type family NormalizeExpDim u where
+  NormalizeExpDim (u -^- Pos 1) = u
+  NormalizeExpDim (u -^- Zero) = NoDim
+  NormalizeExpDim u = u
+
+
+
+--------------------------------------------------------------------------------
 
 -- | Any unit must have a corresponding standard unit. Additionally, a unit is a
 -- newtype constructor : a quantity @u a@ can always be coerced to its magnitude
 -- @a@.
 class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where
   type StdUnitOf u :: StandardUnit
-  type DimOf (u :: StandardUnit) :: Dim
+  type DimOf u :: Dim
 
 -- | Make a quantity out of any numerical value (called the /magnitude/ of that
 -- quantity)
@@ -145,7 +220,8 @@ ofUnit u s =
           ++  "\" does not match expected unit \""
           ++ s ++ "\""
 
-instance IsUnit (MetaUnit u) where
+instance IsUnit u => IsUnit (MetaUnit u) where
+  type DimOf (MetaUnit u) = DimOf u
   type StdUnitOf (MetaUnit u) = u
 
 
@@ -195,8 +271,11 @@ instance (ShowUnit u, ShowUnit v) => ShowUnit (u -*- v) where
 
 
 instance (IsUnit u, IsUnit v) => IsUnit (u -*- v) where
-  type DimOf (u -*- v) = DimOf u -*- DimOf v
+  type DimOf (u -*- v) = DimOf' (u -*- v)
   type StdUnitOf (u -*- v) = StandardizeUnit (u -*- v)
+
+instance (IsDim d, IsDim e) => IsDim (d -*- e) where
+  type StdUnitOf' (d -*- e) = StdUnitOf' d -*- StdUnitOf' e
 
 
 
@@ -245,8 +324,11 @@ type family ShowDigitExponent (n :: Nat) :: ErrorMessage where
   ShowDigitExponent 9 = Text "⁹"
 
 instance IsUnit u => IsUnit (u -^- n) where
-  type DimOf (u -^- n) = DimOf u -^- n
+  type DimOf (u -^- n) = DimOf' (u -^- n)
   type StdUnitOf (u -^- n) = StandardizeUnit (u -^- n)
+
+instance IsDim d  => IsDim (d -^- n) where
+  type StdUnitOf' (d -^- n) = StdUnitOf' d -^- n
 
 
 instance (ShowUnit u, KnownInt n) => ShowUnit (u -^- n) where
@@ -309,7 +391,7 @@ type family Insert u v where
 type family InsertCmp cmp u v where
   InsertCmp 'LT u (v -*- w) = u -*- v -*- w
   InsertCmp 'GT u (v -*- w) = v -*- Insert u w
-  InsertCmp 'EQ u (v -*- w) = MulSameDim u v -*- w
+  InsertCmp 'EQ u (v -*- w) = MulNoUnit (MulSameDim u v) w
   InsertCmp c u v = TypeError (
         Text  "InsertCmp must be called with arguments of"
    :<>: Text "the form InsertCmp cmp u (v -*- w)"
@@ -322,10 +404,16 @@ type family InsertCmp cmp u v where
    :<>: Text ")"
    )
 
+type family MulNoUnit d e where
+  MulNoUnit NoUnit e = e
+  MulNoUnit d NoUnit = d
+  MulNoUnit d e = d -*- e
+
 type family SwapCmp cmp u v where
   SwapCmp 'LT u v = u -*- v
   SwapCmp 'GT u v = v -*- u
   SwapCmp 'EQ u v = MulSameDim u v
+
 
 
 type family MulSameDim u v where
