@@ -21,9 +21,8 @@ import Data.Units.Base
 -- | Angle in degrees.
 --
 newtype Degree a = Degree a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit Degree a
 
 instance Floating a => ConvFactor Degree a where
   factorFrom = pi / 180
@@ -42,9 +41,8 @@ instance ShowUnit Degree where
 -- See https://en.wikipedia.org/wiki/Turn_(angle)
 --
 newtype Turn a = Turn a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit Turn a
 
 instance Floating a => ConvFactor Turn a where
   factorFrom = 2 * pi
@@ -64,9 +62,8 @@ instance ShowUnit Turn where
 -- See https://en.wikipedia.org/wiki/Gradian
 --
 newtype Gradian a = Gradian a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit Gradian a
 
 instance Floating a => ConvFactor Gradian a where
   factorFrom = pi / 200

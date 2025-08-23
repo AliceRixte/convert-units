@@ -27,7 +27,8 @@ import Data.Units.Base.Dimension
 -- @u@ is of type @u a@.
 --
 type Unit = Type -> Type
-type StandardUnit = Type -> Type
+
+type StdUnitOf u = StdUnitOf' (DimOf u)
 
 class IsUnit (StdUnitOf' d) => IsDim (d :: Dim) where
   type StdUnitOf' d :: Unit
@@ -191,7 +192,7 @@ printQuantity = putStr . showQuantity
 
 
 
-newtype MetaUnit (u :: StandardUnit) a = MetaUnit a
+newtype MetaUnit (u :: Unit) a = MetaUnit a
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
@@ -202,6 +203,9 @@ instance ShowUnit u => ShowUnit (MetaUnit u) where
 
 instance (Show a, ShowUnit u) => Show (MetaUnit u a) where
   showsPrec = showsQuantityPrec
+
+instance IsUnit u => IsUnit (MetaUnit u) where
+  type DimOf (MetaUnit u) = DimOf u
 
 -- | Check whether a unit has the same unit as the one represented by a String.
 --
@@ -219,10 +223,9 @@ ofUnit u s =
           ++  "\" does not match expected unit \""
           ++ s ++ "\""
 
-type StdUnitOf u = StdUnitOf' (DimOf u)
 
-instance IsUnit u => IsUnit (MetaUnit u) where
-  type DimOf (MetaUnit u) = DimOf u
+
+
 
   -- type StdUnitOf (MetaUnit u) = u
 

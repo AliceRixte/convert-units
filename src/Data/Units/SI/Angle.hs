@@ -25,9 +25,8 @@ import Data.Units.Base
 -- | An angle in radians.
 --
 newtype Radian a = Radian a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit Radian a
 
 instance Fractional a => ConvFactor Radian a where
   factorFrom = 1
@@ -50,9 +49,8 @@ normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
 -- | A solid angle in steradians.
 --
 newtype Steradian a = Steradian a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit Steradian a
 
 instance Fractional a => ConvFactor Steradian a where
   factorFrom = 1

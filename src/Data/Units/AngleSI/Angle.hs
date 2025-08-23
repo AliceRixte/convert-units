@@ -39,9 +39,8 @@ instance IsDim Angle where
 -- | An angle in radians.
 --
 newtype Radian a = Radian a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit Radian a
 
 instance Fractional a => ConvFactor Radian a where
   factorFrom = 1

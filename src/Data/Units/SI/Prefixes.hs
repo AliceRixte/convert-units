@@ -19,7 +19,9 @@ deriving via MetaPrefix Milli u instance IsUnit u => IsUnit (Milli u )
 
 instance ShowPrefix Milli where
   type ShowPrefixType Milli = Text "m"
-  showPrefix = "m"
+  showPrefix = "Milli"
+  prettyPrefix = "m"
+
 
 instance Fractional a => PrefixFactor Milli a where
   prefixFactorTo = 1000

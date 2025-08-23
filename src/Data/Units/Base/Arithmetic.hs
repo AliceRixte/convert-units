@@ -153,7 +153,7 @@ infixr 5 ~-~
 -- Units of the same dimension are authorized only when the units are equal.
 --
 -- >>> Meter 2 -*- Second 3
--- ofUnit 6 "m.s"
+-- quantity @(Meter -*- Second) 6
 --
 -- >>> Second 5 -*- Meter 2
 -- ofUnit 10 "m.s"

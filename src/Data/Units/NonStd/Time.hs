@@ -24,9 +24,8 @@ import Data.Units.SI
 -- | Time quantity in minutes
 --
 newtype Minute a = Minute a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via (MetaUnit Minute a)
 
 instance IsUnit Minute where
   type DimOf Minute = Time
@@ -43,9 +42,8 @@ instance Fractional a => ConvFactor Minute a where
 -- | Time quantity in hours
 --
 newtype Hour a = Hour a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via (MetaUnit Hour a)
 
 instance IsUnit Hour where
   type DimOf Hour = Time

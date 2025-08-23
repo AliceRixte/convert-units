@@ -26,9 +26,8 @@ instance IsDim Length where
 -- This is the base unit of the length dimension in the SI system.
 --
 newtype Meter a = Meter a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit Meter a
 
 instance Fractional a => ConvFactor Meter a where
   factorFrom = 1
@@ -63,9 +62,8 @@ instance IsDim Time where
 -- This is the base unit of the time dimension in the SI system.
 --
 newtype Second a = Second a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit Second a
 
 instance Fractional a => ConvFactor Second a where
   factorFrom = 1
@@ -100,9 +98,8 @@ instance IsDim Temperature where
 -- system.
 --
 newtype Kelvin a = Kelvin a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit Kelvin a
 
 
 instance Fractional a => ConvFactor Kelvin a where

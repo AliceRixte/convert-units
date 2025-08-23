@@ -10,9 +10,8 @@ import Data.Units.SI.Units
 -- | Frequency in Tone Equal Temperament
 --
 newtype Tet (b :: Nat) (offs :: ZZ) a = Tet a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit (Tet b offs) a
 
 instance (Floating a, KnownNat b, KnownInt offs) => From (Tet b offs) a where
   from (Tet a) = quantity $ 440 * 2 ** ((a + offs) / b)
