@@ -260,13 +260,13 @@ instance Fractional a => ConvFactor NoUnit a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
 
-instance (Num a, ConvFactor u a, ConvFactor v a, IsUnit (StdUnitOf (u-*- v)))
-  =>  ConvFactor (u -*- v) a where
+instance (Num a, ConvFactor u a, ConvFactor v a, IsUnit (StdUnitOf (u .*. v)))
+  =>  ConvFactor (u .*. v) a where
   factorFrom = factorFrom @u * factorFrom @v
   {-# INLINE factorFrom #-}
 
-instance (ConvFactor u a, IsUnit (StdUnitOf (u -^- n)),  KnownInt n)
-  =>  ConvFactor (u -^- n) a where
+instance (ConvFactor u a, IsUnit (StdUnitOf (u .^. n)),  KnownInt n)
+  =>  ConvFactor (u .^. n) a where
   factorFrom = factorFrom @u ^^ intVal (Proxy :: Proxy n)
   {-# INLINE factorFrom #-}
 

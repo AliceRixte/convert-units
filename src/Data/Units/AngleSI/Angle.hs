@@ -63,6 +63,6 @@ normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
 
 -- | A solid angle in steradians.
 --
-type Steradian = Radian -^+ 2
+type Steradian = Radian .^+ 2
 
 

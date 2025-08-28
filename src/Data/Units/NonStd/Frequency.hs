@@ -22,7 +22,7 @@ import Data.Units.SI.Units
 --   to a = MidiPitch $ 12 * logBase 2 (unQuantity a/ 440) + 69
 
 -- instance IsUnit MidiPitch where
---   type DimOf MidiPitch = Time -^~ 1
+--   type DimOf MidiPitch = Time .^- 1
 
 
 -- | Frequency in Tone Equal Temperament
@@ -44,7 +44,7 @@ instance (Floating a, KnownNat b, KnownInt offs) => To (Tet b offs) a where
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100
 
 instance IsUnit (Tet b offs) where
-  type DimOf (Tet b offs) = Time -^~ 1
+  type DimOf (Tet b offs) = Time .^- 1
 
 instance (KnownNat b, KnownInt offs) => ShowUnit (Tet b offs) where
   type ShowUnitType (Tet b offs) =

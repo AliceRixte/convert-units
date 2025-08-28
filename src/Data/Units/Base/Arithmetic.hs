@@ -29,7 +29,7 @@
 --
 -- All the operators proposed here solve this problem:
 --
--- >>> Second 2 -*- Second 3
+-- >>> Second 2 .*. Second 3
 -- ofUnit 6 "s²"
 --
 --------------------------------------------------------------------------------
@@ -37,24 +37,24 @@
 module Data.Units.Base.Arithmetic
   (
   -- ** Addition
-    (-+~)
-  , (~+-)
+    (.+~)
+  , (~+.)
   , (~+~)
   -- ** Subtraction
-  , (--~)
-  , (~--)
+  , (.-~)
+  , (~-.)
   , (~-~)
   -- ** Multiplication
-  , (-*-)
-  , (-*~)
-  , (~*-)
+  , (.*.)
+  , (.*~)
+  , (~*.)
   , (~*~)
   -- ** Division
-  , (-/-)
+  , (./.)
   , (~/~)
   -- ** Exponentiation
-  , (-^-)
-  , (~^-)
+  , (.^.)
+  , (~^.)
   ) where
 
 import Data.Type.Int
@@ -66,30 +66,30 @@ import Data.Units.Base.Convert
 
 -- | Add two quantities of same dimension. The unit of the right operand is converted to the unit of the left operand
 --
--- >>> Kilo (Meter 5) -+~ Meter 80
+-- >>> Kilo (Meter 5) .+~ Meter 80
 -- ofUnit 5.08 "km"
 --
--- >>> Meter 2 -+~ Second 3
+-- >>> Meter 2 .+~ Second 3
 --  • Cannot convert unit ‘s’ to unit ‘m’ because their dimensions do not match.
 --      Dimension of ‘s’ is: T
 --      Dimension of ‘m’ is: L
 --
-(-+~) :: forall u v a. FromTo' v u a => u a -> v a -> u a
-u -+~ v = quantity (unQuantity u + unQuantity (fromTo' v :: u a))
-{-# INLINE (-+~) #-}
+(.+~) :: forall u v a. FromTo' v u a => u a -> v a -> u a
+u .+~ v = quantity (unQuantity u + unQuantity (fromTo' v :: u a))
+{-# INLINE (.+~) #-}
 
-infixr 5 -+~
+infixr 5 .+~
 
--- | Same as @'(-+~)'@ but it is the left operand that is converted.
+-- | Same as @'(.+~)'@ but it is the left operand that is converted.
 --
--- >>> Kilo (Meter 5) ~+- Meter 80
+-- >>> Kilo (Meter 5) ~+. Meter 80
 -- ofUnit 5080.0 "m"
 --
-(~+-) :: FromTo' u v a => u a -> v a -> v a
-(~+-) = flip (-+~)
-{-# INLINE (~+-) #-}
+(~+.) :: FromTo' u v a => u a -> v a -> v a
+(~+.) = flip (.+~)
+{-# INLINE (~+.) #-}
 
-infixr 5 ~+-
+infixr 5 ~+.
 
 -- | Add two quantities of same dimension and convert to the standard unit.
 --
@@ -110,25 +110,25 @@ infixr 5 ~+~
 
 -- | Subtract two quantities of same dimension. The unit of the right operand is converted to the unit of the left operand
 --
--- >>> Kilo (Meter 5) --~ Meter 80
+-- >>> Kilo (Meter 5) .-~ Meter 80
 -- ofUnit 4.92 "km"
 --
-(--~) :: forall u v a. FromTo' v u a => u a -> v a -> u a
-u --~ v = quantity (unQuantity u - unQuantity (fromTo' v :: u a))
-{-# INLINE (--~) #-}
+(.-~) :: forall u v a. FromTo' v u a => u a -> v a -> u a
+u .-~ v = quantity (unQuantity u - unQuantity (fromTo' v :: u a))
+{-# INLINE (.-~) #-}
 
-infixr 5 --~
+infixr 5 .-~
 
--- | Same as @'(--~)'@ but it is the left operand that is converted.
+-- | Same as @'(.-~)'@ but it is the left operand that is converted.
 --
--- >>> Kilo (Meter 5) ~-- Meter 80
+-- >>> Kilo (Meter 5) ~-. Meter 80
 -- ofUnit 4920.0 "m"
 --
-(~--) :: forall u v a. FromTo' u v a => u a -> v a -> v a
-u ~-- v = quantity (unQuantity (fromTo' u :: v a) - unQuantity v)
--- {-# INLINE (~--) #-}
+(~-.) :: forall u v a. FromTo' u v a => u a -> v a -> v a
+u ~-. v = quantity (unQuantity (fromTo' u :: v a) - unQuantity v)
+-- {-# INLINE (~-.) #-}
 
-infixr 5 ~--
+infixr 5 ~-.
 
 -- | Subtract two quantities of same dimension and convert to the standard unit.
 --
@@ -152,75 +152,75 @@ infixr 5 ~-~
 --
 -- Units of the same dimension are authorized only when the units are equal.
 --
--- >>> Meter 2 -*- Second 3
--- quantity @(Meter -*- Second) 6
+-- >>> Meter 2 .*. Second 3
+-- quantity @(Meter .*. Second) 6
 --
--- >>> Second 5 -*- Meter 2
+-- >>> Second 5 .*. Meter 2
 -- ofUnit 10 "m.s"
 --
--- >>> Meter 5 -*- Meter 8
+-- >>> Meter 5 .*. Meter 8
 -- ofUnit 40 "m²"
 --
--- >>> Meter 2 -*- Kilo (Meter 3)
+-- >>> Meter 2 .*. Kilo (Meter 3)
 --     • Failed to multiply two different units ‘m’ and ‘km’ with the same dimension ‘L’.
---      Hint : Did you try to multiply via (-*-) two quantities with
+--      Hint : Did you try to multiply via (.*.) two quantities with
 --             the same dimension but different units ?
---      If so, you might want to use (~*-), (-*~) or (~*~) instead.
+--      If so, you might want to use (~*.), (.*~) or (~*~) instead.
 --
-(-*-) ::
-  ( uv ~ NormalizeUnit (u -*- v)
+(.*.) ::
+  ( uv ~ NormalizeUnit (u .*. v)
   , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
  => u a -> v a -> uv a
-u -*- v = quantity $ unQuantity u * unQuantity v
-{-# INLINE (-*-) #-}
+u .*. v = quantity $ unQuantity u * unQuantity v
+{-# INLINE (.*.) #-}
 
-infixr 7 -*-
+infixr 7 .*.
 
 -- | Multiply two quantities of the same dimension. The unit of the right
 -- will be converted to the unit of the left operand.
 --
--- >>> Meter 2 -*~ Kilo (Meter 3)
+-- >>> Meter 2 .*~ Kilo (Meter 3)
 -- ofUnit 6000.0 "m²"
 --
--- >>> Kilo (Meter 3) -*~ Meter 2
+-- >>> Kilo (Meter 3) .*~ Meter 2
 -- ofUnit 6.0e-3 "km²"
 --
--- >>> Meter 2 -*~ Second 5
+-- >>> Meter 2 .*~ Second 5
 -- • Cannot convert unit ‘m’ to unit ‘s’ because their dimensions do not match.
 --   Dimension of ‘m’ is: L
 --   Dimension of ‘s’ is: T
 --
-(-*~) :: forall u v u2 a.
-  ( u2 ~ NormalizeUnit (u -^+ 2) , IsUnit u2
+(.*~) :: forall u v u2 a.
+  ( u2 ~ NormalizeUnit (u .^+ 2) , IsUnit u2
   , DimEq u v
   , FromTo' v u a
   )
  => u a -> v a -> u2 a
-u -*~ v = quantity $ unQuantity u * unQuantity (fromTo' v :: u a)
-{-# INLINE (-*~) #-}
+u .*~ v = quantity $ unQuantity u * unQuantity (fromTo' v :: u a)
+{-# INLINE (.*~) #-}
 
-infix 7 -*~
+infix 7 .*~
 
--- | Same as @'(-*~)'@ but it is the left operand that is converted.
+-- | Same as @'(.*~)'@ but it is the left operand that is converted.
 --
 -- >>> Milli (Meter 2) ~*~ Kilo (Meter 3)
 -- ofUnit 6.0e-3 "km²"
 --
--- >>> Kilo (Meter 3) ~*- Meter 2
+-- >>> Kilo (Meter 3) ~*. Meter 2
 -- ofUnit 6000.0 "m²"
 --
-(~*-) ::
-  ( v2 ~ NormalizeUnit (v -^+ 2), IsUnit v2
+(~*.) ::
+  ( v2 ~ NormalizeUnit (v .^+ 2), IsUnit v2
   , DimEq v u
   , FromTo' u v a
   )
  => u a -> v a -> v2 a
-(~*-) = flip (-*~)
-{-# INLINE (~*-) #-}
+(~*.) = flip (.*~)
+{-# INLINE (~*.) #-}
 
-infix 7 ~*-
+infix 7 ~*.
 
 -- | Multiply two quantities of the same dimension and convert both of them to the corresponding standard unity.
 --
@@ -233,7 +233,7 @@ infix 7 ~*-
 --   Dimension of ‘s’ is: T
 --
 (~*~) ::
-  ( u2 ~ StdUnitOf u -^+ 2, IsUnit u2
+  ( u2 ~ StdUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConvFactor u a, ConvFactor v a
   )
@@ -250,20 +250,20 @@ infix 7 ~*~
 --
 -- Units of the same dimension are authorized only when the units are equal.
 --
--- >>> Meter 4 -/- Second 2
+-- >>> Meter 4 ./. Second 2
 -- ofUnit 2.0 "m.s⁻¹"
 --
 --
-(-/-) ::
-  (uv ~ NormalizeUnit (u -/- v)
+(./.) ::
+  (uv ~ NormalizeUnit (u ./. v)
   , IsUnit u, IsUnit v, IsUnit uv
   , Fractional a
   )
   => u a -> v a -> uv a
-u -/- v = quantity (unQuantity u / unQuantity v)
-{-# INLINE (-/-) #-}
+u ./. v = quantity (unQuantity u / unQuantity v)
+{-# INLINE (./.) #-}
 
-infix 6 -/-
+infix 6 ./.
 
 -- | Divide two quantities of same dimensions. The numerator will be converted
 -- to the denominator
@@ -290,28 +290,28 @@ infix 6 ~/~
 --
 -- This is meant to be used with @'Data.Type.Int.Proxy'@
 --
--- >>> Kilo (Meter 2) ~^- pos2
+-- >>> Kilo (Meter 2) ~^. pos2
 -- ofUnit 4000000.0 "m²"
 --
-(-^-) :: forall (n :: ZZ) proxy u a. (IsUnit u, KnownInt n, Fractional a)
-  => u a -> proxy n -> (u -^- n) a
-u -^- p = quantity $ unQuantity u ^^ intVal p
-{-# INLINE (-^-) #-}
+(.^.) :: forall (n :: ZZ) proxy u a. (IsUnit u, KnownInt n, Fractional a)
+  => u a -> proxy n -> (u .^. n) a
+u .^. p = quantity $ unQuantity u ^^ intVal p
+{-# INLINE (.^.) #-}
 
-infix 8 -^-
+infix 8 .^.
 
 
 -- | Raise a quantity to a power and convert to the standard unit.
 --
--- >>> Kilo (Meter 2) ~^- neg1
+-- >>> Kilo (Meter 2) ~^. neg1
 -- ofUnit 5.0e-4 "m⁻¹"
 --
-(~^-) :: forall (n :: ZZ) proxy u un a.
-  (KnownInt n, ConvFactor u a, un ~ StdUnitOf u -^- n )
+(~^.) :: forall (n :: ZZ) proxy u un a.
+  (KnownInt n, ConvFactor u a, un ~ StdUnitOf u .^. n )
   => u a -> proxy n -> un a
-u ~^- p = quantity @un $ unQuantity (from' u) ^^ intVal p
-{-# INLINE (~^-) #-}
+u ~^. p = quantity @un $ unQuantity (from' u) ^^ intVal p
+{-# INLINE (~^.) #-}
 
-infix 8 ~^-
+infix 8 ~^.
 
 
