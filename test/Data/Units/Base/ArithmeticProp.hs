@@ -367,7 +367,7 @@ divDiffDimProp :: forall u v a uv.
   ( uv ~ NormalizeUnit (u ./. v)
   , IsUnit u, IsUnit v, IsUnit uv
   , IsUnit (StdUnitOf (u ./. v))
-  , From (u ./. v) a, To (u ./. v) a
+  , ConvertibleUnit (u ./. v) a
   , Arbitrary a, Show a, Epsilon a, Eq a, Fractional a
   )
   => Property
@@ -379,7 +379,7 @@ divDiffDimSpec :: forall u v a uv.
   ( uv ~ NormalizeUnit (u ./. v)
   , IsUnit u, IsUnit v, IsUnit uv
   , IsUnit (StdUnitOf (u ./. v))
-  , From (u ./. v) a, To (u ./. v) a
+  , ConvertibleUnit (u ./. v) a
   , Arbitrary a, Show a, Epsilon a, Eq a, Fractional a
   , ShowUnit u, ShowUnit v
   )

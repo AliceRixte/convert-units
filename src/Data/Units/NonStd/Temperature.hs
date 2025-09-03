@@ -11,8 +11,15 @@ import Data.Units.SI
 --
 $(mkUnit "Celsius" "°C" ''Temperature 1)
 
-instance Fractional a => From Celsius a where
+instance Fractional a => ConvertibleUnit Celsius a where
   from (Celsius x) = Kelvin (x + 273.15)
+  {-# INLINE from #-}
 
-instance Fractional a => To Celsius a where
   to (Kelvin x) = Celsius (x - 273.15)
+  {-# INLINE to #-}
+
+-- instance Fractional a => From Celsius a where
+--   from (Celsius x) = Kelvin (x + 273.15)
+
+-- instance Fractional a => To Celsius a where
+--   to (Kelvin x) = Celsius (x - 273.15)

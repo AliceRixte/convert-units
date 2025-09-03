@@ -25,19 +25,27 @@ import Data.Units.SI.System
 --   type DimOf MidiPitch = Time .^- 1
 
 
+-- instance Fractional a => ConvertibleUnit Celsius a where
+--   from (Celsius x) = Kelvin (x + 273.15)
+--   {-# INLINE from #-}
+
+--   to (Kelvin x) = Celsius (x - 273.15)
+--   {-# INLINE to #-}
+
+
+
 -- | Frequency in Tone Equal Temperament
 --
 newtype Tet (b :: Nat) (offs :: ZZ) a = Tet a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Functor)
 
-instance (Floating a, KnownNat b, KnownInt offs) => From (Tet b offs) a where
+instance (Floating a, KnownNat b, KnownInt offs)
+  => ConvertibleUnit (Tet b offs) a where
   from (Tet a) = quantity $ 440 * 2 ** ((a + offs) / b)
     where
      b = fromIntegral $ natVal (Proxy :: Proxy b)
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100
-
-instance (Floating a, KnownNat b, KnownInt offs) => To (Tet b offs) a where
   to a = Tet $ b * logBase 2 (unQuantity a/ 440) - offs
     where
      b = fromIntegral $ natVal (Proxy :: Proxy b)

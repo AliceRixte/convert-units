@@ -31,13 +31,13 @@ $(mkPrefix "Milli" "m" (1/1000))
 --   prefixFactorTo = 1000
 --   {-# INLINE prefixFactorTo #-}
 
-instance (To u a, Fractional a) => To (Milli u) a where
+instance (ConvertibleUnit u a, Fractional a)
+  => ConvertibleUnit (Milli u) a where
+  from = prefixFrom
+  {-# INLINE from #-}
   to = prefixTo
   {-# INLINE to #-}
 
-instance (From u a, Fractional a) => From (Milli u) a where
-  from = prefixFrom
-  {-# INLINE from #-}
 
 -- instance ConvFactor u a => ConvFactor (Milli u) a where
 --   factorFrom = factorFrom @(MetaPrefix Milli u)
@@ -63,13 +63,11 @@ instance Fractional a => PrefixFactor Kilo a where
   prefixFactorFrom = 1000
   {-# INLINE prefixFactorFrom #-}
 
-instance (To u a, Fractional a) => To (Kilo u) a where
-  to = prefixTo
-  {-# INLINE to #-}
-
-instance (From u a, Fractional a) => From (Kilo u) a where
+instance (ConvertibleUnit u a, Fractional a) => ConvertibleUnit (Kilo u) a where
   from = prefixFrom
   {-# INLINE from #-}
+  to = prefixTo
+  {-# INLINE to #-}
 
 instance ConvFactor u a => ConvFactor (Kilo u) a where
   factorFrom = factorFrom @(MetaPrefix Kilo u)

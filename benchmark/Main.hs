@@ -16,7 +16,7 @@ iterations = [10, 100, 1000]
 
 
 kmphTomps :: Int -> Double
-kmphTomps n =  iterate (fromToCoerce @(Kilo Meter -/- Hour) @(Meter -/- Second)) 5 !! n
+kmphTomps n =  iterate (fromToCoerce @(Kilo Meter ./. Hour) @(Meter ./. Second)) 5 !! n
 
 multConv :: Int -> Double
 multConv n =  iterate (*3.6) (5 :: Double) !! n

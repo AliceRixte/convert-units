@@ -18,13 +18,13 @@ import Data.Units
 ------------------------------------ toFrom ------------------------------------
 
 toFrom :: forall u a.
-  (From u a, To u a)
+  (ConvertibleUnit u a)
   => a -> a
 toFrom a = coerce
   (from (to @u (coerce a :: StdUnitOf u a) :: u a) :: StdUnitOf u a)
 
 toFromProp :: forall u a.
-  ( From u a, To u a
+  ( ConvertibleUnit u a
   , Arbitrary a, Show a, Epsilon a
   )
   => Property
@@ -32,7 +32,7 @@ toFromProp = property (isApproxId (toFrom @u @a))
 
 toFromSpec :: forall u a.
   ( ShowUnit u
-  , From u a, To u a
+  , ConvertibleUnit u a
   , Arbitrary a, Show a, Epsilon a
   )
   => Spec

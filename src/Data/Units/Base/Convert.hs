@@ -98,8 +98,7 @@
 --------------------------------------------------------------------------------
 
 module Data.Units.Base.Convert
-  ( From(..)
-  , To(..)
+  ( ConvertibleUnit (..)
   , FromTo
   , fromTo
   , ConvFactor(..)
@@ -126,11 +125,11 @@ import Data.Units.Base.System
 -- | A unit whose quantities are convertible from that unit to its corresponding
 -- standard unit.
 --
--- When @To u a@ is also satisfied, instances must satisfy the following law :
+-- Instances must satisfy the following law :
 --
 -- * @'from' . 'to' == 'id'@
 --
-class (IsUnit u, IsUnit (StdUnitOf u)) => From u a where
+class (IsUnit u, IsUnit (StdUnitOf u)) => ConvertibleUnit u a where
   -- | Convert a quantity to its standard unit.
   --
   -- >>> import Data.Units.NonStd.Time
@@ -144,23 +143,6 @@ class (IsUnit u, IsUnit (StdUnitOf u)) => From u a where
   -- ofUnit 273.15 "K"
   from :: u a -> StdUnitOf u a
 
-fromCoerce :: forall u a. From u a => a -> a
-fromCoerce = unQuantity @(StdUnitOf u) . from . quantity @u
-{-# INLINE fromCoerce #-}
-
-instance {-# OVERLAPPABLE #-}
-  (ConvFactor u a, IsUnit (StdUnitOf u), IsUnit u)
-    => From u a where
-  from = from'
-
--- | A unit whose quantities are convertible from its corresponding standard
--- unit to itself.
---
--- When @From u a@ is also satisfied, instances must satisfy the following law :
---
--- * @'from' . 'to' == 'id'@
---
-class (IsUnit u, IsUnit (StdUnitOf u)) => To u a where
   -- | Convert a quantity to its standard unit.
   --
   -- >>> to @Hour 1800
@@ -174,19 +156,29 @@ class (IsUnit u, IsUnit (StdUnitOf u)) => To u a where
   --
   to :: StdUnitOf u a -> u a
 
-toCoerce :: forall u a. To u a => a -> a
-toCoerce = unQuantity @u . to . quantity @(StdUnitOf u)
+fromCoerce :: forall u a. ConvertibleUnit u a => a -> a
+fromCoerce = unQuantity @(StdUnitOf u) . from . quantity @u
+{-# INLINE fromCoerce #-}
 
 instance {-# OVERLAPPABLE #-}
   (ConvFactor u a, IsUnit (StdUnitOf u), IsUnit u)
-  => To u a where
+    => ConvertibleUnit u a where
+  from = from'
+  {-# INLINE from #-}
+
   to = to'
   {-# INLINE to #-}
+
+
+toCoerce :: forall u a. ConvertibleUnit u a => a -> a
+toCoerce = unQuantity @u . to . quantity @(StdUnitOf u)
+
+
 
 -- | A constraint that is satisfied when both units have the same dimension and
 -- are such that @u@ can be converted to @v@.
 --
-type FromTo u v a = (DimEq u v, From u a, To v a)
+type FromTo u v a = (DimEq u v, ConvertibleUnit u a, ConvertibleUnit v a)
 
 -- | Conversion between two quantities with the same dimension.
 --
@@ -218,7 +210,7 @@ fromToCoerce = unQuantity @v . fromTo . quantity @u
 -- * @'from' == (* 'factorFrom')@
 -- * @'to' == (* 'factorTo')@
 --
-class (From u a, To u a, Fractional a) => ConvFactor u a where
+class (ConvertibleUnit u a, Fractional a) => ConvFactor u a where
   {-# MINIMAL factorFrom | factorTo #-}
   -- | Multiplying a quantity of type @u a@ with @'factorFrom'@ will convert it
   -- to its corresponding standard unit @StdUnitOf u a@
