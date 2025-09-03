@@ -263,7 +263,7 @@ mulLeftSpec = it (showUnit @u ++ " ~*. " ++ showUnit @v)
 
 
 mulSame :: forall u v a u2 .
-  ( u2 ~ StandardizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ StdUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConvFactor u a, ConvFactor v a
   )
@@ -271,7 +271,7 @@ mulSame :: forall u v a u2 .
 mulSame u v = coerce $ (coerce u :: u a) ~*~ (coerce v :: v a)
 
 mulSameProp :: forall u v a u2 .
-  ( u2 ~ StandardizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ StdUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConvFactor u a, ConvFactor v a
   , Show a, Epsilon a, Arbitrary a
@@ -282,7 +282,7 @@ mulSameProp = property (\(a :: a) (b :: a) ->
              (mulSame @u @v a b))
 
 mulSameSpec :: forall u v a u2 .
-  ( u2 ~ StandardizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ StdUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConvFactor u a, ConvFactor v a
   , ShowUnit u, ShowUnit v
@@ -293,7 +293,7 @@ mulSameSpec = it (showUnit @u ++ " ~*~ " ++ showUnit @v)
   $ mulSameProp @u @v @a
 
 divSame :: forall u v a u2 .
-  ( u2 ~ StandardizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ StdUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConvFactor u a, ConvFactor v a
   )
@@ -301,7 +301,7 @@ divSame :: forall u v a u2 .
 divSame u v = coerce $ (coerce u :: u a) ~/~ (coerce v :: v a)
 
 divSameProp :: forall u v a u2 .
-  ( u2 ~ StandardizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ StdUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConvFactor u a, ConvFactor v a
   , Show a, Epsilon a, Eq a, Arbitrary a
@@ -312,7 +312,7 @@ divSameProp = property (\(a :: a) (b :: a) -> b == 0 ||
              (divSame @u @v a b))
 
 divSameSpec :: forall u v a u2 .
-  ( u2 ~ StandardizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ StdUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConvFactor u a, ConvFactor v a
   , ShowUnit u, ShowUnit v

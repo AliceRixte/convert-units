@@ -3,13 +3,28 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 
+--------------------------------------------------------------------------------
+-- |
+--
+-- Module      :  Data.Units.Base.System
+-- Description :  System of units
+-- Copyright   :  (c) Alice Rixte 2025
+-- License     :  BSD 3
+-- Maintainer  :  alice.rixte@u-bordeaux.fr
+-- Stability   :  unstable
+-- Portability :  non-portable (GHC extensions)
+--
+-- Describe a system of units and their dimensions.
+--
+--------------------------------------------------------------------------------
+
 module Data.Units.Base.System
   (
   -- * Dimensions
     Dim
   , DimId
   , ShowDim
-  , NoDim
+  , NoDim (..)
   , IsDim (..)
   , DimEq
   -- * Units
@@ -19,7 +34,7 @@ module Data.Units.Base.System
   , ShowUnit (..)
   , prettysUnit
   , IsUnit (..)
-  , NoUnit
+  , NoUnit (..)
   , MetaUnit (..) -- TODO
   -- * Quantity
   , quantity
@@ -29,9 +44,9 @@ module Data.Units.Base.System
   , prettyQuantity
   , printQuantity
   -- * Unit and dimension constructors
-  , type (.*.)
+  , type (.*.) (..)
   , type (./.)
-  , type (.^.)
+  , type (.^.) (..)
   , type (.^+)
   , type (.^-)
   )
@@ -125,19 +140,33 @@ newtype NoDim a = NoDim a
 type instance DimId NoDim = 0
 type instance ShowDim NoDim = Text "NoDim"
 
------------------------------------- Units -------------------------------------
+
+type family DimEq (u :: Unit) (v :: Unit) :: Constraint where
+  DimEq u v = DimEqStd u v (DimOf u) (DimOf v)
+
+-- Avoid computing too many times StdUnitOf ? (I don't know if GHC would
+-- optimize it)
+type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
+  :: Constraint where
+  DimEqStd u v du dv =
+    ( IsUnit u
+    , IsUnit v
+    , du ~ dv
+    , If (du == dv) (() :: Constraint)
+      (TypeError (
+          Text "Cannot convert unit ‘"
+          :$$: ShowUnitType u
+          :<>: Text "’ of dimension ‘"
+          :<>: ShowDim du
+          :<>: Text "’"
+          :$$: Text "to unit ‘"
+          :<>: ShowUnitType v
+          :<>: Text "’ of dimension ‘"
+          :<>: ShowDim dv
+
+    )))
 
 
-
--- | A unit is represented by a newtype constructor. A quantity of some unit
--- @u@ is of type @u a@.
---
-type Unit = Type -> Type
-
-type StdUnitOf u = DimToUnit (DimOf u)
-
-class IsUnit (DimToUnit d) => IsDim (d :: Dim) where
-  type DimToUnit d :: Unit
 
 type family DimOf' (u :: Unit) :: Dim where
   DimOf' (u .*. NoUnit) = DimOf' u
@@ -150,6 +179,7 @@ type family DimOf' (u :: Unit) :: Dim where
   DimOf' ((u .^. n) .^. m) = DimOf' (u .^. Mul n m)
   DimOf' (u .^. n) = NormalizeExpDim (DimOf u .^. n)
   DimOf' u = DimOf u
+
 
 type family StandardizeDim d where
   StandardizeDim (d .*. NoDim) = StandardizeDim d
@@ -206,6 +236,21 @@ type family NormalizeExpDim u where
   NormalizeExpDim (u .^. Pos 1) = u
   NormalizeExpDim (u .^. Zero) = NoDim
   NormalizeExpDim u = u
+
+
+------------------------------------ Units -------------------------------------
+
+
+
+-- | A unit is represented by a newtype constructor. A quantity of some unit
+-- @u@ is of type @u a@.
+--
+type Unit = Type -> Type
+
+type StdUnitOf u = DimToUnit (DimOf u)
+
+class IsUnit (DimToUnit d) => IsDim (d :: Dim) where
+  type DimToUnit d :: Unit
 
 
 
@@ -388,7 +433,30 @@ instance (IsDim d, IsDim e) => IsDim (d .*. e) where
 
 
 
---------------------------------------------------------------------------------
+-------------------------------- Unit division ---------------------------------
+
+type family InverseUnit u where
+  InverseUnit (u .*. v) = InverseUnit u .*. InverseUnit v
+  InverseUnit (u .^. n) = NormalizeExp (u .^. Negate n)
+  InverseUnit NoUnit = NoUnit
+  InverseUnit u = u .^. Neg 1
+
+-- | Division of two units.
+--
+-- @
+-- type MySpeed a = (Meter ./. Second) a
+-- type MyMolarEntropy a = (Joule ./. Mole .*. Kelvin) a
+-- @
+--
+-- Notice that multiplication has priority over division.
+--
+type family u ./. v where
+  u ./. v = u .*. InverseUnit v
+
+infix 6 ./.
+
+
+----------------------------- Unit exponentiation ------------------------------
 
 
 -- | Exponentiation of a unit
@@ -474,7 +542,6 @@ toSuperscript a = a
 
 --------------------------------------------------------------------------------
 
-
 type family StandardizeUnit u where
   StandardizeUnit (u .*. NoUnit) = StandardizeUnit u
   StandardizeUnit (NoUnit .*. v) = StandardizeUnit v
@@ -486,7 +553,6 @@ type family StandardizeUnit u where
   StandardizeUnit ((u .^. n) .^. m) = StandardizeUnit (u .^. Mul n m)
   StandardizeUnit (u .^. n) = NormalizeExp (StdUnitOf u .^. n)
   StandardizeUnit u = StdUnitOf u
-
 
 type family Insert u v where
   Insert NoUnit v = v
@@ -521,8 +587,6 @@ type family SwapCmp cmp u v where
   SwapCmp 'LT u v = u .*. v
   SwapCmp 'GT u v = v .*. u
   SwapCmp 'EQ u v = MulSameDim u v
-
-
 
 type family MulSameDim u v where
   MulSameDim (u .^. n) (u .^. m) = NormalizeExp (u .^. Add n m)
@@ -586,55 +650,4 @@ type family InsertForNormalize u v where
 
 --------------------------------------------------------------------------------
 
-type family InverseUnit u where
-  InverseUnit (u .*. v) = InverseUnit u .*. InverseUnit v
-  InverseUnit (u .^. n) = NormalizeExp (u .^. Negate n)
-  InverseUnit NoUnit = NoUnit
-  InverseUnit u = u .^. Neg 1
-
--- | Division of two units.
---
--- @
--- type MySpeed a = (Meter ./. Second) a
--- type MyMolarEntropy a = (Joule ./. Mole .*. Kelvin) a
--- @
---
--- Notice that multiplication has priority over division.
---
-type family u ./. v where
-  u ./. v = u .*. InverseUnit v
-
-infix 6 ./.
-
-
---------------------------------------------------------------------------------
-
-type family DimEq (u :: Unit) (v :: Unit) :: Constraint where
-  DimEq u v = DimEqStd u v (StdUnitOf u) (StdUnitOf v)
-
--- Avoid computing too many times StdUnitOf ? (I don't know if GHC would
--- optimize it)
-type family DimEqStd (u :: Unit) (v :: Unit) (stdu :: Unit) (stdv :: Unit)
-  :: Constraint where
-  DimEqStd u v stdu stdv =
-    ( IsUnit u
-    , IsUnit v
-    , stdu ~ stdv
-    , IsUnit stdu
-    , If (stdu == stdv) (() :: Constraint)
-      (TypeError (
-          Text "Cannot convert unit ‘"
-          :<>: ShowUnitType u
-          :<>: Text "’ to unit ‘"
-          :<>: ShowUnitType v
-          :<>: Text "’ because their dimensions do not match."
-          :$$: Text "Dimension of ‘"
-          :<>: ShowUnitType u
-          :<>: Text "’ is: "
-          :<>: ShowDim (DimOf stdu)
-          :$$: Text "Dimension of ‘"
-          :<>: ShowUnitType v
-          :<>: Text "’ is: "
-          :<>: ShowDim (DimOf stdv)
-    )))
 
