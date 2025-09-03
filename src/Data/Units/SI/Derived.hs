@@ -1,7 +1,7 @@
 module Data.Units.SI.Derived where
 
 import Data.Units.Base
-import Data.Units.SI.Units
+import Data.Units.SI.System
 
 -- type Hertz = Second .^- 1
 -- | Frequency in Hertz

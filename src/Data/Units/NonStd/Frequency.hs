@@ -7,7 +7,7 @@ import GHC.TypeLits
 import Data.Proxy
 
 import Data.Units.Base
-import Data.Units.SI.Units
+import Data.Units.SI.System
 
 -- | Pitch in the MIDI norm.
 --
