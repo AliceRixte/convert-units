@@ -27,6 +27,7 @@ dependencies:
 - data-default
 - convertible
 - newtype
+- template-haskell
 
 ghc-options:
 - -Wall

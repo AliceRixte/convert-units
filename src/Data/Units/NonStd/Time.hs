@@ -1,3 +1,7 @@
+{-# LANGUAGE TemplateHaskell #-}
+
+
+
 --------------------------------------------------------------------------------
 -- |
 --
@@ -18,8 +22,12 @@ module Data.Units.NonStd.Time
   ( module Data.Units.NonStd.Time
   ) where
 
+import Data.Units.Base.TH
+
 import Data.Units.Base
 import Data.Units.SI
+
+$(mkUnit "Minuteee" "min" ''Time 60)
 
 -- | Time quantity in minutes
 --
