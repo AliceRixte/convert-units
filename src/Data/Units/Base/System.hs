@@ -80,13 +80,13 @@ type Dim = Type -> Type
 --
 -- >>> type instance DimId Length = 300
 --
--- >>> :kind! StdUnitOf (Second -^~ 1 -*- Meter)
--- Meter -*- (Second -^- Neg 1)
+-- >>> :kind! StdUnitOf (Second .^- 1 .*. Meter)
+-- Meter .*. (Second .^. Neg 1)
 --
 --
 -- Two different dimensions must have different identifiers. To make sure this
--- remains true, we maintain here an //exhaustive// list of dimensions declared
--- in this package //and// any package that depends on it. Please raise an issue
+-- remains true, we maintain here an /exhaustive/ list of dimensions declared
+-- in this package /and/ any package that depends on it. Please raise an issue
 -- if you added a new dimension.
 --
 -- [This package:]
@@ -96,7 +96,7 @@ type Dim = Type -> Type
 --  +======================================+=====+
 --  | @'NoDim'@                            | 000 |
 --  +--------------------------------------+-----+
---  | @'Angle'@                            | 100 |
+--  | @'Data.Units.AngleSI.Angle.Angle'@   | 100 |
 --  +--------------------------------------+-----+
 --  | @'Data.Units.SI.Mass'@               | 200 |
 --  +--------------------------------------+-----+
@@ -122,7 +122,7 @@ type family DimId (d:: Dim) :: Nat
 -- Using the following in a @'TypeError'@
 --
 -- @
--- ShowDim (Length -*- Time -^~ 1)
+-- ShowDim (Length .*. Time .^- 1)
 -- @
 --
 -- will show @L.T⁻¹@
@@ -164,6 +164,10 @@ type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
           :<>: Text "’."
     )))
 
+-------------------------- Dimension standardization ---------------------------
+
+-- | Helper type family for defining DimOf for .*. and .^.
+--
 type family DimOf' (u :: Unit) :: Dim where
   DimOf' (u .*. NoUnit) = DimOf' u
   DimOf' (NoUnit .*. v) = DimOf' v
@@ -535,20 +539,32 @@ toSuperscript '(' = '⁽'
 toSuperscript '=' = '⁼'
 toSuperscript a = a
 
+------------------------------ Unit normalization ------------------------------
 
---------------------------------------------------------------------------------
-
-type family StandardizeUnit u where
-  StandardizeUnit (u .*. NoUnit) = StandardizeUnit u
-  StandardizeUnit (NoUnit .*. v) = StandardizeUnit v
-  StandardizeUnit ((u .*. v) .*. w) =
-    Insert (StandardizeUnit u) (StandardizeUnit (v .*. w))
-  StandardizeUnit (u .*. v) = Insert (StandardizeUnit u) (StandardizeUnit v)
-  StandardizeUnit (NoUnit .^. n) = NoUnit
-  StandardizeUnit ((u .*. v) .^. n) = StandardizeUnit (u .^. n .*. v .^. n)
-  StandardizeUnit ((u .^. n) .^. m) = StandardizeUnit (u .^. Mul n m)
-  StandardizeUnit (u .^. n) = NormalizeExp (StdUnitOf u .^. n)
-  StandardizeUnit u = StdUnitOf u
+-- | Sort a unit by dimension, and try to collapse them into exponents without
+-- converting it to standard units.
+--
+-- >>> :kind! NormalizeUnit (Minute .*. Minute)
+-- Minute .^. Pos 2
+--
+-- >>> 1 :: NormalizeUnit (Minute .*. Second) Double
+-- <interactive>:39:1: error: [GHC-47403]
+-- • Failed to multiply two different units ‘min’ and ‘s’ with the same
+--   dimension ‘T’.
+--   Hint : Did you try to multiply via (.*.) two quantities with
+--          the same dimension but different units ?
+--
+type family NormalizeUnit u where
+  NormalizeUnit (u .*. NoUnit) = NormalizeUnit u
+  NormalizeUnit (NoUnit .*. v) = NormalizeUnit v
+  NormalizeUnit ((u .*. v) .*. w) =
+    InsertForNormalize (NormalizeUnit u) (NormalizeUnit (v .*. w))
+  NormalizeUnit (u .*. v) = InsertForNormalize (NormalizeUnit u) (NormalizeUnit v)
+  NormalizeUnit (NoUnit .^. n) = NoUnit
+  NormalizeUnit ((u .*. v) .^. n) = NormalizeUnit (u .^. n .*. v .^. n)
+  NormalizeUnit ((u .^. n) .^. m) = NormalizeUnit (u .^. Mul n m)
+  NormalizeUnit (u .^. n) = NormalizeExp (u .^. n)
+  NormalizeUnit u = u -- ^ This is the only difference with StandardizeUnit
 
 type family Insert u v where
   Insert NoUnit v = v
@@ -557,6 +573,30 @@ type family Insert u v where
     InsertCmp (Compare (DimId (DimOf u)) (DimId (DimOf v))) u (v .*. w)
   Insert u v =
     SwapCmp (Compare (DimId (DimOf u)) (DimId (DimOf v))) u v
+
+type family NormalizeExp u where
+  NormalizeExp (u .^. Pos 1) = u
+  NormalizeExp (u .^. Zero) = NoUnit
+  NormalizeExp u = u
+
+
+type family InsertForNormalize u v where
+  InsertForNormalize NoUnit v = v
+  InsertForNormalize u NoUnit = u
+  InsertForNormalize u (v .*. w) =
+    InsertCmp (Compare
+                  -- We need to standardize to get the dimension (not necessary
+                  -- in StandardizeUnit becaus units are already standardized)
+                  (DimId (DimOf u))
+                  (DimId (DimOf v))
+              ) u (v .*. w)
+  InsertForNormalize u v =
+    SwapCmp (Compare
+                  -- We need to standardize to get the dimension (not necessary
+                  -- in StandardizeUnit becaus units are already standardized)
+                  (DimId (DimOf u))
+                  (DimId (DimOf v))
+            ) u v
 
 type family InsertCmp cmp u v where
   InsertCmp 'LT u (v .*. w) = u .*. v .*. w
@@ -601,49 +641,3 @@ type family MulSameDim u v where
     :$$: Text "       the same dimension but different units ?"
     :$$: Text "If so, you might want to use (~*-), (-*~) or (~*~) instead. "
     )
-
-type family NormalizeExp u where
-  NormalizeExp (u .^. Pos 1) = u
-  NormalizeExp (u .^. Zero) = NoUnit
-  NormalizeExp u = u
-
---------------------------------------------------------------------------------
-
--- | Same as StandardizeUnit but does not convert to standard units. This can
--- result in rectangle units.
-type family NormalizeUnit u where
-  NormalizeUnit (u .*. NoUnit) = NormalizeUnit u
-  NormalizeUnit (NoUnit .*. v) = NormalizeUnit v
-  NormalizeUnit ((u .*. v) .*. w) =
-    InsertForNormalize (NormalizeUnit u) (NormalizeUnit (v .*. w))
-  NormalizeUnit (u .*. v) = InsertForNormalize (NormalizeUnit u) (NormalizeUnit v)
-  NormalizeUnit (NoUnit .^. n) = NoUnit
-  NormalizeUnit ((u .*. v) .^. n) = NormalizeUnit (u .^. n .*. v .^. n)
-  NormalizeUnit ((u .^. n) .^. m) = NormalizeUnit (u .^. Mul n m)
-  NormalizeUnit (u .^. n) = NormalizeExp (u .^. n)
-  NormalizeUnit u = u -- ^ This is the only difference with StandardizeUnit
-
--- | Same as StandardizeUnit but does not convert to standard units. This can
--- result in rectangle units.
-type family InsertForNormalize u v where
-  InsertForNormalize NoUnit v = v
-  InsertForNormalize u NoUnit = u
-  InsertForNormalize u (v .*. w) =
-    InsertCmp (Compare
-                  -- We need to standardize to get the dimension (not necessary
-                  -- in StandardizeUnit becaus units are already standardized)
-                  (DimId (DimOf (StandardizeUnit u)))
-                  (DimId (DimOf (StandardizeUnit v)))
-              ) u (v .*. w)
-  InsertForNormalize u v =
-    SwapCmp (Compare
-                  -- We need to standardize to get the dimension (not necessary
-                  -- in StandardizeUnit becaus units are already standardized)
-                  (DimId (DimOf (StandardizeUnit u)))
-                  (DimId (DimOf (StandardizeUnit v)))
-            ) u v
-
-
---------------------------------------------------------------------------------
-
-
