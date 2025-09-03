@@ -119,7 +119,7 @@ import Data.Proxy
 
 import Data.Type.Int
 
-import Data.Units.Base.Unit
+import Data.Units.Base.System
 
 
 

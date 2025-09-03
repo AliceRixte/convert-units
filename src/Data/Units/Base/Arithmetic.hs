@@ -59,7 +59,7 @@ module Data.Units.Base.Arithmetic
 
 import Data.Type.Int
 
-import Data.Units.Base.Unit
+import Data.Units.Base.System
 import Data.Units.Base.Convert
 
 ----------------------------------- Addition -----------------------------------

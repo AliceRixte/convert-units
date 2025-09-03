@@ -1,6 +1,6 @@
 module Data.Units.Base
-  ( module Data.Units.Base.Unit
-  , module Data.Units.Base.Dimension
+  ( module GHC.TypeError
+  , module Data.Units.Base.System
   , module Data.Units.Base.Convert
   , module Data.Units.Base.Arithmetic
   , module Data.Units.Base.Prefix
@@ -8,8 +8,8 @@ module Data.Units.Base
   , module Data.Type.Int.Proxy
   ) where
 
-import Data.Units.Base.Unit
-import Data.Units.Base.Dimension
+import GHC.TypeError
+import Data.Units.Base.System
 import Data.Units.Base.Convert
 import Data.Units.Base.Arithmetic
 import Data.Units.Base.Prefix

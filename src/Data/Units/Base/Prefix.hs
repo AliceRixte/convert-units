@@ -22,7 +22,9 @@
 
 module Data.Units.Base.Prefix where
 
-import Data.Units.Base.Unit
+import GHC.TypeError
+
+import Data.Units.Base.System
 import Data.Units.Base.Convert
 
 -- | A unit prefix, like Kilo, Milli, etc.

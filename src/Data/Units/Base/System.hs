@@ -1,12 +1,39 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 
-module Data.Units.Base.Unit
-  ( module Data.Units.Base.Unit
-  , module GHC.TypeError
+module Data.Units.Base.System
+  (
+  -- * Dimensions
+    Dim
+  , DimId
+  , ShowDim
+  , NoDim
+  , IsDim (..)
+  , DimEq
+  -- * Units
+  , Unit
+  , StdUnitOf
+  , NormalizeUnit
+  , ShowUnit (..)
+  , prettysUnit
+  , IsUnit (..)
+  , NoUnit
+  , MetaUnit (..) -- TODO
+  -- * Quantity
+  , quantity
+  , unQuantity
+  , showsQuantity
+  , showQuantity
+  , prettyQuantity
+  , printQuantity
+  -- * Unit and dimension constructors
+  , type (.*.)
+  , type (./.)
+  , type (.^.)
+  , type (.^+)
+  , type (.^-)
   )
   where
 
@@ -21,7 +48,86 @@ import GHC.TypeLits
 
 import Data.Type.Int
 
-import Data.Units.Base.Dimension
+
+---------------------------------- Dimension -----------------------------------
+
+-- | A unit dimension.
+--
+--  Modeled as a newtype constructor, just like @'Unit'@.
+--
+-- >>> type Speed = Length -/- Time
+--
+type Dim = Type -> Type
+
+-- | A dimension identifier.
+--
+-- This identifiers allow to sort the units when computing the standard unit.
+--
+-- >>> type instance DimId Length = 300
+--
+-- >>> :kind! StdUnitOf (Second -^~ 1 -*- Meter)
+-- Meter -*- (Second -^- Neg 1)
+--
+--
+-- Two different dimensions must have different identifiers. To make sure this
+-- remains true, we maintain here an //exhaustive// list of dimensions declared
+-- in this package //and// any package that depends on it. Please raise an issue
+-- if you added a new dimension.
+--
+-- [This package:]
+--
+--  +--------------------------------------+-----+
+--  | Dimension                            | Id  |
+--  +======================================+=====+
+--  | @'NoDim'@                            | 000 |
+--  +--------------------------------------+-----+
+--  | @'Angle'@                            | 100 |
+--  +--------------------------------------+-----+
+--  | @'Data.Units.SI.Mass'@               | 200 |
+--  +--------------------------------------+-----+
+--  | @'Data.Units.SI.Length'@             | 300 |
+--  +--------------------------------------+-----+
+--  | @'Data.Units.SI.Time'@               | 400 |
+--  +--------------------------------------+-----+
+--  | @'Data.Units.SI.ElectricCurrent'@    | 500 |
+--  +--------------------------------------+-----+
+--  | @'Data.Units.SI.Temperature'@        | 600 |
+--  +--------------------------------------+-----+
+--  | @'Data.Units.SI.SubstanceAmount'@    | 700 |
+--  +--------------------------------------+-----+
+--  | @'Data.Units.SI.LuminousIntensity'@  | 800 |
+--  +--------------------------------------+-----+
+--
+type family DimId (d:: Dim) :: Nat
+
+-- | Pretty print a dimension in error messages
+--
+-- >>> type instance ShowDim Length = Text "L"
+--
+-- Using the following in a @'TypeError'@
+--
+-- @
+-- ShowDim (Length -*- Time -^~ 1)
+-- @
+--
+-- will show @L.T⁻¹@
+--
+type family ShowDim (d :: Dim) :: ErrorMessage
+
+
+-- | The dimension of non dimensional quantities
+--
+newtype NoDim a = NoDim a
+  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
+           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+
+
+type instance DimId NoDim = 0
+type instance ShowDim NoDim = Text "NoDim"
+
+------------------------------------ Units -------------------------------------
+
+
 
 -- | A unit is represented by a newtype constructor. A quantity of some unit
 -- @u@ is of type @u a@.
@@ -56,9 +162,6 @@ type family StandardizeDim d where
   StandardizeDim ((d .^. n) .^. m) = StandardizeDim (d .^. Mul n m)
   StandardizeDim (d .^. n) = NormalizeExpDim (d .^. n)
   StandardizeDim d = d
-
-type family MulDim (d :: Dim) (e :: Dim) where
-  MulDim d e = StandardizeDim (d .*. e)
 
 type family InsertDim d e where
   InsertDim NoDim e = e
@@ -534,3 +637,4 @@ type family DimEqStd (u :: Unit) (v :: Unit) (stdu :: Unit) (stdv :: Unit)
           :<>: Text "’ is: "
           :<>: ShowDim (DimOf stdv)
     )))
+
