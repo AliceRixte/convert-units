@@ -2,6 +2,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Data.Units.SI.Prefixes where
 
@@ -9,23 +10,26 @@ module Data.Units.SI.Prefixes where
 import Data.Units.Base
 
 
-newtype Milli (u :: Unit) a = Milli (u a)
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
-  deriving Show via MetaPrefix Milli u a
-  deriving ShowUnit via MetaPrefix Milli u
-
-deriving via MetaPrefix Milli u instance IsUnit u => IsUnit (Milli u )
-
-instance ShowPrefix Milli where
-  type ShowPrefixType Milli = Text "m"
-  showPrefix = "Milli"
-  prettyPrefix = "m"
+$(mkPrefix "Milli" "m" (1/1000))
 
 
-instance Fractional a => PrefixFactor Milli a where
-  prefixFactorTo = 1000
-  {-# INLINE prefixFactorTo #-}
+-- newtype Milli (u :: Unit) a = Milli (u a)
+--   deriving ( Eq, Ord, Num, Fractional, Floating, Real
+--            , RealFrac, RealFloat, Functor)
+--   deriving Show via MetaPrefix Milli u a
+--   deriving ShowUnit via MetaPrefix Milli u
+
+-- deriving via MetaPrefix Milli u instance IsUnit u => IsUnit (Milli u )
+
+-- instance ShowPrefix Milli where
+--   type ShowPrefixType Milli = Text "m"
+--   showPrefix = "Milli"
+--   prettyPrefix = "m"
+
+
+-- instance Fractional a => PrefixFactor Milli a where
+--   prefixFactorTo = 1000
+--   {-# INLINE prefixFactorTo #-}
 
 instance (To u a, Fractional a) => To (Milli u) a where
   to = prefixTo
@@ -35,9 +39,9 @@ instance (From u a, Fractional a) => From (Milli u) a where
   from = prefixFrom
   {-# INLINE from #-}
 
-instance ConvFactor u a => ConvFactor (Milli u) a where
-  factorFrom = factorFrom @(MetaPrefix Milli u)
-  {-# INLINE factorFrom #-}
+-- instance ConvFactor u a => ConvFactor (Milli u) a where
+--   factorFrom = factorFrom @(MetaPrefix Milli u)
+--   {-# INLINE factorFrom #-}
 
 
 --------------------------------------------------------------------------------
