@@ -35,7 +35,7 @@ module Data.Units.Base.System
   , prettysUnit
   , IsUnit (..)
   , NoUnit (..)
-  , MetaUnit (..) -- TODO
+  , MetaUnit (..)
   -- * Quantity
   , quantity
   , unQuantity
@@ -144,8 +144,6 @@ type instance ShowDim NoDim = Text "NoDim"
 type family DimEq (u :: Unit) (v :: Unit) :: Constraint where
   DimEq u v = DimEqStd u v (DimOf u) (DimOf v)
 
--- Avoid computing too many times StdUnitOf ? (I don't know if GHC would
--- optimize it)
 type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
   :: Constraint where
   DimEqStd u v du dv =
@@ -155,7 +153,7 @@ type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
     , If (du == dv) (() :: Constraint)
       (TypeError (
           Text "Cannot convert unit ‘"
-          :$$: ShowUnitType u
+          :<>: ShowUnitType u
           :<>: Text "’ of dimension ‘"
           :<>: ShowDim du
           :<>: Text "’"
@@ -163,10 +161,8 @@ type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
           :<>: ShowUnitType v
           :<>: Text "’ of dimension ‘"
           :<>: ShowDim dv
-
+          :<>: Text "’."
     )))
-
-
 
 type family DimOf' (u :: Unit) :: Dim where
   DimOf' (u .*. NoUnit) = DimOf' u
