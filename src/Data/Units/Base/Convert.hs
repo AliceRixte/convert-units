@@ -252,7 +252,7 @@ class (From u a, To u a, Fractional a) => ConvFactor u a where
   factorTo = 1 / factorFrom @u
   {-# INLINE factorTo #-}
 
-instance (IsUnit u, IsUnit (StdUnitOf' (DimOf u)), Fractional a) => ConvFactor (MetaUnit u) a where
+instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a) => ConvFactor (MetaUnit u) a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
 

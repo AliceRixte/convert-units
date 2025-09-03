@@ -18,7 +18,7 @@ type instance DimId Length = 300
 type instance ShowDim Length = Text "L"
 
 instance IsDim Length where
-  type StdUnitOf' Length = Meter
+  type DimToUnit Length = Meter
 
 
 -- | A quantity in meters, denotated @m@ in SI.
@@ -55,7 +55,7 @@ type instance DimId Time = 400
 type instance ShowDim Time = Text "T"
 
 instance IsDim Time where
-  type StdUnitOf' Time = Second
+  type DimToUnit Time = Second
 
 -- | A quantity in seconds, denotated @s@ in SI.
 --
@@ -90,7 +90,7 @@ type instance DimId Temperature = 500
 type instance ShowDim Temperature = Text "Θ"
 
 instance IsDim Temperature where
-  type StdUnitOf' Temperature = Kelvin
+  type DimToUnit Temperature = Kelvin
 
 -- | A quantity in Kelvin, denotated @K@ in SI.
 --

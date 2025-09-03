@@ -28,10 +28,10 @@ import Data.Units.Base.Dimension
 --
 type Unit = Type -> Type
 
-type StdUnitOf u = StdUnitOf' (DimOf u)
+type StdUnitOf u = DimToUnit (DimOf u)
 
-class IsUnit (StdUnitOf' d) => IsDim (d :: Dim) where
-  type StdUnitOf' d :: Unit
+class IsUnit (DimToUnit d) => IsDim (d :: Dim) where
+  type DimToUnit d :: Unit
 
 type family DimOf' (u :: Unit) :: Dim where
   DimOf' (u .*. NoUnit) = DimOf' u
@@ -248,7 +248,7 @@ instance IsUnit NoUnit where
   type DimOf NoUnit = NoDim
 
 instance IsDim NoDim where
-  type StdUnitOf' NoDim = NoUnit
+  type DimToUnit NoDim = NoUnit
 
 
 -- | Multiplication of two units.
@@ -281,7 +281,7 @@ instance (IsUnit u, IsUnit v) => IsUnit (u .*. v) where
   type DimOf (u .*. v) = DimOf' (u .*. v)
 
 instance (IsDim d, IsDim e) => IsDim (d .*. e) where
-  type StdUnitOf' (d .*. e) = StdUnitOf' d .*. StdUnitOf' e
+  type DimToUnit (d .*. e) = DimToUnit d .*. DimToUnit e
 
 
 
@@ -333,7 +333,7 @@ instance IsUnit u => IsUnit (u .^. n) where
   type DimOf (u .^. n) = DimOf' (u .^. n)
 
 instance IsDim d  => IsDim (d .^. n) where
-  type StdUnitOf' (d .^. n) = StdUnitOf' d .^. n
+  type DimToUnit (d .^. n) = DimToUnit d .^. n
 
 
 instance (ShowUnit u, KnownInt n) => ShowUnit (u .^. n) where

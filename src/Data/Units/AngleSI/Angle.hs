@@ -34,7 +34,7 @@ type instance DimId Angle = 100
 type instance ShowDim Angle = Text "A"
 
 instance IsDim Angle where
-  type StdUnitOf' Angle = Radian
+  type DimToUnit Angle = Radian
 
 -- | An angle in radians.
 --
