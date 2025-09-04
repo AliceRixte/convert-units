@@ -16,7 +16,19 @@
 --------------------------------------------------------------------------------
 
 
-module Data.Units.Base.TH where
+module Data.Units.Base.TH
+  ( -- * Units
+    mkUnitFrom
+  , mkUnitTo
+  , mkUnitNoFactor
+  , mkBaseUnit
+  -- * Dimensions
+  , mkDim
+  -- * Prefixes
+  , mkPrefixFrom
+  , mkPrefixTo
+  )
+  where
 
 import GHC.TypeError
 
@@ -32,7 +44,7 @@ import Data.Units.Base.Prefix
 --
 deriveList :: [Name]
 deriveList =
-  [ ''Eq
+  [''Eq
   , ''Ord
   , ''Num
   , ''Fractional
@@ -42,6 +54,8 @@ deriveList =
   , ''RealFloat
   ]
 
+-- | List of derived classes for a unit.
+--
 deriveListUnit :: [Name]
 deriveListUnit = ''Show : deriveList
 
@@ -219,6 +233,90 @@ mkUnitNoFactor unitStr prettyStr dimName = do
   isUnitDec  <- mkIsUnitInstance unitName dimName
   showUnitDec  <- mkShowUnitInstance unitName unitStr prettyStr
   return $ [newtypeDec] ++  isUnitDec ++ showUnitDec
+
+
+-- | Make a base unit.
+--
+-- In addition to calling 'mkUnitFrom' with factor 1, this also makes an
+-- instance of 'IsDim', which cannot be done in 'mkDim' since the base unit is
+-- not yet declared.
+--
+-- [Usage:]
+--
+-- @ \$(mkBaseUnit "Second" "s" ''Time ) @
+--
+mkBaseUnit :: String -> String -> Name -> Q [Dec]
+mkBaseUnit unitStr prettyStr dimName = do
+  let unitName = mkName unitStr
+  unitDec <- mkUnitFrom unitStr prettyStr dimName 1
+  isDimDec <- mkIsDimInstance dimName unitName
+  return $ unitDec ++ isDimDec
+
+---------------------------------- Dimensions ----------------------------------
+
+-- | List of derived classes for a dimension.
+--
+deriveListDim :: [Name]
+deriveListDim = deriveListUnit
+
+
+mkDimNewtype :: Quote m
+  => [Name] -> Name -> m Dec
+mkDimNewtype = mkUnitNewtype
+
+-- | Make an instance of the form
+--
+-- @
+-- instance IsDim Time where
+--   type DimToUnit Time = Second
+-- @
+--
+mkIsDimInstance :: Quote m => Name -> Name -> m [Dec]
+mkIsDimInstance dimName unitName = [d|
+  instance IsDim $(conT dimName) where
+    type DimToUnit $(conT dimName) = $(conT unitName)
+  |]
+
+-- | Make a type instance of the form
+--
+-- @
+-- type instance DimId Time = 400
+-- @
+--
+mkDimIdTypeInstance :: Quote m => Name -> Integer -> m [Dec]
+mkDimIdTypeInstance dimName n = [d|
+  type instance DimId $(conT dimName) = $(litT (numTyLit n))
+  |]
+
+-- | Make a type instance of the form
+--
+-- @
+-- type instance ShowDim Time = Text "T"
+-- @
+--
+mkShowDimTypeInstance :: Quote m => Name -> String -> m [Dec]
+mkShowDimTypeInstance dimName str = [d|
+  type instance ShowDim $(conT dimName) = Text $(litT (strTyLit str))
+  |]
+
+-- | Make a dimension.
+--
+-- This will not declare an instance for 'IsDim', which is instead declared
+-- using 'mkBaseUnit'.
+
+-- [Usage:]
+--
+-- @ \$(mkDim "Time" "T" 400) @
+--
+mkDim :: String -> String -> Integer -> Q [Dec]
+mkDim dimStr showStr n = do
+  let dimName = mkName dimStr
+  newtypeDec <- mkDimNewtype deriveListDim dimName
+  -- isDimDec <- mkIsDimInstance dimName unitName
+  dimIdDec <- mkDimIdTypeInstance dimName n
+  showDimDec <- mkShowDimTypeInstance dimName showStr
+  return $ [newtypeDec]  ++ dimIdDec ++ showDimDec
+
 
 
 ----------------------------------- Prefixes -----------------------------------
