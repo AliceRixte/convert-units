@@ -58,9 +58,9 @@
 -- You will get instances for @'From'@ and @'To'@ for free.
 --
 -- >>> from (Hour 1)
--- ofUnit 3600.0 "s"
+-- Second 3600.0
 -- >>> from' (Hour 1)
--- ofUnit 3600.0 "s"
+-- Second 3600.0
 --
 -- === Affine conversion (with an offset)
 --
@@ -85,9 +85,9 @@
 -- @
 --
 -- >>> from (Celsius 0)
--- ofUnit -273.15 "K"
+-- Kelvin 273.15
 -- >>> from' (Celsius 0)
--- ofUnit 0.0 "K"
+-- Kelvin 0.0
 --
 -- === Other conversions
 --
@@ -135,13 +135,13 @@ class (IsUnit u, IsUnit (BaseUnitOf u)) => ConvertibleUnit u a where
   --
   -- >>> import Data.Units.NonStd.Time
   -- >>> from @Hour 1
-  -- ofUnit 3600.0 "s"
+  -- Second 3600.0
   -- >>> from (Hour 1)
-  -- ofUnit 3600.0 "s"
-  -- >>> from @(Kilo Meter -/- Hour) 36
-  -- ofUnit 10.0 "m.s⁻¹"
+  -- Second 3600.0
+  -- >>> from @(Kilo Meter ./. Hour) 36
+  -- quantity @(Meter .*. Second .^- 1) 10.0
   -- >>> from (Celsius 0)
-  -- ofUnit 273.15 "K"
+  -- Kelvin 273.15
   from :: u a -> BaseUnitOf u a
   default from :: ConvFactor u a => u a -> BaseUnitOf u a
   from = from'
@@ -150,13 +150,13 @@ class (IsUnit u, IsUnit (BaseUnitOf u)) => ConvertibleUnit u a where
   -- | Convert a quantity to its standard unit.
   --
   -- >>> to @Hour 1800
-  -- ofUnit 0.5 "hr"
+  -- Hour 0.5
   -- >>> to 1800 :: Hour Double
-  -- ofUnit 0.5 "hr"
-  -- >>> to @(Kilo Meter -/- Hour) 10
-  -- ofUnit 36.0 "km.hr⁻¹"
+  -- Hour 0.5
+  -- >>> to @(Kilo Meter ./. Hour) 10
+  -- quantity @(Kilo Meter .*. Hour .^- 1) 36.0
   -- >>> to @Celsius 0
-  -- ofUnit (-273.15) "°C"
+  -- Celsius (-273.15)
   --
   to :: BaseUnitOf u a -> u a
   default to :: ConvFactor u a => BaseUnitOf u a -> u a
@@ -189,15 +189,15 @@ type FromTo u v a = (DimEq u v, ConvertibleUnit u a, ConvertibleUnit v a)
 -- | Conversion between two quantities with the same dimension.
 --
 --  >>> fromTo @Celsius @Kelvin 0
---  ofUnit 273.15 "K"
+--  Kelvin 273.15
 -- >>> fromTo @(Milli Second) @Hour 1
--- ofUnit 2.7777777777777776e-7 "hr"
+-- Hour 2.7777777777777776e-7
 -- >>> fromTo (Milli (Second 1)) :: Hour Double
--- ofUnit 2.7777777777777776e-7 "hr"
+-- Hour 2.7777777777777776e-7
 -- >>> fromTo @Turn @Degree (1/4) -- angle conversion
--- ofUnit 90.0 "°"
--- >>> fromTo @(Kilo Meter -/- Hour) @(Milli Meter -/- Milli Second) 36
--- ofUnit 10.0 "mm.ms⁻¹"
+-- Degree 90.0
+-- >>> fromTo @(Kilo Meter ./. Hour) @(Milli Meter ./. Milli Second) 36
+-- quantity @(Milli Meter .*. Milli Second .^- 1) 10.0
 --
 fromTo :: FromTo u v a => u a -> v a
 fromTo = to . from
@@ -228,7 +228,7 @@ class (ConvertibleUnit u a, Fractional a) => ConvFactor u a where
   -- 3600.0
   -- >>> factorFrom @Celsius :: Double
   -- 1.0
-  -- >>> factorFrom @(Kilo Meter -/- Hour) :: Double
+  -- >>> factorFrom @(Kilo Meter ./. Hour) :: Double
   -- 0.2777777777777778
   factorFrom :: a
   factorFrom = 1 / factorTo @u
@@ -241,7 +241,7 @@ class (ConvertibleUnit u a, Fractional a) => ConvFactor u a where
   -- 2.777777777777778e-4
   -- >>> factorTo @Celsius :: Double
   -- 1.0
-  -- >>> factorTo @(Kilo Meter -/- Hour) :: Double
+  -- >>> factorTo @(Kilo Meter ./. Hour) :: Double
   -- 3.5999999999999996
   --
   -- Notice the small error due to the fact that the factor computed is @1 /
@@ -288,13 +288,13 @@ instance (ConvFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
 -- by  @'fromFactor'@.
 --
 -- >>> from' @Hour 1
--- ofUnit 3600.0 "s"
+-- Second 3600.0
 -- >>> from' (Hour 1)
--- ofUnit 3600.0 "s"
--- >>> from' @(Kilo Meter -/- Hour) 36
--- ofUnit 10.0 "m.s⁻¹"
+-- Second 3600.0
+-- >>> from' @(Kilo Meter ./. Hour) 36
+-- quantity @(Meter .*. Second .^- 1) 10.0
 -- >>> from' (Celsius 0)
--- ofUnit 0.0 "K"
+-- Kelvin 0.0
 --
 from' :: forall u a. ConvFactor u a
   => u a -> BaseUnitOf u a
@@ -305,13 +305,13 @@ from' q = quantity (unQuantity q * factorFrom @u)
 -- by  @'toFactor'@.
 --
 -- >>> to' @Hour 1800
--- ofUnit 0.5 "hr"
+-- Hour 0.5
 -- >>> to' 1800 :: Hour Double
--- ofUnit 0.5 "hr"
--- >>> to' @(Kilo Meter -/- Hour) 10
--- ofUnit 36.0 "km.hr⁻¹"
+-- Hour 0.5
+-- >>> to' @(Kilo Meter ./. Hour) 10
+-- quantity @(Kilo Meter .*. Hour .^- 1) 36.0
 -- >>> to' @Celsius 0
--- ofUnit (-273.15) "°C"
+-- Celsius 0.0
 --
 to' :: forall u a. ConvFactor u a
   => BaseUnitOf u a -> u a
@@ -326,15 +326,15 @@ type FromTo' u v a = (DimEq u v, ConvFactor u a, ConvFactor v a)
 -- | Conversion, using conversion factors, between two quantities with the same dimension
 --
 -- >>> fromTo' @Celsius @Kelvin 0
---  ofUnit 0.0 "K"
+-- Kelvin 0.0
 -- >>> fromTo' @(Milli Second) @Hour 1
--- ofUnit 2.7777777777777776e-7 "hr"
+-- Hour 2.7777777777777776e-7
 -- >>> fromTo' (Milli (Second 1)) :: Hour Double
--- ofUnit 2.7777777777777776e-7 "hr"
+-- Hour 2.7777777777777776e-7
 -- >>> fromTo' @Turn @Degree (1/4) -- angle conversion
--- ofUnit 90.0 "°"
--- >>> fromTo' @(Kilo Meter -/- Hour) @(Milli Meter -/- Milli Second) 36
--- ofUnit 10.0 "mm.ms⁻¹"
+-- Degree 90.0
+-- >>> fromTo' @(Kilo Meter ./. Hour) @(Milli Meter ./. Milli Second) 36
+-- quantity @(Milli Meter .*. Milli Second .^- 1) 10.0
 --
 fromTo' :: forall u v a.
   FromTo' u v a

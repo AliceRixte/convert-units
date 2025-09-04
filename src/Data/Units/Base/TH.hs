@@ -332,9 +332,7 @@ mkDim dimStr showStr n = do
 --   deriving Show via MetaPrefix Milli u a
 --   deriving ShowUnit via MetaPrefix Milli u
 -- @
-
--- | Génère un newtype avec dérivations et deriving via
--- mkPrefixNewtype ''Milli
+--
 mkPrefixNewtype :: Monad m => [Name] -> Name -> m Dec
 mkPrefixNewtype l prefixName = pure $
   NewtypeD
@@ -404,12 +402,26 @@ mkShowPrefixInstance prefixName prefixStr prettyStr = [d|
 -- | Make an instance of the form
 --
 -- @
+-- instance Fractional a => PrefixFactor Kilo a where
+--   prefixFactorFrom = 1000
+--   {-# INLINE prefixFactorFrom #-}
+--
+mkPrefixFactorFromInstance :: Name -> Rational -> Q [Dec]
+mkPrefixFactorFromInstance prefixName factor = [d|
+  instance Fractional a => PrefixFactor $(conT prefixName) a where
+    prefixFactorFrom = $(litE (RationalL factor))
+    {-# INLINE prefixFactorFrom #-}
+  |]
+
+-- | Make an instance of the form
+--
+-- @
 -- instance Fractional a => PrefixFactor Milli a where
 --   prefixFactorTo = 1000
 --   {-# INLINE prefixFactorTo #-}
 --
-mkPrefixFactorInstance :: Name -> Rational -> Q [Dec]
-mkPrefixFactorInstance prefixName factor = [d|
+mkPrefixFactorToInstance :: Name -> Rational -> Q [Dec]
+mkPrefixFactorToInstance prefixName factor = [d|
   instance Fractional a => PrefixFactor $(conT prefixName) a where
     prefixFactorTo = $(litE (RationalL factor))
     {-# INLINE prefixFactorTo #-}
@@ -421,31 +433,18 @@ mkPrefixFactorInstance prefixName factor = [d|
 -- instance ConvFactor u a => ConvFactor (Milli u) a where
 --   factorFrom = factorFrom @(MetaPrefix Milli u)
 --   {-# INLINE factorFrom #-}
--- @
---
-mkPrefixConvFactorFromInstance :: Name -> Q [Dec]
-mkPrefixConvFactorFromInstance prefixName = [d|
-  instance ConvFactor u a => ConvFactor ($(conT prefixName) u) a where
-    factorFrom = factorFrom @(MetaPrefix $(conT prefixName) u)
-    {-# INLINE factorFrom #-}
-  |]
-
--- | Make an instance of the form
---
--- @
--- instance ConvFactor u a => ConvFactor (Milli u) a where
---   factorTo= factorTo @(MetaPrefix Milli u)
+-- factorTo = factorTo @(MetaPrefix Milli u)
 --   {-# INLINE factorTo #-}
 -- @
 --
-mkPrefixConvFactorToInstance :: Name -> Q [Dec]
-mkPrefixConvFactorToInstance prefixName = [d|
+mkPrefixConvFactorInstance :: Name -> Q [Dec]
+mkPrefixConvFactorInstance prefixName = [d|
   instance ConvFactor u a => ConvFactor ($(conT prefixName) u) a where
+    factorFrom = factorFrom @(MetaPrefix $(conT prefixName) u)
+    {-# INLINE factorFrom #-}
     factorTo = factorTo @(MetaPrefix $(conT prefixName) u)
     {-# INLINE factorTo #-}
   |]
-
---
 
 -- | Make an instance of the form
 --
@@ -482,8 +481,8 @@ mkPrefixFrom prefixStr prettyStr factor = do
   newtypeDec <- mkPrefixNewtype deriveList prefixName
   isUnitDec <- mkPrefixIsUnitInstance prefixName
   showPrefixDec <- mkShowPrefixInstance prefixName prefixStr prettyStr
-  factorDec <- mkPrefixFactorInstance prefixName factor
-  convFactorDec <- mkPrefixConvFactorFromInstance prefixName
+  factorDec <- mkPrefixFactorFromInstance prefixName factor
+  convFactorDec <- mkPrefixConvFactorInstance prefixName
   convUnitDec <- mkPrefixConvUnitInstance prefixName
   return $ [newtypeDec] ++ isUnitDec ++ showPrefixDec
         ++ factorDec ++ convFactorDec ++ convUnitDec
@@ -502,8 +501,8 @@ mkPrefixTo prefixStr prettyStr factor = do
   newtypeDec <- mkPrefixNewtype deriveList prefixName
   isUnitDec <- mkPrefixIsUnitInstance prefixName
   showPrefixDec <- mkShowPrefixInstance prefixName prefixStr prettyStr
-  factorDec <- mkPrefixFactorInstance prefixName factor
-  convFactorDec <- mkPrefixConvFactorToInstance prefixName
+  factorDec <- mkPrefixFactorToInstance prefixName factor
+  convFactorDec <- mkPrefixConvFactorInstance prefixName
   convUnitDec <- mkPrefixConvUnitInstance prefixName
   return $ [newtypeDec] ++ isUnitDec ++ showPrefixDec
         ++ factorDec ++ convFactorDec ++ convUnitDec

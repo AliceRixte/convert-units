@@ -266,7 +266,7 @@ class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where
 -- quantity)
 --
 -- >>> quantity @(Meter ./. Second) 1
--- ofUnit 1 "m.s⁻¹"
+-- quantity @(Meter .*. Second .^- 1) 1
 quantity :: forall u a. IsUnit u => a -> u a
 quantity = coerce
 {-# INLINE quantity #-}
@@ -355,24 +355,7 @@ instance (Show a, ShowUnit u) => Show (MetaUnit u a) where
 instance IsUnit u => IsUnit (MetaUnit u) where
   type DimOf (MetaUnit u) = DimOf u
 
--- | Check whether a unit has the same unit as the one represented by a String.
---
--- This will fail if the units do not match and is the constant function if the
--- units match.
---
--- This is mainly useful for pretty printing units.
---
-ofUnit :: forall u a. ShowUnit u => u a -> String -> u a
-ofUnit u s =
-  if s == showUnit @u then
-    u
-  else
-    error $ "Current unit \"" ++ showUnit @u
-          ++  "\" does not match expected unit \""
-          ++ s ++ "\""
-
 --------------------------------------------------------------------------------
-
 
 -- | A unit that has no dimension.
 --
@@ -629,7 +612,8 @@ type family MulSameDim u v where
     :<>: Text "’ with the same dimension ‘"
     :<>: ShowDim (DimOf u)
     :<>: Text "’."
-    :$$: Text "Hint : Did you try to multiply via (.*.) two quantities with"
-    :$$: Text "       the same dimension but different units ?"
-    :$$: Text "If so, you might want to use (~*-), (-*~) or (~*~) instead. "
+    :$$: Text "Hint : Did you try to multiply via (.*.) or divide (./.) "
+    :$$: Text "       two quantities with the same dimension but different"
+    :$$: Text "       units ?"
+    :$$: Text "If so, you might want to use (~*.), (~/.), (.*~), (./~), (~*~), or (~/~) instead."
     )
