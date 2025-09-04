@@ -2,7 +2,7 @@
 -- |
 --
 -- Module      :  Data.Units.SI.NonStd.Angle
--- Description :  Non standard angle units
+-- Description :  Dimensionless non standard angle units
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
 -- Maintainer  :  alice.rixte@u-bordeaux.fr

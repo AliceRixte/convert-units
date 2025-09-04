@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.AngleSI.Angle
+-- Module      :  Data.Units.SI.Angle
 -- Description :  Dimensionless angles
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -9,10 +9,11 @@
 -- Stability   :  unstable
 -- Portability :  non-portable (GHC extensions)
 --
--- This module defines radians as the standard unit for the angle (`@A@`)
--- dimension.
+-- This module defines radians and steradians as dimension less units. as the
+-- standard unit for the angle (`@A@`)
 --
--- See "Data.Units.SI.Angle" for dimensionless radians and steradians.
+-- See "Data.Units.AngleSI.Angle" for radians and steradians in an angle
+-- dimension `@A@`.
 --
 --------------------------------------------------------------------------------
 

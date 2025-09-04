@@ -3,14 +3,14 @@
 -- |
 --
 -- Module      :  Data.Units.AngleSI.NonStd.Angle
--- Description :  Non standard angle units
+-- Description :  Non standard angle units with a dimension A
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
 -- Maintainer  :  alice.rixte@u-bordeaux.fr
 -- Stability   :  unstable
 -- Portability :  non-portable (GHC extensions)
 --
--- Non standard angle units with a dimension A
+-- Non standard angle units with a dimension A.
 --
 --------------------------------------------------------------------------------
 
