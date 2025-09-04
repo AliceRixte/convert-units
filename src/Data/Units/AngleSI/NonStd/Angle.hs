@@ -21,60 +21,40 @@ import Data.Units.Base
 
 import Data.Units.AngleSI.Angle
 
+
+
 -- | Angle in degrees.
 --
-newtype Degree a = Degree a
-  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
-
-instance Floating a => ConvFactor Degree a where
-  factorFrom = pi / 180
-
-instance IsUnit Degree where
-  type DimOf Degree = Angle
-
-instance ShowUnit Degree where
-  type ShowUnitType Degree = Text "°"
-  showUnit = "Degree"
-  prettyUnit = "°"
-
+$(mkUnitNoFactor "Degree" "°" ''Angle)
 
 -- | Angle in complete turns (also called cycles or revolutions)
 --
 -- See https://en.wikipedia.org/wiki/Turn_(angle)
 --
-newtype Turn a = Turn a
-  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
-
-instance Floating a => ConvFactor Turn a where
-  factorFrom = 2 * pi
-
-instance IsUnit Turn where
-  type DimOf Turn = Angle
-
-instance ShowUnit Turn where
-  type ShowUnitType Turn = Text "tr"
-  showUnit = "Turn"
-  prettyUnit = "tr"
-
-
+$(mkUnitNoFactor "Turn" "tr" ''Angle)
 
 -- | Angle in gradians
 --
 -- See https://en.wikipedia.org/wiki/Gradian
 --
-newtype Gradian a = Gradian a
-  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
+$(mkUnitNoFactor "Gradian" "grad" ''Angle)
+
+
+instance Floating a => ConvertibleUnit Degree a
+
+instance Floating a => ConvFactor Degree a where
+  factorFrom = pi / 180
+  {-# INLINE factorFrom #-}
+
+instance Floating a => ConvertibleUnit Turn a
+
+instance Floating a => ConvFactor Turn a where
+  factorFrom = 2 * pi
+  {-# INLINE factorFrom #-}
+
+instance Floating a => ConvertibleUnit Gradian a
 
 instance Floating a => ConvFactor Gradian a where
   factorFrom = pi / 200
+  {-# INLINE factorFrom #-}
 
-instance IsUnit Gradian where
-  type DimOf Gradian = Angle
-
-instance ShowUnit Gradian where
-  type ShowUnitType Gradian = Text "grad"
-  showUnit = "Gradian"
-  prettyUnit = "grad"

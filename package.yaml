@@ -47,7 +47,7 @@ default-extensions:
   - UndecidableInstances
   - MultiParamTypeClasses
   - FlexibleContexts
-  - DeriveFunctor
+  - TemplateHaskell
 
 library:
   ghc-options:

@@ -21,6 +21,7 @@
 module Data.Units.AngleSI.Angle where
 
 import Data.Fixed
+import Data.Coerce
 
 import Data.Units.Base
 
@@ -28,7 +29,7 @@ import Data.Units.Base
 --
 newtype Angle a = Angle a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
+           , RealFrac, RealFloat)
 
 type instance DimId Angle = 100
 type instance ShowDim Angle = Text "A"
@@ -40,7 +41,14 @@ instance IsDim Angle where
 --
 newtype Radian a = Radian a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
+           , RealFrac, RealFloat)
+
+instance ConvertibleUnit Radian a where
+  from = coerce
+  {-# INLINE from #-}
+
+  to = coerce
+  {-# INLINE to #-}
 
 instance Fractional a => ConvFactor Radian a where
   factorFrom = 1

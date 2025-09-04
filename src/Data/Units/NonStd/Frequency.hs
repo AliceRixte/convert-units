@@ -13,7 +13,7 @@ import Data.Units.SI.System
 --
 -- newtype MidiPitch a = MidiPitch a
 --   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
---            , RealFrac, RealFloat, Functor)
+--            , RealFrac, RealFloat)
 
 -- instance Floating a => From MidiPitch a where
 --   from (MidiPitch a) = quantity $ 440 * 2 ** ((a - 69) / 12)
@@ -38,7 +38,7 @@ import Data.Units.SI.System
 --
 newtype Tet (b :: Nat) (offs :: ZZ) a = Tet a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
+           , RealFrac, RealFloat)
 
 instance (Floating a, KnownNat b, KnownInt offs)
   => ConvertibleUnit (Tet b offs) a where

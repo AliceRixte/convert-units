@@ -10,7 +10,7 @@ import Data.Coerce
 --  .*. .+. .-.
 newtype Hertz a = Hertz a
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
+           , RealFrac, RealFloat)
   deriving Show via MetaUnit Hertz a
 
 instance Fractional a => ConvFactor Hertz a where

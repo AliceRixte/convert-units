@@ -110,27 +110,59 @@ mkConvFactorInstance unitName factor = [d|
     factorFrom = $(litE (RationalL factor))
   |]
 
+-- | Make an instance of the form
+--
+-- @
+-- instance Fractional a => ConvertibleUnit Minute a
+-- @
+--
+mkDefaultSigConvertibleUnitInstance :: Quote m => Name -> m [Dec]
+mkDefaultSigConvertibleUnitInstance unitName = [d|
+  instance Fractional a => ConvertibleUnit $(conT unitName) a
+  |]
+
+-- | Make an instance of the form
+--
+-- @
+-- instance Fractional a => ConvertibleUnit Meter a where
+--    from = coerce
+--    {-# INLINE from #-}
+--    to = coerce
+--    {-# INLINE to #-}
+-- @
+--
+mkStdConvertibleUnitInstance :: Quote m => Name -> m [Dec]
+mkStdConvertibleUnitInstance unitName = [d|
+  instance Fractional a => ConvertibleUnit $(conT unitName) a where
+    from = coerce
+    {-# INLINE from #-}
+    to = coerce
+    {-# INLINE to #-}
+  |]
+
+
 -- | Make a unit that can be converted via a factor
 --
 -- [Usage:]
 --
 -- @
 -- \$(mkUnit "Minute" "min" ''Time 60)
--- \$(mkUnit "Celsius" "°C" ''Temperature 1)
 -- @
 --
--- [Note:]
---
--- It is possibe to overload
---
 mkUnit :: String -> String -> Name -> Rational -> Q [Dec]
-mkUnit unitStr prettyStr dimName  factor = do
+mkUnit unitStr prettyStr dimName factor = do
   let unitName = mkName unitStr
-  newtypeDec  <- mkUnitNewtype deriveListUnit unitName
-  isUnitDec  <- mkIsUnitInstance unitName dimName
-  showUnitDec  <- mkShowUnitInstance unitName unitStr prettyStr
-  convFactorDec  <- mkConvFactorInstance unitName factor
-  return $ [newtypeDec] ++  isUnitDec ++ showUnitDec ++ convFactorDec
+  newtypeDec <- mkUnitNewtype deriveListUnit unitName
+  isUnitDec <- mkIsUnitInstance unitName dimName
+  showUnitDec <- mkShowUnitInstance unitName unitStr prettyStr
+  convFactorDec <- mkConvFactorInstance unitName factor
+  convUnitDec <-
+    if factor == 1 then
+      mkStdConvertibleUnitInstance unitName
+    else
+      mkDefaultSigConvertibleUnitInstance unitName
+  return $
+    [newtypeDec] ++ isUnitDec ++ showUnitDec ++ convFactorDec ++ convUnitDec
 
 -- | Make a unit without declaring any conversion instances.
 --

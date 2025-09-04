@@ -167,14 +167,14 @@ fromCoerce :: forall u a. ConvertibleUnit u a => a -> a
 fromCoerce = unQuantity @(StdUnitOf u) . from . quantity @u
 {-# INLINE fromCoerce #-}
 
-instance {-# OVERLAPPABLE #-}
-  (ConvFactor u a, IsUnit (StdUnitOf u), IsUnit u)
-    => ConvertibleUnit u a where
-  from = from'
-  {-# INLINE from #-}
+-- instance {-# OVERLAPPABLE #-}
+--   (ConvFactor u a, IsUnit (StdUnitOf u), IsUnit u)
+--     => ConvertibleUnit u a where
+--   from = from'
+--   {-# INLINE from #-}
 
-  to = to'
-  {-# INLINE to #-}
+--   to = to'
+--   {-# INLINE to #-}
 
 
 toCoerce :: forall u a. ConvertibleUnit u a => a -> a
@@ -254,18 +254,30 @@ class (ConvertibleUnit u a, Fractional a) => ConvFactor u a where
   {-# INLINE factorTo #-}
 
 instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a)
+  => ConvertibleUnit (MetaUnit u) a where
+
+instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a)
   => ConvFactor (MetaUnit u) a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
+
+
+instance Fractional a => ConvertibleUnit NoUnit a
 
 instance Fractional a => ConvFactor NoUnit a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
 
 instance (Num a, ConvFactor u a, ConvFactor v a, IsUnit (StdUnitOf (u .*. v)))
+  => ConvertibleUnit (u .*. v) a
+
+instance (Num a, ConvFactor u a, ConvFactor v a, IsUnit (StdUnitOf (u .*. v)))
   =>  ConvFactor (u .*. v) a where
   factorFrom = factorFrom @u * factorFrom @v
   {-# INLINE factorFrom #-}
+
+instance (ConvFactor u a, IsUnit (StdUnitOf (u .^. n)),  KnownInt n)
+  => ConvertibleUnit (u .^. n) a
 
 instance (ConvFactor u a, IsUnit (StdUnitOf (u .^. n)),  KnownInt n)
   =>  ConvFactor (u .^. n) a where

@@ -9,7 +9,11 @@ import Data.Units.SI
 
 -- | Thermodynamic temperature in Celsius degrees
 --
-$(mkUnit "Celsius" "°C" ''Temperature 1)
+$(mkUnitNoFactor "Celsius" "°C" ''Temperature)
+
+instance Fractional a => ConvFactor Celsius a where
+  factorFrom = 1
+  {-# INLINE factorFrom #-}
 
 instance Fractional a => ConvertibleUnit Celsius a where
   from (Celsius x) = Kelvin (x + 273.15)
@@ -17,9 +21,3 @@ instance Fractional a => ConvertibleUnit Celsius a where
 
   to (Kelvin x) = Celsius (x - 273.15)
   {-# INLINE to #-}
-
--- instance Fractional a => From Celsius a where
---   from (Celsius x) = Kelvin (x + 273.15)
-
--- instance Fractional a => To Celsius a where
---   to (Kelvin x) = Celsius (x - 273.15)
