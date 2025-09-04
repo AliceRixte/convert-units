@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DefaultSignatures #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 --------------------------------------------------------------------------------
@@ -142,6 +143,9 @@ class (IsUnit u, IsUnit (StdUnitOf u)) => ConvertibleUnit u a where
   -- >>> from (Celsius 0)
   -- ofUnit 273.15 "K"
   from :: u a -> StdUnitOf u a
+  default from :: ConvFactor u a => u a -> StdUnitOf u a
+  from = from'
+  {-# INLINE from #-}
 
   -- | Convert a quantity to its standard unit.
   --
@@ -155,6 +159,9 @@ class (IsUnit u, IsUnit (StdUnitOf u)) => ConvertibleUnit u a where
   -- ofUnit (-273.15) "°C"
   --
   to :: StdUnitOf u a -> u a
+  default to :: ConvFactor u a => StdUnitOf u a -> u a
+  to = to'
+  {-# INLINE to #-}
 
 fromCoerce :: forall u a. ConvertibleUnit u a => a -> a
 fromCoerce = unQuantity @(StdUnitOf u) . from . quantity @u
@@ -172,8 +179,7 @@ instance {-# OVERLAPPABLE #-}
 
 toCoerce :: forall u a. ConvertibleUnit u a => a -> a
 toCoerce = unQuantity @u . to . quantity @(StdUnitOf u)
-
-
+{-# INLINE toCoerce #-}
 
 -- | A constraint that is satisfied when both units have the same dimension and
 -- are such that @u@ can be converted to @v@.
@@ -195,11 +201,14 @@ type FromTo u v a = (DimEq u v, ConvertibleUnit u a, ConvertibleUnit v a)
 --
 fromTo :: FromTo u v a => u a -> v a
 fromTo = to . from
+{-# INLINE fromTo #-}
 
 fromToCoerce :: forall u v a. FromTo u v a => a -> a
 fromToCoerce = unQuantity @v . fromTo . quantity @u
+{-# INLINE fromToCoerce #-}
 
 --------------------------------------------------------------------------------
+
 
 -- | Unit that can be converted to their corresponding standard unit by
 -- multiplication with a conversion factor.
@@ -244,7 +253,8 @@ class (ConvertibleUnit u a, Fractional a) => ConvFactor u a where
   factorTo = 1 / factorFrom @u
   {-# INLINE factorTo #-}
 
-instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a) => ConvFactor (MetaUnit u) a where
+instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a)
+  => ConvFactor (MetaUnit u) a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
 
@@ -277,6 +287,7 @@ instance (ConvFactor u a, IsUnit (StdUnitOf (u .^. n)),  KnownInt n)
 from' :: forall u a. ConvFactor u a
   => u a -> StdUnitOf u a
 from' q = quantity (unQuantity q * factorFrom @u)
+{-# INLINE from' #-}
 
 -- | Convert a standard quantity to a unit @u@ by multiplying it by
 -- by  @'toFactor'@.
@@ -293,6 +304,7 @@ from' q = quantity (unQuantity q * factorFrom @u)
 to' :: forall u a. ConvFactor u a
   => StdUnitOf u a -> u a
 to' q = quantity (unQuantity q * factorTo @u)
+{-# INLINE to' #-}
 
 -- | A constraint that is satisfied when both units have the same dimension and
 -- are such that @u@ can be converted to @v@ by using a conversion factor.
@@ -316,3 +328,4 @@ fromTo' :: forall u v a.
   FromTo' u v a
   => u a -> v a
 fromTo' q = quantity (unQuantity q * (factorFrom @u * factorTo @v))
+{-# INLINE fromTo' #-}
