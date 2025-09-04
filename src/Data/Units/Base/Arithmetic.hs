@@ -100,7 +100,7 @@ infixr 5 ~+.
   , ConvFactor u a, ConvFactor v a
   )
  => u a -> v a -> (BaseUnitOf u) a
-u ~+~ v = quantity (unQuantity (from' u) + unQuantity (from' v))
+u ~+~ v = quantity (unQuantity (toBaseUnit' u) + unQuantity (toBaseUnit' v))
 {-# INLINE (~+~) #-}
 
 infixr 5 ~+~
@@ -139,7 +139,7 @@ infixr 5 ~-.
   , ConvFactor v a, ConvFactor u a
   )
  => u a -> v a -> (BaseUnitOf u) a
-u ~-~ v = quantity $ unQuantity (from' u) - unQuantity (from' v)
+u ~-~ v = quantity $ unQuantity (toBaseUnit' u) - unQuantity (toBaseUnit' v)
 {-# INLINE (~-~) #-}
 
 infixr 5 ~-~
@@ -234,7 +234,7 @@ infix 7 ~*.
   , ConvFactor u a, ConvFactor v a
   )
  => u a -> v a -> u2 a
-u ~*~ v = quantity $ unQuantity (from' u) * unQuantity (from' v)
+u ~*~ v = quantity $ unQuantity (toBaseUnit' u) * unQuantity (toBaseUnit' v)
 {-# INLINE (~*~) #-}
 
 infix 7 ~*~
@@ -275,7 +275,7 @@ infix 6 ./.
   , ConvFactor u a, ConvFactor v a
   )
   => u a -> v a -> NoUnit a
-u ~/~ v = quantity $ unQuantity (from' u)  / unQuantity (from' v)
+u ~/~ v = quantity $ unQuantity (toBaseUnit' u)  / unQuantity (toBaseUnit' v)
 {-# INLINE (~/~) #-}
 
 infix 6 ~/~
@@ -305,7 +305,7 @@ infix 8 .^.
 (~^.) :: forall (n :: ZZ) proxy u un a.
   (KnownInt n, ConvFactor u a, un ~ BaseUnitOf u .^. n )
   => u a -> proxy n -> un a
-u ~^. p = quantity @un $ unQuantity (from' u) ^^ intVal p
+u ~^. p = quantity @un $ unQuantity (toBaseUnit' u) ^^ intVal p
 {-# INLINE (~^.) #-}
 
 infix 8 ~^.

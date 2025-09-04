@@ -9,23 +9,6 @@ import Data.Proxy
 import Data.Units.Base
 import Data.Units.SI.System
 
--- | Pitch in the MIDI norm.
---
--- newtype MidiPitch a = MidiPitch a
---   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
---            , RealFrac, RealFloat)
-
--- instance Floating a => From MidiPitch a where
---   from (MidiPitch a) = quantity $ 440 * 2 ** ((a - 69) / 12)
-
--- instance Floating a => To MidiPitch a where
---   to a = MidiPitch $ 12 * logBase 2 (unQuantity a/ 440) + 69
-
--- instance IsUnit MidiPitch where
---   type DimOf MidiPitch = Time .^- 1
-
-
-
 -- | Frequency in Tone Equal Temperament
 --
 newtype Tet (b :: Nat) (offs :: ZZ) a = Tet a
@@ -34,11 +17,11 @@ newtype Tet (b :: Nat) (offs :: ZZ) a = Tet a
 
 instance (Floating a, KnownNat b, KnownInt offs)
   => ConvertibleUnit (Tet b offs) a where
-  from (Tet a) = quantity $ 440 * 2 ** ((a + offs) / b)
+  toBaseUnit (Tet a) = quantity $ 440 * 2 ** ((a + offs) / b)
     where
      b = fromIntegral $ natVal (Proxy :: Proxy b)
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100
-  to a = Tet $ b * logBase 2 (unQuantity a/ 440) - offs
+  fromBaseUnit a = Tet $ b * logBase 2 (unQuantity a/ 440) - offs
     where
      b = fromIntegral $ natVal (Proxy :: Proxy b)
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100

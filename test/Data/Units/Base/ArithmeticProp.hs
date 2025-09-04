@@ -441,7 +441,7 @@ exp2ConvProp :: forall u a.
   => Property
 exp2ConvProp =
   property (\a -> aboutEqual
-    (coerce (from' (coerce a :: u a)) ^^ (2 :: Int)) (exp2Conv @u @a a))
+    (coerce (toBaseUnit' (coerce a :: u a)) ^^ (2 :: Int)) (exp2Conv @u @a a))
 
 expm1ConvProp :: forall u a.
   ( ConvFactor u a
@@ -450,7 +450,7 @@ expm1ConvProp :: forall u a.
   => Property
 expm1ConvProp =
   property (\a -> a == 0 ||
-    aboutEqual (coerce (from' (coerce a :: u a)) ^^ (-1 :: Int)) (expm1Conv @u @a a))
+    aboutEqual (coerce (toBaseUnit' (coerce a :: u a)) ^^ (-1 :: Int)) (expm1Conv @u @a a))
 
 
 expConvSpec :: forall u a.

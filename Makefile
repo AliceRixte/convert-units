@@ -48,9 +48,9 @@ test:
 install:
 	$(stack) install $(pkg)
 
-# Add {-# OPTIONS_GHC -ddump-to-file #-} to Main.hs of the benchmark
-ddump:
-  $(stack) bench --ghc-options="-ddump-to-file -ddump-simpl" --no-run-benchmarks
+# # Add {-# OPTIONS_GHC -ddump-to-file #-} to Main.hs of the benchmark
+# ddump:
+#   $(stack) bench --ghc-options="-ddump-to-file -ddump-simpl" --no-run-benchmarks
 
 
 # Profiling
