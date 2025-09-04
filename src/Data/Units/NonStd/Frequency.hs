@@ -25,14 +25,6 @@ import Data.Units.SI.System
 --   type DimOf MidiPitch = Time .^- 1
 
 
--- instance Fractional a => ConvertibleUnit Celsius a where
---   from (Celsius x) = Kelvin (x + 273.15)
---   {-# INLINE from #-}
-
---   to (Kelvin x) = Celsius (x - 273.15)
---   {-# INLINE to #-}
-
-
 
 -- | Frequency in Tone Equal Temperament
 --
@@ -60,10 +52,12 @@ instance (KnownNat b, KnownInt offs) => ShowUnit (Tet b offs) where
     :<>: Text ",offs=" :<>: ShowType offs :<>: Text "}"
   showsUnitPrec d = showParen (d > 10) $
     showString "Tet " . shows (natVal (Proxy :: Proxy b))
-                     . showString " "
-                     . shows (intVal (Proxy :: Proxy offs))
-  prettyUnit = "tet{b=" ++ show (natVal (Proxy :: Proxy b))
-            ++ ",offs=" ++ show (intVal (Proxy :: Proxy offs)) ++ "}"
+                      . showString " "
+                      . shows (intVal (Proxy :: Proxy offs))
+  prettysUnitPrec d = showParen (d > 10) $
+    showString "tet " . shows (natVal (Proxy :: Proxy b))
+                      . showString " "
+                      . shows (intVal (Proxy :: Proxy offs))
 
 
 type MidiPitch = Tet 12 (Neg 6900)

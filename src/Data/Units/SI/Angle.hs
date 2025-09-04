@@ -25,11 +25,11 @@ import Data.Units.Base
 
 -- | An angle in radians.
 --
-$(mkUnit "Radian" "sr" ''NoDim 1)
+$(mkUnitFrom "Radian" "rad" ''NoDim 1)
 
 -- | A solid angle in steradians.
 --
-$(mkUnit "Steradian" "sr" ''NoDim 1)
+$(mkUnitFrom "Steradian" "sr" ''NoDim 1)
 
 -- | Normalize an angle to the range ]-pi, pi]
 normalizeRadians :: (RealFrac a, Floating a) => Radian a -> Radian a
