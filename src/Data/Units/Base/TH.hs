@@ -492,7 +492,7 @@ mkPrefixFrom prefixStr prettyStr factor = do
 -- [Usage:]
 --
 -- @
--- \$(mkPrefixTo "Kilo" "k" 1000)
+-- \$(mkPrefixTo "Milli" "m" 1000)
 -- @
 --
 mkPrefixTo :: String -> String -> Rational -> Q [Dec]

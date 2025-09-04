@@ -1,3 +1,5 @@
+{-# LANGUAGE PatternSynonyms #-}
+
 --------------------------------------------------------------------------------
 -- |
 --
@@ -14,10 +16,24 @@
 --------------------------------------------------------------------------------
 
 
-module Data.Units.SI.Derived where
+module Data.Units.SI.Derived
+  ( -- * Official derived units from SI
+    Frequency
+  , Hertz (..)
+  , Speed
+  , Acceleration
+  , Force
+  , Newton
+  , pattern Newton
+  )
+  where
+
+import Data.Coerce
 
 import Data.Units.Base
 import Data.Units.SI.System
+import Data.Units.SI.Angle
+import Data.Units.SI.Prefixes
 
 import Data.Coerce
 
@@ -25,6 +41,37 @@ type Frequency = Time .^- 1
 
 -- | Frequency in hertz
 --
--- @1 Hz = 1 s⁻¹@
---
 $(mkUnitFrom "Hertz" "Hz" ''Frequency 1)
+
+type Speed = Length ./. Time
+
+type Acceleration = Length ./. (Time .^+ 2)
+
+type Force = Mass .*. Acceleration
+
+-- | Force in newtons
+--
+$(mkUnitFrom "Newton" "N" ''Force 1)
+
+type Pressure = StandardizeDim (Force ./. (Length .^+ 2))
+
+-- | Pressure in pascals
+--
+$(mkUnitFrom "Pascal" "Pa" ''Pressure 1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

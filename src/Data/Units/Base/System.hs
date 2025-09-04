@@ -27,6 +27,7 @@ module Data.Units.Base.System
   , NoDim (..)
   , IsDim (..)
   , DimEq
+  , StandardizeDim
   -- * Units
   , Unit
   , BaseUnitOf
@@ -171,8 +172,7 @@ type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
 type family DimOf' (u :: Unit) :: Dim where
   DimOf' (u .*. NoUnit) = DimOf' u
   DimOf' (NoUnit .*. v) = DimOf' v
-  DimOf' ((u .*. v) .*. w) =
-    InsertDim (DimOf' u) (DimOf' (v .*. w))
+  DimOf' ((u .*. v) .*. w) = DimOf' (u .*. (v .*. w))
   DimOf' (u .*. v) = InsertDim (DimOf' u) (DimOf' v)
   DimOf' (NoUnit .^. n) = NoDim
   DimOf' ((u .*. v) .^. n) = DimOf' (u .^. n .*. v .^. n)
@@ -184,8 +184,7 @@ type family DimOf' (u :: Unit) :: Dim where
 type family StandardizeDim d where
   StandardizeDim (d .*. NoDim) = StandardizeDim d
   StandardizeDim (NoDim .*. e) = StandardizeDim e
-  StandardizeDim ((d .*. e) .*. f) =
-    InsertDim (StandardizeDim d) (StandardizeDim (e .*. f))
+  StandardizeDim ((d .*. e) .*. f) = StandardizeDim (d .*. (e .*. f))
   StandardizeDim (d .*. e) = InsertDim (StandardizeDim d) (StandardizeDim e)
   StandardizeDim (NoDim .^. n) = NoDim
   StandardizeDim ((d .*. e) .^. n) = StandardizeDim (d .^. n .*. e .^. n)
@@ -387,15 +386,14 @@ newtype ((u :: Unit) .*. (v :: Unit)) a = MulUnit a
 
 infixr 7 .*.
 
-type instance ShowDim (u .*. v) = ShowDim u :<>: Text "." :<>: ShowDim v
+type instance ShowDim (u .*. v) = ShowDim u :<>: Text "⋅" :<>: ShowDim v
 
 instance (ShowUnit u, ShowUnit v) => ShowUnit (u .*. v) where
   type ShowUnitType (u .*. v) =
-         Text "(" :<>: ShowUnitType u
-    :<>: Text "." :<>: ShowUnitType v
-    :<>: Text ")"
+    ShowUnitType u
+    :<>: Text "⋅" :<>: ShowUnitType v
   prettysUnitPrec d = showParen (d > 7) $
-    prettysUnitPrec @u 7 . showString "." .  prettysUnitPrec @v 7
+    prettysUnitPrec @u 7 . showString "⋅" .  prettysUnitPrec @v 7
   showsUnitPrec d = showParen (d > 7) $
     showsUnitPrec @u 7 . showString " .*. " .  showsUnitPrec @v 7
 
@@ -425,7 +423,7 @@ type family InverseUnit u where
 --
 -- Notice that multiplication has priority over division.
 --
-type family u ./. v where
+type family (u :: Unit) ./. (v :: Unit) :: Unit where
   u ./. v = u .*. InverseUnit v
 
 infix 6 ./.
@@ -437,7 +435,7 @@ infix 6 ./.
 -- | Exponentiation of a unit
 --
 -- @
--- type MyAcceleration a = (Meter .*. Second .^. Neg 2) a
+-- type Acceleration = Meter .*. Second .^. Neg 2
 -- @
 --
 newtype ((u :: Unit) .^. (n :: ZZ)) a = PowUnit a
@@ -446,9 +444,21 @@ newtype ((u :: Unit) .^. (n :: ZZ)) a = PowUnit a
   deriving Show via MetaUnit (u .^. n) a
 infix 8 .^.
 
+-- | Positive exponentiation of a unit
+--
+-- @
+-- type Area = Meter .^+ 2
+-- @
+--
 type a .^+ b = a .^. Pos b
 infix 8 .^+
 
+-- | Negative exponentiation of a unit
+--
+-- @
+-- type Hertz = Second .^- 1
+-- @
+--
 type a .^- b = a .^. Neg b
 infix 8 .^-
 
@@ -532,8 +542,7 @@ toSuperscript a = a
 type family NormalizeUnit u where
   NormalizeUnit (u .*. NoUnit) = NormalizeUnit u
   NormalizeUnit (NoUnit .*. v) = NormalizeUnit v
-  NormalizeUnit ((u .*. v) .*. w) =
-    InsertForNormalize (NormalizeUnit u) (NormalizeUnit (v .*. w))
+  NormalizeUnit ((u .*. v) .*. w) = NormalizeUnit (u .*. (v .*. w))
   NormalizeUnit (u .*. v) = InsertForNormalize (NormalizeUnit u) (NormalizeUnit v)
   NormalizeUnit (NoUnit .^. n) = NoUnit
   NormalizeUnit ((u .*. v) .^. n) = NormalizeUnit (u .^. n .*. v .^. n)
@@ -615,5 +624,5 @@ type family MulSameDim u v where
     :$$: Text "Hint : Did you try to multiply via (.*.) or divide (./.) "
     :$$: Text "       two quantities with the same dimension but different"
     :$$: Text "       units ?"
-    :$$: Text "If so, you might want to use (~*.), (~/.), (.*~), (./~), (~*~), or (~/~) instead."
+    :$$: Text "If so, you might want to use (~*.), (.*~), (~*~), or (~/~) instead."
     )

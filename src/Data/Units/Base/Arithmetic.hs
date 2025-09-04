@@ -165,7 +165,7 @@ infixr 5 ~-~
 --   Hint : Did you try to multiply via (.*.) or divide (./.)
 --          two quantities with the same dimension but different
 --          units ?
---   If so, you might want to use (~*.), (~/.), (.*~), (./~), (~*~), or (~/~) instead.
+--   If so, you might want to use (~*.), (.*~), (~*~), or (~/~) instead.
 (.*.) ::
   ( uv ~ NormalizeUnit (u .*. v)
   , IsUnit u, IsUnit v, IsUnit uv
@@ -192,7 +192,6 @@ infixr 7 .*.
 --
 (.*~) :: forall u v u2 a.
   ( u2 ~ NormalizeUnit (u .^+ 2) , IsUnit u2
-  , DimEq u v
   , FromTo' v u a
   )
  => u a -> v a -> u2 a
@@ -211,7 +210,6 @@ infix 7 .*~
 --
 (~*.) ::
   ( v2 ~ NormalizeUnit (v .^+ 2), IsUnit v2
-  , DimEq v u
   , FromTo' u v a
   )
  => u a -> v a -> v2 a

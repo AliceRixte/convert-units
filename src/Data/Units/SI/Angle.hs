@@ -22,15 +22,24 @@ module Data.Units.SI.Angle where
 import Data.Fixed
 import Data.Coerce
 
+
 import Data.Units.Base
+
+-- | The angle derived dimension in SI.
+--
+type Angle = NoDim
 
 -- | An angle in radians.
 --
-$(mkUnitFrom "Radian" "rad" ''NoDim 1)
+$(mkUnitFrom "Radian" "rad" ''Angle 1)
+
+-- | The solid angle derived dimension in SI.
+--
+type SolidAngle = NoDim
 
 -- | A solid angle in steradians.
 --
-$(mkUnitFrom "Steradian" "sr" ''NoDim 1)
+$(mkUnitFrom "Steradian" "sr" ''SolidAngle 1)
 
 -- | Normalize an angle to the range ]-pi, pi]
 normalizeRadians :: (RealFrac a, Floating a) => Radian a -> Radian a

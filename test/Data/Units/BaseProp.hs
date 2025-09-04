@@ -25,7 +25,7 @@ sameDimSpec :: forall u a.
   , FromTo' u u a
   , DimEq u u
   , IsUnit (NormalizeUnit (u .^+ 2))
-  , IsUnit (StdUnitOf u)
+  , IsUnit (BaseUnitOf u)
   )
   => Spec
 sameDimSpec = describe ("Unit " ++ showUnit @u) $ do
