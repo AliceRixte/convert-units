@@ -100,7 +100,7 @@ infixr 5 ~+.
   ( DimEq u v
   , ConvFactor u a, ConvFactor v a
   )
- => u a -> v a -> (StdUnitOf u) a
+ => u a -> v a -> (BaseUnitOf u) a
 u ~+~ v = quantity (unQuantity (from' u) + unQuantity (from' v))
 {-# INLINE (~+~) #-}
 
@@ -139,7 +139,7 @@ infixr 5 ~-.
   ( DimEq u v
   , ConvFactor v a, ConvFactor u a
   )
- => u a -> v a -> (StdUnitOf u) a
+ => u a -> v a -> (BaseUnitOf u) a
 u ~-~ v = quantity $ unQuantity (from' u) - unQuantity (from' v)
 {-# INLINE (~-~) #-}
 
@@ -233,7 +233,7 @@ infix 7 ~*.
 --   Dimension of ‘s’ is: T
 --
 (~*~) ::
-  ( u2 ~ StdUnitOf u .^+ 2, IsUnit u2
+  ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConvFactor u a, ConvFactor v a
   )
@@ -307,7 +307,7 @@ infix 8 .^.
 -- ofUnit 5.0e-4 "m⁻¹"
 --
 (~^.) :: forall (n :: ZZ) proxy u un a.
-  (KnownInt n, ConvFactor u a, un ~ StdUnitOf u .^. n )
+  (KnownInt n, ConvFactor u a, un ~ BaseUnitOf u .^. n )
   => u a -> proxy n -> un a
 u ~^. p = quantity @un $ unQuantity (from' u) ^^ intVal p
 {-# INLINE (~^.) #-}

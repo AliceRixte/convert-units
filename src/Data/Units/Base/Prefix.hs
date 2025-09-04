@@ -108,14 +108,15 @@ instance PrefixFactor p a => PrefixFactor (MetaPrefix p) a where
   prefixFactorTo = prefixFactorTo @p
   {-# INLINE prefixFactorTo #-}
 
-instance (PrefixFactor p a, ConvFactor u a, StdUnitOf (p u) ~ StdUnitOf u)
+instance (PrefixFactor p a, ConvFactor u a, BaseUnitOf (p u) ~ BaseUnitOf u)
   => ConvFactor (MetaPrefix p u) a where
   factorFrom = prefixFactorFrom @p * factorFrom @u
   {-# INLINE factorFrom #-}
   factorTo= prefixFactorTo @p * factorTo @u
   {-# INLINE factorTo #-}
 
-instance (PrefixFactor p a, ConvertibleUnit u a, StdUnitOf (p u) ~ StdUnitOf u)
+instance
+  (PrefixFactor p a, ConvertibleUnit u a, BaseUnitOf (p u) ~ BaseUnitOf u)
   => ConvertibleUnit (MetaPrefix p u) a where
 
   from (MetaPrefix a) = prefixFrom @p @u a
@@ -124,14 +125,14 @@ instance (PrefixFactor p a, ConvertibleUnit u a, StdUnitOf (p u) ~ StdUnitOf u)
   {-# INLINE to #-}
 
 prefixFrom :: forall (p :: Prefix) (u :: Unit) a.
-  (PrefixFactor p a, ConvertibleUnit u a, StdUnitOf (p u) ~ StdUnitOf u)
-  => p u a -> StdUnitOf u a
+  (PrefixFactor p a, ConvertibleUnit u a, BaseUnitOf (p u) ~ BaseUnitOf u)
+  => p u a -> BaseUnitOf u a
 prefixFrom u = from @u $ quantity @u (prefixFactorFrom @p * unQuantity u)
 {-# INLINE prefixFrom #-}
 
 prefixTo :: forall (p :: Prefix) (u :: Unit) a.
-  (PrefixFactor p a, ConvertibleUnit u a, StdUnitOf (p u) a ~ StdUnitOf u a)
-  => StdUnitOf (p u) a -> p u a
+  (PrefixFactor p a, ConvertibleUnit u a, BaseUnitOf (p u) a ~ BaseUnitOf u a)
+  => BaseUnitOf (p u) a -> p u a
 prefixTo a = quantity  $ unQuantity (to @u a) * prefixFactorTo @p
 {-# INLINE prefixTo #-}
 

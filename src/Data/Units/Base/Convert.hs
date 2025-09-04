@@ -130,7 +130,7 @@ import Data.Units.Base.System
 --
 -- * @'from' . 'to' == 'id'@
 --
-class (IsUnit u, IsUnit (StdUnitOf u)) => ConvertibleUnit u a where
+class (IsUnit u, IsUnit (BaseUnitOf u)) => ConvertibleUnit u a where
   -- | Convert a quantity to its standard unit.
   --
   -- >>> import Data.Units.NonStd.Time
@@ -142,8 +142,8 @@ class (IsUnit u, IsUnit (StdUnitOf u)) => ConvertibleUnit u a where
   -- ofUnit 10.0 "m.s⁻¹"
   -- >>> from (Celsius 0)
   -- ofUnit 273.15 "K"
-  from :: u a -> StdUnitOf u a
-  default from :: ConvFactor u a => u a -> StdUnitOf u a
+  from :: u a -> BaseUnitOf u a
+  default from :: ConvFactor u a => u a -> BaseUnitOf u a
   from = from'
   {-# INLINE from #-}
 
@@ -158,17 +158,17 @@ class (IsUnit u, IsUnit (StdUnitOf u)) => ConvertibleUnit u a where
   -- >>> to @Celsius 0
   -- ofUnit (-273.15) "°C"
   --
-  to :: StdUnitOf u a -> u a
-  default to :: ConvFactor u a => StdUnitOf u a -> u a
+  to :: BaseUnitOf u a -> u a
+  default to :: ConvFactor u a => BaseUnitOf u a -> u a
   to = to'
   {-# INLINE to #-}
 
 fromCoerce :: forall u a. ConvertibleUnit u a => a -> a
-fromCoerce = unQuantity @(StdUnitOf u) . from . quantity @u
+fromCoerce = unQuantity @(BaseUnitOf u) . from . quantity @u
 {-# INLINE fromCoerce #-}
 
 -- instance {-# OVERLAPPABLE #-}
---   (ConvFactor u a, IsUnit (StdUnitOf u), IsUnit u)
+--   (ConvFactor u a, IsUnit (BaseUnitOf u), IsUnit u)
 --     => ConvertibleUnit u a where
 --   from = from'
 --   {-# INLINE from #-}
@@ -178,7 +178,7 @@ fromCoerce = unQuantity @(StdUnitOf u) . from . quantity @u
 
 
 toCoerce :: forall u a. ConvertibleUnit u a => a -> a
-toCoerce = unQuantity @u . to . quantity @(StdUnitOf u)
+toCoerce = unQuantity @u . to . quantity @(BaseUnitOf u)
 {-# INLINE toCoerce #-}
 
 -- | A constraint that is satisfied when both units have the same dimension and
@@ -222,7 +222,7 @@ fromToCoerce = unQuantity @v . fromTo . quantity @u
 class (ConvertibleUnit u a, Fractional a) => ConvFactor u a where
   {-# MINIMAL factorFrom | factorTo #-}
   -- | Multiplying a quantity of type @u a@ with @'factorFrom'@ will convert it
-  -- to its corresponding standard unit @StdUnitOf u a@
+  -- to its corresponding standard unit @BaseUnitOf u a@
   --
   -- >>> factorFrom @Hour :: Double
   -- 3600.0
@@ -234,7 +234,7 @@ class (ConvertibleUnit u a, Fractional a) => ConvFactor u a where
   factorFrom = 1 / factorTo @u
   {-# INLINE factorFrom #-}
 
-  -- | Multiplying a quantity of type @StdUnitOf u a@ with @'factorTo'@
+  -- | Multiplying a quantity of type @BaseUnitOf u a@ with @'factorTo'@
   -- will convert it to the unit @u a@
   --
   -- >>> factorTo @Hour :: Double
@@ -268,18 +268,18 @@ instance Fractional a => ConvFactor NoUnit a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
 
-instance (Num a, ConvFactor u a, ConvFactor v a, IsUnit (StdUnitOf (u .*. v)))
+instance (Num a, ConvFactor u a, ConvFactor v a, IsUnit (BaseUnitOf (u .*. v)))
   => ConvertibleUnit (u .*. v) a
 
-instance (Num a, ConvFactor u a, ConvFactor v a, IsUnit (StdUnitOf (u .*. v)))
+instance (Num a, ConvFactor u a, ConvFactor v a, IsUnit (BaseUnitOf (u .*. v)))
   =>  ConvFactor (u .*. v) a where
   factorFrom = factorFrom @u * factorFrom @v
   {-# INLINE factorFrom #-}
 
-instance (ConvFactor u a, IsUnit (StdUnitOf (u .^. n)),  KnownInt n)
+instance (ConvFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
   => ConvertibleUnit (u .^. n) a
 
-instance (ConvFactor u a, IsUnit (StdUnitOf (u .^. n)),  KnownInt n)
+instance (ConvFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
   =>  ConvFactor (u .^. n) a where
   factorFrom = factorFrom @u ^^ intVal (Proxy :: Proxy n)
   {-# INLINE factorFrom #-}
@@ -297,7 +297,7 @@ instance (ConvFactor u a, IsUnit (StdUnitOf (u .^. n)),  KnownInt n)
 -- ofUnit 0.0 "K"
 --
 from' :: forall u a. ConvFactor u a
-  => u a -> StdUnitOf u a
+  => u a -> BaseUnitOf u a
 from' q = quantity (unQuantity q * factorFrom @u)
 {-# INLINE from' #-}
 
@@ -314,7 +314,7 @@ from' q = quantity (unQuantity q * factorFrom @u)
 -- ofUnit (-273.15) "°C"
 --
 to' :: forall u a. ConvFactor u a
-  => StdUnitOf u a -> u a
+  => BaseUnitOf u a -> u a
 to' q = quantity (unQuantity q * factorTo @u)
 {-# INLINE to' #-}
 

@@ -29,7 +29,7 @@ module Data.Units.Base.System
   , DimEq
   -- * Units
   , Unit
-  , StdUnitOf
+  , BaseUnitOf
   , NormalizeUnit
   , ShowUnit (..)
   , prettysUnit
@@ -80,7 +80,7 @@ type Dim = Type -> Type
 --
 -- >>> type instance DimId Length = 300
 --
--- >>> :kind! StdUnitOf (Second .^- 1 .*. Meter)
+-- >>> :kind! BaseUnitOf (Second .^- 1 .*. Meter)
 -- Meter .*. (Second .^. Neg 1)
 --
 --
@@ -247,7 +247,7 @@ type family NormalizeExpDim u where
 --
 type Unit = Type -> Type
 
-type StdUnitOf u = DimToUnit (DimOf u)
+type BaseUnitOf u = DimToUnit (DimOf u)
 
 class IsUnit (DimToUnit d) => IsDim (d :: Dim) where
   type DimToUnit d :: Unit
@@ -370,14 +370,6 @@ ofUnit u s =
     error $ "Current unit \"" ++ showUnit @u
           ++  "\" does not match expected unit \""
           ++ s ++ "\""
-
-
-
-
-
-  -- type StdUnitOf (MetaUnit u) = u
-
-
 
 --------------------------------------------------------------------------------
 

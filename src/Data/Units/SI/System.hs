@@ -1,15 +1,16 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.Base.System
--- Description :  System of units
+-- Module      :  Data.Units.SI.System
+-- Description :  Base units and dimensions of the International System of Units
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
 -- Maintainer  :  alice.rixte@u-bordeaux.fr
 -- Stability   :  stable
 -- Portability :  non-portable (GHC extensions)
 --
--- Describe a system of units and their dimensions.
+-- Base units and dimensions of the International System of Units (abbreviated
+-- SI).
 --
 --------------------------------------------------------------------------------
 
