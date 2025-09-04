@@ -107,11 +107,6 @@ module Data.Units.Base.Convert
   , fromBaseUnit'
   , FromTo'
   , fromTo'
-
-   -- Remove
-  , fromCoerce
-  , toCoerce
-  , fromToCoerce
   )
   where
 
@@ -163,15 +158,6 @@ class (IsUnit u, IsUnit (BaseUnitOf u)) => ConvertibleUnit u a where
   fromBaseUnit = fromBaseUnit'
   {-# INLINE fromBaseUnit #-}
 
-fromCoerce :: forall u a. ConvertibleUnit u a => a -> a
-fromCoerce = unQuantity @(BaseUnitOf u) . toBaseUnit . quantity @u
-{-# INLINE fromCoerce #-}
-
-
-
-toCoerce :: forall u a. ConvertibleUnit u a => a -> a
-toCoerce = unQuantity @u . fromBaseUnit . quantity @(BaseUnitOf u)
-{-# INLINE toCoerce #-}
 
 -- | A constraint that is satisfied when both units have the same dimension and
 -- are such that @u@ can be converted to @v@.
@@ -194,10 +180,6 @@ type FromTo u v a = (DimEq u v, ConvertibleUnit u a, ConvertibleUnit v a)
 fromTo :: FromTo u v a => u a -> v a
 fromTo = fromBaseUnit . toBaseUnit
 {-# INLINE fromTo #-}
-
-fromToCoerce :: forall u v a. FromTo u v a => a -> a
-fromToCoerce = unQuantity @v . fromTo . quantity @u
-{-# INLINE fromToCoerce #-}
 
 --------------------------------------------------------------------------------
 
