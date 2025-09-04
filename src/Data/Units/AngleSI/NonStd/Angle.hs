@@ -42,19 +42,19 @@ $(mkUnitNoFactor "Gradian" "grad" ''Angle)
 
 instance Floating a => ConvertibleUnit Degree a
 
-instance Floating a => ConvFactor Degree a where
+instance Floating a => ConversionFactor Degree a where
   factorFrom = pi / 180
   {-# INLINE factorFrom #-}
 
 instance Floating a => ConvertibleUnit Turn a
 
-instance Floating a => ConvFactor Turn a where
+instance Floating a => ConversionFactor Turn a where
   factorFrom = 2 * pi
   {-# INLINE factorFrom #-}
 
 instance Floating a => ConvertibleUnit Gradian a
 
-instance Floating a => ConvFactor Gradian a where
+instance Floating a => ConversionFactor Gradian a where
   factorFrom = pi / 200
   {-# INLINE factorFrom #-}
 

@@ -114,26 +114,26 @@ mkShowUnitInstance unitName unitStr prettyStr = [d|
 -- | Make an instance of the form
 --
 -- @
--- instance Fractional a => ConvFactor Minute a where
+-- instance Fractional a => ConversionFactor Minute a where
 --    factorFrom = 60
 -- @
 --
 mkConvFactorFromInstance :: Quote m => Name -> Rational -> m [Dec]
 mkConvFactorFromInstance unitName factor = [d|
-  instance Fractional a => ConvFactor $(conT unitName) a where
+  instance Fractional a => ConversionFactor $(conT unitName) a where
     factorFrom = $(litE (RationalL factor))
   |]
 
 -- | Make an instance of the form
 --
 -- @
--- instance Fractional a => ConvFactor Minute a where
+-- instance Fractional a => ConversionFactor Minute a where
 --    factorTo = 60
 -- @
 --
 mkConvFactorToInstance :: Quote m => Name -> Rational -> m [Dec]
 mkConvFactorToInstance unitName factor = [d|
-  instance Fractional a => ConvFactor $(conT unitName) a where
+  instance Fractional a => ConversionFactor $(conT unitName) a where
     factorTo = $(litE (RationalL factor))
   |]
 
@@ -430,7 +430,7 @@ mkPrefixFactorToInstance prefixName factor = [d|
 -- | Make an instance of the form
 --
 -- @
--- instance ConvFactor u a => ConvFactor (Milli u) a where
+-- instance ConversionFactor u a => ConversionFactor (Milli u) a where
 --   factorFrom = factorFrom @(MetaPrefix Milli u)
 --   {-# INLINE factorFrom #-}
 -- factorTo = factorTo @(MetaPrefix Milli u)
@@ -439,7 +439,7 @@ mkPrefixFactorToInstance prefixName factor = [d|
 --
 mkPrefixConvFactorInstance :: Name -> Q [Dec]
 mkPrefixConvFactorInstance prefixName = [d|
-  instance ConvFactor u a => ConvFactor ($(conT prefixName) u) a where
+  instance ConversionFactor u a => ConversionFactor ($(conT prefixName) u) a where
     factorFrom = factorFrom @(MetaPrefix $(conT prefixName) u)
     {-# INLINE factorFrom #-}
     factorTo = factorTo @(MetaPrefix $(conT prefixName) u)

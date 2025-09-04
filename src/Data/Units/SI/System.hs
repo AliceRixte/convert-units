@@ -57,7 +57,7 @@ $(mkUnitNoFactor "Gram" "g" ''Mass)
 
 instance Fractional a => ConvertibleUnit Gram a
 
-instance Fractional a => ConvFactor Gram a where
+instance Fractional a => ConversionFactor Gram a where
   factorTo = 1000
   {-# INLINE factorTo #-}
 

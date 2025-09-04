@@ -11,7 +11,7 @@ import Data.Units.SI
 --
 $(mkUnitNoFactor "Celsius" "°C" ''Temperature)
 
-instance Fractional a => ConvFactor Celsius a where
+instance Fractional a => ConversionFactor Celsius a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
 

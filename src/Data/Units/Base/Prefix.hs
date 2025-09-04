@@ -108,8 +108,9 @@ instance PrefixFactor p a => PrefixFactor (MetaPrefix p) a where
   prefixFactorTo = prefixFactorTo @p
   {-# INLINE prefixFactorTo #-}
 
-instance (PrefixFactor p a, ConvFactor u a, BaseUnitOf (p u) ~ BaseUnitOf u)
-  => ConvFactor (MetaPrefix p u) a where
+instance
+  (PrefixFactor p a, ConversionFactor u a, BaseUnitOf (p u) ~ BaseUnitOf u)
+  => ConversionFactor (MetaPrefix p u) a where
   factorFrom = prefixFactorFrom @p * factorFrom @u
   {-# INLINE factorFrom #-}
   factorTo= prefixFactorTo @p * factorTo @u

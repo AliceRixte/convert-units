@@ -265,7 +265,7 @@ mulLeftSpec = it (showUnit @u ++ " ~*. " ++ showUnit @v)
 mulSame :: forall u v a u2 .
   ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
-  , ConvFactor u a, ConvFactor v a
+  , ConversionFactor u a, ConversionFactor v a
   )
   => a -> a -> a
 mulSame u v = coerce $ (coerce u :: u a) ~*~ (coerce v :: v a)
@@ -273,7 +273,7 @@ mulSame u v = coerce $ (coerce u :: u a) ~*~ (coerce v :: v a)
 mulSameProp :: forall u v a u2 .
   ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
-  , ConvFactor u a, ConvFactor v a
+  , ConversionFactor u a, ConversionFactor v a
   , Show a, Epsilon a, Arbitrary a
   )
   => Property
@@ -284,7 +284,7 @@ mulSameProp = property (\(a :: a) (b :: a) ->
 mulSameSpec :: forall u v a u2 .
   ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
-  , ConvFactor u a, ConvFactor v a
+  , ConversionFactor u a, ConversionFactor v a
   , ShowUnit u, ShowUnit v
   , Show a, Epsilon a, Arbitrary a
   )
@@ -295,7 +295,7 @@ mulSameSpec = it (showUnit @u ++ " ~*~ " ++ showUnit @v)
 divSame :: forall u v a u2 .
   ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
-  , ConvFactor u a, ConvFactor v a
+  , ConversionFactor u a, ConversionFactor v a
   )
   => a -> a -> a
 divSame u v = coerce $ (coerce u :: u a) ~/~ (coerce v :: v a)
@@ -303,7 +303,7 @@ divSame u v = coerce $ (coerce u :: u a) ~/~ (coerce v :: v a)
 divSameProp :: forall u v a u2 .
   ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
-  , ConvFactor u a, ConvFactor v a
+  , ConversionFactor u a, ConversionFactor v a
   , Show a, Epsilon a, Eq a, Arbitrary a
   )
   => Property
@@ -314,7 +314,7 @@ divSameProp = property (\(a :: a) (b :: a) -> b == 0 ||
 divSameSpec :: forall u v a u2 .
   ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
-  , ConvFactor u a, ConvFactor v a
+  , ConversionFactor u a, ConversionFactor v a
   , ShowUnit u, ShowUnit v
   , Show a, Epsilon a, Eq a, Arbitrary a
   )
@@ -325,17 +325,17 @@ divSameSpec = it (showUnit @u ++ " ~/~ " ++ showUnit @v)
 ------------------ Arithmetic with two different dimensions  -------------------
 
 mulDiffDim :: forall u v a.
-  ( ConvFactor u a, ConvFactor v a
+  ( ConversionFactor u a, ConversionFactor v a
   , IsUnit (NormalizeUnit (u .*. v))
   )
   => a -> a -> a
 mulDiffDim u v = coerce $ (coerce u :: u a) .*. (coerce v :: v a)
 
 mulDiffDimProp :: forall u v a.
-  ( ConvFactor u a, ConvFactor v a
+  ( ConversionFactor u a, ConversionFactor v a
   , IsUnit (NormalizeUnit (u .*. v))
   , Coercible a (BaseUnitOf (NormalizeUnit (u .*. v)) a)
-  , ConvFactor (NormalizeUnit (u .*. v)) a
+  , ConversionFactor (NormalizeUnit (u .*. v)) a
   , Arbitrary a, Show a, Epsilon a
   )
   => Property
@@ -344,10 +344,10 @@ mulDiffDimProp =
   .&&. toFromProp @(NormalizeUnit (u .*. v)) @a
 
 mulDiffDimSpec :: forall u v a.
-  ( ConvFactor u a, ConvFactor v a
+  ( ConversionFactor u a, ConversionFactor v a
   , IsUnit (NormalizeUnit (u .*. v))
   , Coercible a (BaseUnitOf (NormalizeUnit (u .*. v)) a)
-  , ConvFactor (NormalizeUnit (u .*. v)) a
+  , ConversionFactor (NormalizeUnit (u .*. v)) a
   , Arbitrary a, Show a, Epsilon a
   , ShowUnit u, ShowUnit v
   )
@@ -390,17 +390,17 @@ divDiffDimSpec =  it (showUnit @u ++ " ./. " ++ showUnit @v)
 -------------------------------- Exponentiation --------------------------------
 
 exp2 :: forall u a.
-  ConvFactor u a
+  ConversionFactor u a
   => a -> a
 exp2 u = coerce $ (coerce u :: u a) .^. pos2
 
 expm1 :: forall u a.
-  ConvFactor u a
+  ConversionFactor u a
   => a -> a
 expm1 u = coerce $ (coerce u :: u a) .^. neg1
 
 exp2Prop :: forall u a.
-  ( ConvFactor u a
+  ( ConversionFactor u a
   , Arbitrary a, Show a, Epsilon a
   )
   => Property
@@ -408,7 +408,7 @@ exp2Prop =
   property (\a -> aboutEqual (a * a) (exp2 @u @a a))
 
 expm1Prop :: forall u a.
-  ( ConvFactor u a
+  ( ConversionFactor u a
   , Arbitrary a, Show a,  Eq a, Epsilon a
   )
   => Property
@@ -416,7 +416,7 @@ expm1Prop =
   property (\a -> a == 0 || aboutEqual (1 / a) (expm1 @u @a a))
 
 expSpec :: forall u a.
-  ( ConvFactor u a
+  ( ConversionFactor u a
   , ShowUnit u
   , Arbitrary a, Show a,  Eq a, Epsilon a
   )
@@ -425,17 +425,17 @@ expSpec = it (showUnit @u ++ " .^+ 2  ," ++ showUnit @u ++ " .^- 1") $
   exp2Prop @u @a .&&. expm1Prop @u @a
 
 exp2Conv :: forall u a.
-  ConvFactor u a
+  ConversionFactor u a
   => a -> a
 exp2Conv u = coerce $ (coerce u :: u a) ~^. pos2
 
 expm1Conv :: forall u a.
-  ConvFactor u a
+  ConversionFactor u a
   => a -> a
 expm1Conv u = coerce $ (coerce u :: u a) ~^. neg1
 
 exp2ConvProp :: forall u a.
-  ( ConvFactor u a
+  ( ConversionFactor u a
   , Arbitrary a, Show a, Epsilon a
   )
   => Property
@@ -444,7 +444,7 @@ exp2ConvProp =
     (coerce (toBaseUnit' (coerce a :: u a)) ^^ (2 :: Int)) (exp2Conv @u @a a))
 
 expm1ConvProp :: forall u a.
-  ( ConvFactor u a
+  ( ConversionFactor u a
   , Arbitrary a, Show a, Eq a, Epsilon a
   )
   => Property
@@ -454,7 +454,7 @@ expm1ConvProp =
 
 
 expConvSpec :: forall u a.
-  ( ConvFactor u a
+  ( ConversionFactor u a
   , ShowUnit u
   , Arbitrary a, Show a,  Eq a, Epsilon a
   )

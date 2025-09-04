@@ -28,12 +28,12 @@
 --  |                          | Which instances        | Note                 |
 --  |                          | to declare             |                      |
 --  +==========================+========================+======================+
---  | Conversion factor        | Only @'ConvFactor'@    | @'from' == 'from''@, |
+--  | Conversion factor        | Only @'ConversionFactor'@    | @'from' == 'from''@, |
 --  |                          | (@'From'@ and @'To'@   | @'to' == 'to''@,     |
 --  |                          | have a default         | @'fromTo' == @       |
 --  |                          | overlappable instance) | @'fromTo''@          |
 --  +--------------------------+------------------------+----------------------+
---  | Affine conversion        | @'ConvFactor'@,        | @'from' /= 'from''@, |
+--  | Affine conversion        | @'ConversionFactor'@,        | @'from' /= 'from''@, |
 --  |                          | @'From'@ and @'To'@    | @'to' /= 'to''@,     |
 --  |                          |                        | @'fromTo' /= @       |
 --  |                          |                        | @'fromTo''@          |
@@ -48,10 +48,10 @@
 --
 -- For units that can be converted to and from their corresponding standard
 -- units by multiplication of a converion factor, you only need to declare an
--- instance of @'ConvFactor'@, like
+-- instance of @'ConversionFactor'@, like
 --
 -- @
--- instance Fractional a => ConvFactor Hour a where f
+-- instance Fractional a => ConversionFactor Hour a where f
 --   actorFrom = 3600
 -- @
 --
@@ -74,7 +74,7 @@
 -- This can be expressed by the following instances:
 --
 -- @
--- instance Fractional a => ConvFactor Celsius a where
+-- instance Fractional a => ConversionFactor Celsius a where
 --   factorFrom = 1
 --
 -- instance Fractional a => From Celsius a where
@@ -93,7 +93,7 @@
 --
 -- Any other conversion can be implemented, like for instance logarithmic units.
 -- In this case, you should only give an instance for @'From'@ and @'To'@, and
--- no instance for @'ConvFactor'@. See for instance linear picth
+-- no instance for @'ConversionFactor'@. See for instance linear picth
 -- @'Data.Unit.NonStd.Frequency.Tet'@.
 --
 --------------------------------------------------------------------------------
@@ -102,11 +102,15 @@ module Data.Units.Base.Convert
   ( ConvertibleUnit (..)
   , FromTo
   , fromTo
-  , ConvFactor(..)
+  , from
+  , to
+  , ConversionFactor (..)
   , toBaseUnit'
   , fromBaseUnit'
   , FromTo'
   , fromTo'
+  , from'
+  , to'
   )
   where
 
@@ -138,7 +142,7 @@ class (IsUnit u, IsUnit (BaseUnitOf u)) => ConvertibleUnit u a where
   -- >>> toBaseUnit (Celsius 0)
   -- Kelvin 273.15
   toBaseUnit :: u a -> BaseUnitOf u a
-  default toBaseUnit :: ConvFactor u a => u a -> BaseUnitOf u a
+  default toBaseUnit :: ConversionFactor u a => u a -> BaseUnitOf u a
   toBaseUnit = toBaseUnit'
   {-# INLINE toBaseUnit #-}
 
@@ -154,7 +158,7 @@ class (IsUnit u, IsUnit (BaseUnitOf u)) => ConvertibleUnit u a where
   -- Celsius (-273.15)
   --
   fromBaseUnit :: BaseUnitOf u a -> u a
-  default fromBaseUnit :: ConvFactor u a => BaseUnitOf u a -> u a
+  default fromBaseUnit :: ConversionFactor u a => BaseUnitOf u a -> u a
   fromBaseUnit = fromBaseUnit'
   {-# INLINE fromBaseUnit #-}
 
@@ -181,6 +185,26 @@ fromTo :: FromTo u v a => u a -> v a
 fromTo = fromBaseUnit . toBaseUnit
 {-# INLINE fromTo #-}
 
+-- | A mere synonym of @'fromTo'@ where it is more intuitive to use only one
+-- type application.
+--
+-- >>> from @Celsius 0 :: Kelvin Double
+-- Kelvin 273.15
+--
+from :: FromTo u v a => u a -> v a
+from = fromTo
+{-# INLINE from #-}
+
+-- | Same as @'fromTo'@ but the type applications are reversed
+--
+-- >>> to @Kelvin (Celsius 0)
+-- Kelvin 273.15
+--
+to :: forall v u a. FromTo u v a => u a -> v a
+to = fromTo
+{-# INLINE to #-}
+
+
 --------------------------------------------------------------------------------
 
 
@@ -193,7 +217,7 @@ fromTo = fromBaseUnit . toBaseUnit
 -- * @'toBaseUnit' == (* 'factorFrom')@
 -- * @'fromBaseUnit' == (* 'factorTo')@
 --
-class (ConvertibleUnit u a, Fractional a) => ConvFactor u a where
+class (ConvertibleUnit u a, Fractional a) => ConversionFactor u a where
   {-# MINIMAL factorFrom | factorTo #-}
   -- | Multiplying a quantity of type @u a@ with @'factorFrom'@ will convert it
   -- to its corresponding standard unit @BaseUnitOf u a@
@@ -231,30 +255,30 @@ instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a)
   => ConvertibleUnit (MetaUnit u) a where
 
 instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a)
-  => ConvFactor (MetaUnit u) a where
+  => ConversionFactor (MetaUnit u) a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
 
 
 instance Fractional a => ConvertibleUnit NoUnit a
 
-instance Fractional a => ConvFactor NoUnit a where
+instance Fractional a => ConversionFactor NoUnit a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
 
-instance (Num a, ConvFactor u a, ConvFactor v a, IsUnit (BaseUnitOf (u .*. v)))
+instance (Num a, ConversionFactor u a, ConversionFactor v a, IsUnit (BaseUnitOf (u .*. v)))
   => ConvertibleUnit (u .*. v) a
 
-instance (Num a, ConvFactor u a, ConvFactor v a, IsUnit (BaseUnitOf (u .*. v)))
-  =>  ConvFactor (u .*. v) a where
+instance (Num a, ConversionFactor u a, ConversionFactor v a, IsUnit (BaseUnitOf (u .*. v)))
+  =>  ConversionFactor (u .*. v) a where
   factorFrom = factorFrom @u * factorFrom @v
   {-# INLINE factorFrom #-}
 
-instance (ConvFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
+instance (ConversionFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
   => ConvertibleUnit (u .^. n) a
 
-instance (ConvFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
-  =>  ConvFactor (u .^. n) a where
+instance (ConversionFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
+  =>  ConversionFactor (u .^. n) a where
   factorFrom = factorFrom @u ^^ intVal (Proxy :: Proxy n)
   {-# INLINE factorFrom #-}
 
@@ -270,7 +294,7 @@ instance (ConvFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
 -- >>> toBaseUnit' (Celsius 0)
 -- Kelvin 0.0
 --
-toBaseUnit' :: forall u a. ConvFactor u a
+toBaseUnit' :: forall u a. ConversionFactor u a
   => u a -> BaseUnitOf u a
 toBaseUnit' q = quantity (unQuantity q * factorFrom @u)
 {-# INLINE toBaseUnit' #-}
@@ -287,7 +311,7 @@ toBaseUnit' q = quantity (unQuantity q * factorFrom @u)
 -- >>> fromBaseUnit' @Celsius 0
 -- Celsius 0.0
 --
-fromBaseUnit' :: forall u a. ConvFactor u a
+fromBaseUnit' :: forall u a. ConversionFactor u a
   => BaseUnitOf u a -> u a
 fromBaseUnit' q = quantity (unQuantity q * factorTo @u)
 {-# INLINE fromBaseUnit' #-}
@@ -295,9 +319,10 @@ fromBaseUnit' q = quantity (unQuantity q * factorTo @u)
 -- | A constraint that is satisfied when both units have the same dimension and
 -- are such that @u@ can be converted to @v@ by using a conversion factor.
 --
-type FromTo' u v a = (DimEq u v, ConvFactor u a, ConvFactor v a)
+type FromTo' u v a = (DimEq u v, ConversionFactor u a, ConversionFactor v a)
 
--- | Conversion, using conversion factors, between two quantities with the same dimension
+-- | Conversion, using conversion factors, between two quantities with the same
+-- dimension
 --
 -- >>> fromTo' @Celsius @Kelvin 0
 -- Kelvin 0.0
@@ -315,3 +340,26 @@ fromTo' :: forall u v a.
   => u a -> v a
 fromTo' q = quantity (unQuantity q * (factorFrom @u * factorTo @v))
 {-# INLINE fromTo' #-}
+
+
+
+-- | A mere synonym of @'fromTo''@ where it is more intuitive to use only one
+-- type application.
+--
+-- >>> from' @Celsius 0 :: Kelvin Double
+-- Kelvin 0.0
+--
+from' :: FromTo' u v a => u a -> v a
+from' = fromTo'
+{-# INLINE from' #-}
+
+-- | Same as @'fromTo''@ but the type applications are reversed
+--
+-- >>> to' @Kelvin (Celsius 0)
+-- Kelvin 0.0
+--
+to' :: forall v u a. FromTo' u v a => u a -> v a
+to' = fromTo'
+{-# INLINE to' #-}
+
+
