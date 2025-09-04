@@ -51,8 +51,9 @@ $(mkDim "Mass" "M" 200)
 --
 -- >>> from (Gram 8)
 -- quantity @(Kilo Gram) 8.0e-3
--- >>> :kind! BaseUnitOf (Kilo Gram)
--- Not in scope: type constructor or class `BaseUnitOf'
+-- >>> :kind! BaseUnitOf Gram
+-- BaseUnitOf Gram :: * -> *
+-- = Kilo Gram
 $(mkUnitNoFactor "Gram" "g" ''Mass)
 
 instance Fractional a => ConvertibleUnit Gram a
