@@ -248,7 +248,8 @@ type Unit = Type -> Type
 
 type BaseUnitOf u = DimToUnit (DimOf u)
 
-class IsUnit (DimToUnit d) => IsDim (d :: Dim) where
+class (IsUnit (DimToUnit d), forall a. Coercible (d a) a)
+  => IsDim (d :: Dim) where
   type DimToUnit d :: Unit
 
 
