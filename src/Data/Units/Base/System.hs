@@ -95,7 +95,9 @@ type Dim = Type -> Type
 --  +--------------------------------------+-----+
 --  | Dimension                            | Id  |
 --  +======================================+=====+
---  | @'NoDim'@                            | 000 |
+--  | Reserved                             |   0 |
+--  +======================================+=====+
+--  | @'NoDim'@                            |   1 |
 --  +--------------------------------------+-----+
 --  | @'Data.Units.AngleSI.Angle.Angle'@   | 100 |
 --  +--------------------------------------+-----+
@@ -138,7 +140,7 @@ newtype NoDim a = NoDim a
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
 
-type instance DimId NoDim = 0
+type instance DimId NoDim = 1
 type instance ShowDim NoDim = Text "NoDim"
 
 
