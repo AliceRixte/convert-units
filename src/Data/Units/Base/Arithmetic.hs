@@ -251,7 +251,7 @@ infix 7 ~*~
 --
 --
 (./.) ::
-  (uv ~ NormalizeUnit' (u ./. v)
+  ( uv ~ NormalizeUnit' (u ./. v)
   , IsUnit u, IsUnit v, IsUnit uv
   , Fractional a
   )

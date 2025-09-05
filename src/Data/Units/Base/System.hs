@@ -43,7 +43,7 @@ module Data.Units.Base.System
   , showsQuantity
   , showQuantity
   , prettyQuantity
-  , printQuantity
+  , putQuantity
   -- * Unit and dimension constructors
   , type (.*.) (..)
   , type (./.)
@@ -256,9 +256,9 @@ class (IsUnit (DimToUnit d), forall a. Coercible (d a) a)
 
 --------------------------------------------------------------------------------
 
--- | Any unit must have a corresponding standard unit. Additionally, a unit is a
--- newtype constructor : a quantity @u a@ can always be coerced to its magnitude
--- @a@.
+-- | Any unit must have a dimension. Additionally, a unit is a newtype
+-- constructor : a quantity @u a@ can always be coerced to its magnitude @a@.
+--
 class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where
   type DimOf u :: Dim
 
@@ -332,8 +332,8 @@ showQuantity u = showsQuantity u ""
 prettyQuantity :: forall u a. (ShowUnit u, Show a) => u a -> String
 prettyQuantity u  = show (unQuantity u) ++ " " ++  prettyUnit @u
 
-printQuantity :: (Show a, ShowUnit u) => u a -> IO ()
-printQuantity = putStr . showQuantity
+putQuantity :: (Show a, ShowUnit u) => u a -> IO ()
+putQuantity = putStrLn . prettyQuantity
 
 
 --------------------------------------------------------------------------------
@@ -527,8 +527,7 @@ toSuperscript a = a
 
 ------------------------------ Unit normalization ------------------------------
 
--- | Sort a unit by dimension, and try to collapse them into exponents without
--- converting it to standard units.
+-- | Tries to normalize a unit without converting to base units.
 --
 -- >>> :kind! NormalizeUnit' (Minute .*. Minute)
 -- Minute .^. Pos 2
@@ -544,53 +543,42 @@ type family NormalizeUnit' u where
   NormalizeUnit' (u .*. NoUnit) = NormalizeUnit' u
   NormalizeUnit' (NoUnit .*. v) = NormalizeUnit' v
   NormalizeUnit' ((u .*. v) .*. w) = NormalizeUnit' (u .*. (v .*. w))
-  NormalizeUnit' (u .*. v) = InsertForNormalize (NormalizeUnit' u) (NormalizeUnit' v)
+  NormalizeUnit' (u .*. v) = InsertUnit (NormalizeUnit' u) (NormalizeUnit' v)
   NormalizeUnit' (NoUnit .^. n) = NoUnit
   NormalizeUnit' ((u .*. v) .^. n) = NormalizeUnit' (u .^. n .*. v .^. n)
   NormalizeUnit' ((u .^. n) .^. m) = NormalizeUnit' (u .^. Mul n m)
   NormalizeUnit' (u .^. n) = NormalizeExp (u .^. n)
   NormalizeUnit' u = u -- ^ This is the only difference with StandardizeUnit
 
-type family Insert u v where
-  Insert NoUnit v = v
-  Insert u NoUnit = u
-  Insert u (v .*. w) =
-    InsertCmp (Compare (DimId (DimOf u)) (DimId (DimOf v))) u (v .*. w)
-  Insert u v =
-    SwapCmp (Compare (DimId (DimOf u)) (DimId (DimOf v))) u v
-
 type family NormalizeExp u where
   NormalizeExp (u .^. Pos 1) = u
   NormalizeExp (u .^. Zero) = NoUnit
   NormalizeExp u = u
 
+type family InsertUnit u v where
+  InsertUnit NoUnit v = v
+  InsertUnit u NoUnit = u
+  InsertUnit u v = InsertUnitIds u v (DimId (DimOf u)) (DimId (DimOf v))
 
-type family InsertForNormalize u v where
-  InsertForNormalize NoUnit v = v
-  InsertForNormalize u NoUnit = u
-  InsertForNormalize u (v .*. w) =
-    InsertCmp (Compare
-                  -- We need to standardize to get the dimension (not necessary
-                  -- in StandardizeUnit becaus units are already standardized)
-                  (DimId (DimOf u))
-                  (DimId (DimOf v))
-              ) u (v .*. w)
-  InsertForNormalize u v =
-    SwapCmp (Compare
-                  -- We need to standardize to get the dimension (not necessary
-                  -- in StandardizeUnit becaus units are already standardized)
-                  (DimId (DimOf u))
-                  (DimId (DimOf v))
-            ) u v
+type family InsertUnitIds u v uid vid where
+  InsertUnitIds u (v .*. w) uid vid  =
+    If (uid == 0)
+        (u .*. v .*. w)
+        (InsertCmp (Compare uid vid) u (v .*. w))
+  InsertUnitIds u v uid vid =
+    If (uid == 0)
+        (u .*. v)
+        (SwapCmp (Compare uid vid) u v)
+
 
 type family InsertCmp cmp u v where
   InsertCmp 'LT u (v .*. w) = u .*. v .*. w
-  InsertCmp 'GT u (v .*. w) = v .*. Insert u w
+  InsertCmp 'GT u (v .*. w) = v .*. InsertUnit u w
   InsertCmp 'EQ u (v .*. w) = MulNoUnit (MulSameDim u v) w
   InsertCmp c u v = TypeError (
         Text  "InsertCmp must be called with arguments of"
-   :<>: Text "the form InsertCmp cmp u (v .*. w)"
-   :$$: Text "  instead, it was called with InsertCmp "
+   :<>: Text " the form InsertCmp cmp u (v .*. w)"
+   :$$: Text " instead, it was called with InsertCmp."
    :<>: ShowType c
    :<>: Text " ("
    :<>: ShowType u
