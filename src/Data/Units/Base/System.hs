@@ -79,6 +79,20 @@ type Dim = Type -> Type
 --
 -- This identifiers allow to sort the units when computing the standard unit.
 --
+-- Every identifier must be of the form
+--
+-- @0x...0_0_0_0_@
+--
+-- where each allowed digit is eiter @0@, @1@, @2@, @4@ or @8@.
+--
+-- This allows to compute the dimension identifier of a product of dimensions by
+-- summing the identifiers. One can easily show that the sum of @n@ identifiers
+-- will be unique as long as @n < 16@.
+--
+-- This means that dimension identifiers might conflict when using units whose
+-- quantity corresponds to a product of @16@ different dimensions, which is
+-- impossible in SI, which contains only @7@ dimensions.
+--
 -- >>> type instance DimId Length = 300
 --
 -- >>> :kind! NormalizeUnit (Second .^- 1 .*. Meter)
@@ -92,31 +106,31 @@ type Dim = Type -> Type
 --
 -- [This package:]
 --
---  +--------------------------------------+-----+
---  | Dimension                            | Id  |
---  +======================================+=====+
---  | Reserved                             |   0 |
---  +======================================+=====+
---  | @'NoDim'@                            |   1 |
---  +--------------------------------------+-----+
---  | @'Data.Units.AngleSI.Angle.Angle'@   | 100 |
---  +--------------------------------------+-----+
---  | @'Data.Units.SI.Mass'@               | 200 |
---  +--------------------------------------+-----+
---  | @'Data.Units.SI.Length'@             | 300 |
---  +--------------------------------------+-----+
---  | @'Data.Units.SI.Time'@               | 400 |
---  +--------------------------------------+-----+
---  | @'Data.Units.SI.ElectricCurrent'@    | 500 |
---  +--------------------------------------+-----+
---  | @'Data.Units.SI.Temperature'@        | 600 |
---  +--------------------------------------+-----+
---  | @'Data.Units.SI.SubstanceAmount'@    | 700 |
---  +--------------------------------------+-----+
---  | @'Data.Units.SI.LuminousIntensity'@  | 800 |
---  +--------------------------------------+-----+
+--  +--------------------------------------+-----------------+
+--  | Dimension                            | Id              |
+--  +======================================+=================+
+--  | Reserved                             |   0             |
+--  +======================================+=================+
+--  | @'NoDim'@                            |   1             |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.AngleSI.Angle.Angle'@   | 0x08080401      |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.Mass'@               | 0x08080402      |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.Length'@             | 0x08080404      |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.Time'@               | 0x08080408      |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.ElectricCurrent'@    | 0x08080801      |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.Temperature'@        | 0x08080802      |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.SubstanceAmount'@    | 0x08080804      |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.LuminousIntensity'@  | 0x08080808      |
+--  +--------------------------------------+-----------------+
 --
-type family DimId (d:: Dim) :: Nat
+type family DimId (d:: Dim) :: ZZ
 
 -- | Pretty print a dimension in error messages
 --
@@ -140,7 +154,7 @@ newtype NoDim a = NoDim a
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
 
-type instance DimId NoDim = 1
+type instance DimId NoDim = Pos 1
 type instance ShowDim NoDim = Text "NoDim"
 
 
@@ -404,6 +418,8 @@ instance (ShowUnit u, ShowUnit v) => ShowUnit (u .*. v) where
 instance (IsUnit u, IsUnit v) => IsUnit (u .*. v) where
   type DimOf (u .*. v) = DimOf' (u .*. v)
 
+type instance DimId (u .*. v) = Neg (Abs (Mul (DimId u ) (DimId v)))
+
 instance (IsDim d, IsDim e) => IsDim (d .*. e) where
   type DimToUnit (d .*. e) = DimToUnit d .*. DimToUnit e
 
@@ -564,13 +580,9 @@ type family InsertUnit u v where
 
 type family InsertUnitIds u v uid vid where
   InsertUnitIds u (v .*. w) uid vid  =
-    If (uid == 0)
-        (u .*. v .*. w)
-        (InsertCmp (Compare uid vid) u (v .*. w))
+    InsertCmp (Compare uid vid) u (v .*. w)
   InsertUnitIds u v uid vid =
-    If (uid == 0)
-        (u .*. v)
-        (SwapCmp (Compare uid vid) u v)
+    SwapCmp (Compare uid vid) u v
 
 
 type family InsertCmp cmp u v where

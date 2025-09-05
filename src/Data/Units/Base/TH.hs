@@ -34,6 +34,7 @@ import GHC.TypeError
 
 import Language.Haskell.TH
 
+import Data.Type.Int
 import Data.Units.Base.System
 import Data.Units.Base.Convert
 import Data.Units.Base.Prefix
@@ -285,7 +286,7 @@ mkIsDimInstance dimName unitName = [d|
 --
 mkDimIdTypeInstance :: Quote m => Name -> Integer -> m [Dec]
 mkDimIdTypeInstance dimName n = [d|
-  type instance DimId $(conT dimName) = $(litT (numTyLit n))
+  type instance DimId $(conT dimName) = Pos $(litT (numTyLit n))
   |]
 
 -- | Make a type instance of the form

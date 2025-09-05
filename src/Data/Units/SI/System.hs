@@ -39,7 +39,7 @@ import Data.Units.SI.Prefixes
 --
 --  This may contain a mass quantity with unspecified unit.
 --
-$(mkDim "Mass" "M" 200)
+$(mkDim "Mass" "M" 0x08080402)
 
 
 -- | A quantity in grams, denotated @g@ in SI.
@@ -69,7 +69,7 @@ instance IsDim Mass where
 --
 --  This may contain a length quantity with unspecified unit.
 --
-$(mkDim "Length" "L" 300)
+$(mkDim "Length" "L" 0x08080404)
 
 
 -- | A quantity in meters, denotated @m@ in SI.
@@ -84,7 +84,7 @@ $(mkBaseUnit "Meter" "m" ''Length)
 --
 --  This may contain a length quantity with unspecified unit.
 --
-$(mkDim "Time" "T" 400)
+$(mkDim "Time" "T" 0x08080408)
 
 
 -- | A quantity in seconds, denotated @s@ in SI.
@@ -93,13 +93,28 @@ $(mkDim "Time" "T" 400)
 --
 $(mkBaseUnit "Second" "s" ''Time)
 
+-- | The electric current dimension, denotated @I@ in SI.
+--
+--  This may contain an electric current quantity with unspecified unit.
+--
+$(mkDim "Current" "I" 0x08080801)
 
+
+-- | A quantity in amperes, denotated @A@ in SI.
+--
+-- This is the base unit of the electric current dimension in the SI
+-- system.
+--
+$(mkBaseUnit "Ampere" "A" ''Current)
 
 -- | The thermodynamic temperature dimension, denotated @Θ@ in SI.
 --
 --  This may contain a temperature quantity with unspecified unit.
 --
-$(mkDim "Temperature" "Θ" 500)
+$(mkDim "Temperature" "Θ" 0x08080802)
+
+
+
 
 
 -- | A quantity in Kelvin, denotated @K@ in SI.
@@ -113,7 +128,7 @@ $(mkBaseUnit "Kelvin" "K" ''Temperature)
 --
 --  This may contain an amount of substance quantity with unspecified unit.
 --
-$(mkDim "AmountOfSubstance" "N" 600)
+$(mkDim "AmountOfSubstance" "N" 0x08080804)
 
 
 -- | A quantity in moles, denotated @mol@ in SI.
@@ -123,25 +138,12 @@ $(mkDim "AmountOfSubstance" "N" 600)
 --
 $(mkBaseUnit "Mole" "mol" ''AmountOfSubstance)
 
--- | The electric current dimension, denotated @I@ in SI.
---
---  This may contain an electric current quantity with unspecified unit.
---
-$(mkDim "Current" "I" 700)
-
-
--- | A quantity in amperes, denotated @A@ in SI.
---
--- This is the base unit of the electric current dimension in the SI
--- system.
---
-$(mkBaseUnit "Ampere" "A" ''Current)
 
 -- | The luminous intensity dimension, denotated @J@ in SI.
 --
 --  This may contain a luminous intensity quantity with unspecified unit.
 --
-$(mkDim "LuminousIntensity" "J" 800)
+$(mkDim "LuminousIntensity" "J" 0x08080808)
 
 -- | A quantity in candelas, denotated @cd@ in SI.
 --

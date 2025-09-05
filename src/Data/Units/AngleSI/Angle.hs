@@ -27,7 +27,7 @@ import Data.Units.Base
 
 -- | The angle dimension, denotated @A@.
 --
-$(mkDim "Angle" "A" 100)
+$(mkDim "Angle" "A" 0x08080401)
 
 
 -- | An angle in radians.
