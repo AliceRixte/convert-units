@@ -23,8 +23,9 @@ module Data.Units.SI.Derived
   , Speed
   , Acceleration
   , Force
-  , Newton
-  , pattern Newton
+  , Pressure
+  , Newton (..)
+  , Pascal (..)
   )
   where
 
@@ -43,11 +44,11 @@ type Frequency = Time .^- 1
 --
 $(mkUnitFrom "Hertz" "Hz" ''Frequency 1)
 
-type Speed = Length ./. Time
+type Speed = NormalizeDim (Length ./. Time)
 
-type Acceleration = Length ./. (Time .^+ 2)
+type Acceleration = NormalizeDim (Length ./. (Time .^+ 2))
 
-type Force = Mass .*. Acceleration
+type Force = NormalizeDim (Mass .*. Acceleration)
 
 -- | Force in newtons
 --
@@ -58,20 +59,5 @@ type Pressure = NormalizeDim (Force ./. (Length .^+ 2))
 -- | Pressure in pascals
 --
 $(mkUnitFrom "Pascal" "Pa" ''Pressure 1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

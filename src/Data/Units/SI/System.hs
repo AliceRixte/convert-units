@@ -54,6 +54,7 @@ $(mkDim "Mass" "M" 0x08080402)
 -- >>> :kind! BaseUnitOf Gram
 -- BaseUnitOf Gram :: * -> *
 -- = Kilo Gram
+--
 $(mkUnitNoFactor "Gram" "g" ''Mass)
 
 instance Fractional a => ConvertibleUnit Gram a

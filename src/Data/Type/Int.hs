@@ -24,6 +24,10 @@ type ZZ = Signed Nat
 
 type instance Compare (a :: Signed k) (b :: Signed k) = CmpSigned a b
 
+type family IsPos (a :: ZZ) :: Bool where
+  IsPos (Pos a) = 'True
+  IsPos b       = 'False
+
 -- | Compare Signed kinds when those kinds are comparable.
 type family CmpSigned a b where
   CmpSigned (Neg a) (Neg b) = FlipOrdering (Compare a b)

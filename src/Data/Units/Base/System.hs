@@ -183,18 +183,25 @@ type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
 
 -------------------------- Dimension standardization ---------------------------
 
+
 -- | Helper type family for defining DimOf for .*. and .^.
 --
 type family DimOf' (u :: Unit) :: Dim where
-  DimOf' (u .*. NoUnit) = DimOf' u
-  DimOf' (NoUnit .*. v) = DimOf' v
-  DimOf' ((u .*. v) .*. w) = DimOf' (u .*. (v .*. w))
-  DimOf' (u .*. v) = InsertDim (DimOf' u) (DimOf' v)
-  DimOf' (NoUnit .^. n) = NoDim
-  DimOf' ((u .*. v) .^. n) = DimOf' (u .^. n .*. v .^. n)
-  DimOf' ((u .^. n) .^. m) = DimOf' (u .^. Mul n m)
-  DimOf' (u .^. n) = NormalizeExpDim (DimOf u .^. n)
-  DimOf' u = DimOf u
+  DimOf' u = NormalizeDim (UnitToDim u)
+  -- DimOf' (u .*. NoUnit) = DimOf' u
+  -- DimOf' (NoUnit .*. v) = DimOf' v
+  -- DimOf' ((u .*. v) .*. w) = DimOf' (u .*. (v .*. w))
+  -- DimOf' (u .*. v) = InsertDim (DimOf' u) (DimOf' v)
+  -- DimOf' (NoUnit .^. n) = NoDim
+  -- DimOf' ((u .*. v) .^. n) = DimOf' (u .^. n .*. v .^. n)
+  -- DimOf' ((u .^. n) .^. m) = DimOf' (u .^. Mul n m)
+  -- DimOf' (u .^. n) = NormalizeExpDim (DimOf u .^. n)
+  -- DimOf' u = DimOf u
+
+type family UnitToDim (u :: Unit) :: Dim where
+  UnitToDim (u .*. v) = UnitToDim u .*. UnitToDim v
+  UnitToDim (u .^. n) = UnitToDim u .^. n
+  UnitToDim u = DimOf u
 
 
 type family NormalizeDim d where
@@ -418,7 +425,7 @@ instance (ShowUnit u, ShowUnit v) => ShowUnit (u .*. v) where
 instance (IsUnit u, IsUnit v) => IsUnit (u .*. v) where
   type DimOf (u .*. v) = DimOf' (u .*. v)
 
-type instance DimId (u .*. v) = Neg (Abs (Mul (DimId u ) (DimId v)))
+type instance DimId (u .*. v) = Neg (Abs (Add (DimId u ) (DimId v)))
 
 instance (IsDim d, IsDim e) => IsDim (d .*. e) where
   type DimToUnit (d .*. e) = DimToUnit d .*. DimToUnit e
@@ -566,7 +573,7 @@ type family NormalizeUnit' u where
   NormalizeUnit' ((u .*. v) .^. n) = NormalizeUnit' (u .^. n .*. v .^. n)
   NormalizeUnit' ((u .^. n) .^. m) = NormalizeUnit' (u .^. Mul n m)
   NormalizeUnit' (u .^. n) = NormalizeExp (u .^. n)
-  NormalizeUnit' u = u -- ^ This is the only difference with StandardizeUnit
+  NormalizeUnit' u = u
 
 type family NormalizeExp u where
   NormalizeExp (u .^. Pos 1) = u
@@ -580,16 +587,17 @@ type family InsertUnit u v where
 
 type family InsertUnitIds u v uid vid where
   InsertUnitIds u (v .*. w) uid vid  =
-    InsertCmp (Compare uid vid) u (v .*. w)
+    InsertCmp (IsPos uid) (Compare uid vid) u (v .*. w)
   InsertUnitIds u v uid vid =
-    SwapCmp (Compare uid vid) u v
+    SwapCmp (IsPos uid) (Compare uid vid) u v
 
 
-type family InsertCmp cmp u v where
-  InsertCmp 'LT u (v .*. w) = u .*. v .*. w
-  InsertCmp 'GT u (v .*. w) = v .*. InsertUnit u w
-  InsertCmp 'EQ u (v .*. w) = MulNoUnit (MulSameDim u v) w
-  InsertCmp c u v = TypeError (
+type family InsertCmp b cmp u v where
+  InsertCmp b 'LT u (v .*. w) = u .*. v .*. w
+  InsertCmp b 'GT u (v .*. w) = v .*. InsertUnit u w
+  InsertCmp 'True 'EQ u (v .*. w) = MulNoUnit (MulSameDim u v) w
+  InsertCmp 'False 'EQ u (v .*. w) = MulOther (MulSameDim u v) w
+  InsertCmp b c u v = TypeError (
         Text  "InsertCmp must be called with arguments of"
    :<>: Text " the form InsertCmp cmp u (v .*. w)"
    :$$: Text " instead, it was called with InsertCmp."
@@ -606,10 +614,18 @@ type family MulNoUnit d e where
   MulNoUnit d NoUnit = d
   MulNoUnit d e = d .*. e
 
-type family SwapCmp cmp u v where
-  SwapCmp 'LT u v = u .*. v
-  SwapCmp 'GT u v = v .*. u
-  SwapCmp 'EQ u v = MulSameDim u v
+type family SwapCmp b cmp u v where
+  SwapCmp b 'LT u v = u .*. v
+  SwapCmp b 'GT u v = v .*. u
+  SwapCmp True 'EQ u v = MulSameDim u v
+  SwapCmp False 'EQ u v = MulOther u v
+
+type family MulOther u v where
+  MulOther (u .^. n) (u .^. m) = NormalizeExp (u .^. Add n m)
+  MulOther u (u .^. m) = NormalizeExp (u .^. Add (Pos 1) m)
+  MulOther (u .^. n) u = NormalizeExp (u .^. Add n (Pos 1))
+  MulOther u u = u .^. Pos 2
+  MulOther u v = u .*. v
 
 type family MulSameDim u v where
   MulSameDim (u .^. n) (u .^. m) = NormalizeExp (u .^. Add n m)
