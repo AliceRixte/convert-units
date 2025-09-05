@@ -51,6 +51,7 @@ module Data.Units.Base.System
   , prettyQuantity
   , putQuantity
   -- * Unit and dimension constructors
+  , type (.*~)
   , type (.*.) (..)
   , type (./.)
   , type (.^.) (..)
@@ -236,6 +237,21 @@ type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
           :<>: Text "’."
     )))
 
+type family CmpDim (d :: Dim) (e :: Dim) :: Ordering where
+  CmpDim (d .*. d') (e .*. e') =
+    If (CmpDim d e == 'EQ) (CmpDim d' e') (CmpDim d e)
+  CmpDim (d .*. d') e =
+    If (CmpDim d e == 'EQ) 'GT (CmpDim d e)
+  CmpDim d (e .*. e') =
+    If (CmpDim d e == 'EQ) 'LT (CmpDim d e)
+  CmpDim (d .^. dn) (e .^. en) =
+    If (CmpDim d e == 'EQ) (CmpSigned dn en) (CmpDim d e)
+  CmpDim (d .^. dn) e =
+    If (CmpDim d e == 'EQ) (CmpSigned dn (Pos 1)) (CmpDim d e)
+  CmpDim d (e .^. en) =
+    If (CmpDim d e == 'EQ) (CmpSigned (Pos 1) en) (CmpDim d e)
+  CmpDim d e = CmpSigned (DimId d) (DimId e)
+
 
 -------------------------- Dimension normalization ---------------------------
 
@@ -244,32 +260,30 @@ type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
 --
 type family DimOf' (u :: Unit) :: Dim where
   DimOf' u = NormalizeDim (UnitToDim u)
-  -- DimOf' (u .*. NoUnit) = DimOf' u
-  -- DimOf' (NoUnit .*. v) = DimOf' v
-  -- DimOf' ((u .*. v) .*. w) = DimOf' (u .*. (v .*. w))
-  -- DimOf' (u .*. v) = InsertDim (DimOf' u) (DimOf' v)
-  -- DimOf' (NoUnit .^. n) = NoDim
-  -- DimOf' ((u .*. v) .^. n) = DimOf' (u .^. n .*. v .^. n)
-  -- DimOf' ((u .^. n) .^. m) = DimOf' (u .^. Mul n m)
-  -- DimOf' (u .^. n) = NormalizeExpDim (DimOf u .^. n)
-  -- DimOf' u = DimOf u
 
 type family UnitToDim (u :: Unit) :: Dim where
   UnitToDim (u .*. v) = UnitToDim u .*. UnitToDim v
   UnitToDim (u .^. n) = UnitToDim u .^. n
   UnitToDim u = DimOf u
 
+type NormalizeDim d = NormalizeFlatDim (Flatten d)
 
-type family NormalizeDim d where
-  NormalizeDim (d .*. NoDim) = NormalizeDim d
-  NormalizeDim (NoDim .*. e) = NormalizeDim e
-  NormalizeDim ((d .*. e) .*. f) = NormalizeDim (d .*. (e .*. f))
-  NormalizeDim (d .*. e) = InsertDim (NormalizeDim d) (NormalizeDim e)
-  NormalizeDim (NoDim .^. n) = NoDim
-  NormalizeDim ((d .*. e) .^. n) = NormalizeDim (d .^. n .*. e .^. n)
-  NormalizeDim ((d .^. n) .^. m) = NormalizeDim (d .^. Mul n m)
-  NormalizeDim (d .^. n) = NormalizeExpDim (d .^. n)
-  NormalizeDim d = d
+type family Flatten u where
+  Flatten (u .*. v) = Flatten u .*. Flatten v
+  Flatten ((u .*. v) .^. n) = Flatten (u .^. n) .*. Flatten (v .^. n)
+  Flatten ((u .^. n) .^. m) = Flatten (u .^. Mul n m)
+  Flatten (u .^. n) = u .^. n
+  Flatten u = u
+
+type family NormalizeFlatDim d where
+  NormalizeFlatDim (d .*. NoDim) = NormalizeFlatDim d
+  NormalizeFlatDim (NoDim .*. e) = NormalizeFlatDim e
+  NormalizeFlatDim ((d .*. e) .*. f) = NormalizeFlatDim (d .*. (e .*. f))
+  NormalizeFlatDim (d .*. e) =
+    InsertDim (NormalizeFlatDim d) (NormalizeFlatDim e)
+  NormalizeFlatDim (NoDim .^. n) = NoDim
+  NormalizeFlatDim (d .^. n) = NormalizeExpDim (d .^. n)
+  NormalizeFlatDim d = d
 
 type family InsertDim d e where
   InsertDim NoDim e = e
@@ -488,8 +502,6 @@ instance (ShowDim u, ShowDim v) => ShowDim (u .*. v) where
 instance (IsUnit u, IsUnit v) => IsUnit (u .*. v) where
   type DimOf (u .*. v) = DimOf' (u .*. v)
 
-type instance DimId (u .*. v) = Neg (Abs (Add (DimId u ) (DimId v)))
-
 instance (IsDim d, IsDim e) => IsDim (d .*. e) where
   type DimToUnit (d .*. e) = DimToUnit d .*. DimToUnit e
 
@@ -627,6 +639,11 @@ toSuperscript a = a
 
 ------------------------------ Unit normalization ------------------------------
 
+type (u :: Unit) .*~ (v :: Unit) = NormalizeUnit' (u .*. v)
+
+infixr 7 .*~
+
+
 -- | Tries to normalize a unit without converting to base units.
 --
 -- >>> :kind! NormalizeUnit' (Minute .*. Minute)
@@ -639,16 +656,17 @@ toSuperscript a = a
 --   Hint : Did you try to multiply via (.*.) two quantities with
 --          the same dimension but different units ?
 --
-type family NormalizeUnit' u where
-  NormalizeUnit' (u .*. NoUnit) = NormalizeUnit' u
-  NormalizeUnit' (NoUnit .*. v) = NormalizeUnit' v
-  NormalizeUnit' ((u .*. v) .*. w) = NormalizeUnit' (u .*. (v .*. w))
-  NormalizeUnit' (u .*. v) = InsertUnit (NormalizeUnit' u) (NormalizeUnit' v)
-  NormalizeUnit' (NoUnit .^. n) = NoUnit
-  NormalizeUnit' ((u .*. v) .^. n) = NormalizeUnit' (u .^. n .*. v .^. n)
-  NormalizeUnit' ((u .^. n) .^. m) = NormalizeUnit' (u .^. Mul n m)
-  NormalizeUnit' (u .^. n) = NormalizeExp (u .^. n)
-  NormalizeUnit' u = u
+type NormalizeUnit' u = NormalizeFlatUnit' (Flatten u)
+
+type family NormalizeFlatUnit' u where
+  NormalizeFlatUnit' (u .*. NoUnit) = NormalizeFlatUnit' u
+  NormalizeFlatUnit' (NoUnit .*. v) = NormalizeFlatUnit' v
+  NormalizeFlatUnit' ((u .*. v) .*. w) = NormalizeFlatUnit' (u .*. (v .*. w))
+  NormalizeFlatUnit' (u .*. v) =
+    InsertUnit (NormalizeFlatUnit' u) (NormalizeFlatUnit' v)
+  NormalizeFlatUnit' (NoUnit .^. n) = NoUnit
+  NormalizeFlatUnit' (u .^. n) = NormalizeExp (u .^. n)
+  NormalizeFlatUnit' u = u
 
 type family NormalizeExp u where
   NormalizeExp (u .^. Pos 1) = u
@@ -658,31 +676,45 @@ type family NormalizeExp u where
 type family InsertUnit u v where
   InsertUnit NoUnit v = v
   InsertUnit u NoUnit = u
-  InsertUnit u v = InsertUnitIds u v (DimId (DimOf u)) (DimId (DimOf v))
+  InsertUnit (u .*. v) w =
+    TypeError (Text
+      "Insert unit : Removing left association failed in NormalizeFlatUnit'")
+  InsertUnit (u .^. n) (v .^. m .*. w) =
+      InsertCmp (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .^. m .*. w)
+  InsertUnit (u .^. n) (v .*. w) =
+      InsertCmp (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .*. w)
+  InsertUnit (u .^. n) (v .^. m) =
+      InsertCmp (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .^. m)
+  InsertUnit (u .^. n) v =
+      InsertCmp (CmpDim (DimOf u) (DimOf v)) (u .^. n) v
+  InsertUnit u (v .^. m .*. w) =
+      InsertCmp (CmpDim (DimOf u) (DimOf v)) u (v .^. m .*. w)
+  InsertUnit u (v .*. w) =
+      InsertCmp (CmpDim (DimOf u) (DimOf v)) u (v .*. w)
+  InsertUnit u (v .^. m) =
+      InsertCmp (CmpDim (DimOf u) (DimOf v)) u (v .^. m)
+  InsertUnit u v =
+      InsertCmp (CmpDim (DimOf u) (DimOf v)) u v
 
-type family InsertUnitIds u v uid vid where
-  InsertUnitIds u (v .*. w) uid vid  =
-    InsertCmp (IsPos uid) (Compare uid vid) u (v .*. w)
-  InsertUnitIds u v uid vid =
-    SwapCmp (IsPos uid) (Compare uid vid) u v
 
-
-type family InsertCmp b cmp u v where
-  InsertCmp b 'LT u (v .*. w) = u .*. v .*. w
-  InsertCmp b 'GT u (v .*. w) = v .*. InsertUnit u w
-  InsertCmp 'True 'EQ u (v .*. w) = MulNoUnit (MulSameDim u v) w
-  InsertCmp 'False 'EQ u (v .*. w) = MulOther (MulSameDim u v) w
-  InsertCmp b c u v = TypeError (
-        Text  "InsertCmp must be called with arguments of"
-   :<>: Text " the form InsertCmp cmp u (v .*. w)"
-   :$$: Text " instead, it was called with InsertCmp."
-   :<>: ShowType c
-   :<>: Text " ("
-   :<>: ShowType u
-   :<>: Text ") ("
-   :<>: ShowType v
-   :<>: Text ")"
-   )
+type family InsertCmp cmp u v where
+  InsertCmp 'LT u (v .*. w) = u .*. v .*. w
+  InsertCmp 'GT u (v .*. w) = v .*. InsertUnit u w
+  InsertCmp 'EQ u (v .*. w) = MulNoUnit (MulSameDim u v) w
+  InsertCmp 'LT u v = u .*. v
+  InsertCmp 'GT u v = v .*. u
+  InsertCmp 'EQ u v = MulSameDim u v
+  -- InsertCmp b c u v = TypeError (
+  --       Text  "InsertCmp must be called with arguments of"
+  --  :<>: Text " the form InsertCmp cmp u (v .*. w)"
+  --  :$$: Text " instead, it was called with InsertCmp."
+  --  :<>: ShowType c
+  --  :<>: Text " ("
+  --  :<>: ShowType u
+  --  :<>: Text ") ("
+  --  :<>: ShowType v
+  --  :<>: Text ")"
+  --  )
 
 type family MulNoUnit d e where
   MulNoUnit NoUnit e = e
@@ -703,20 +735,22 @@ type family MulOther u v where
   MulOther u v = u .*. v
 
 type family MulSameDim u v where
-  MulSameDim (u .^. n) (u .^. m) = NormalizeExp (u .^. Add n m)
-  MulSameDim u (u .^. m) = NormalizeExp (u .^. Add (Pos 1) m)
-  MulSameDim (u .^. n) u = NormalizeExp (u .^. Add n (Pos 1))
-  MulSameDim u u = u .^. Pos 2
-  MulSameDim u v = TypeError (
-         Text "Failed to multiply two different units ‘"
-    :<>: ShowUnitType u
-    :<>: Text "’ and ‘"
-    :<>: ShowUnitType v
-    :<>: Text "’ with the same dimension ‘"
-    :<>: ShowDimType (DimOf u)
-    :<>: Text "’."
-    :$$: Text "Hint : Did you try to multiply via (.*.) or divide (./.) "
-    :$$: Text "       two quantities with the same dimension but different"
-    :$$: Text "       units ?"
-    :$$: Text "If so, you might want to use (~*.), (.*~), (~*~), or (~/~) instead."
-    )
+  MulSameDim (u .^. n) (v .^. m) = NormalizeExp (u .^. Add n m)
+  MulSameDim u (v .^. m) = NormalizeExp (u .^. Add (Pos 1) m)
+  MulSameDim (u .^. n) v = NormalizeExp (u .^. Add n (Pos 1))
+  MulSameDim u v = u .^. Pos 2
+  -- MulSameDim u v = TypeError (
+  --        Text "Failed to multiply two different units ‘"
+  --   :<>: ShowUnitType u
+  --   :<>: Text "’ and ‘"
+  --   :<>: ShowUnitType v
+  --   :<>: Text "’ with the same dimension ‘"
+  --   :<>: ShowDimType (DimOf u)
+  --   :<>: Text "’."
+  --   :$$: Text "Hint : Did you try to multiply via (.*.) or divide (./.) "
+  --   :$$: Text "       two quantities with the same dimension but different"
+  --   :$$: Text "       units ?"
+  --   :$$: Text "If so, you might want to use (~*.), (.*~), (~*~), or (~/~) instead."
+  --   )
+
+
