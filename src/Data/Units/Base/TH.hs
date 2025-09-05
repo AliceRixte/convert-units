@@ -292,12 +292,18 @@ mkDimIdTypeInstance dimName n = [d|
 -- | Make a type instance of the form
 --
 -- @
--- type instance ShowDim Time = Text "T"
+-- instance ShowDim Minute where
+--   type ShowDimType Minute = Text "min"
+--   showDim = "Minute"
+--   prettyDim = "min"
 -- @
 --
-mkShowDimTypeInstance :: Quote m => Name -> String -> m [Dec]
-mkShowDimTypeInstance dimName str = [d|
-  type instance ShowDim $(conT dimName) = Text $(litT (strTyLit str))
+mkShowDimInstance :: Quote m => Name -> String -> String -> m [Dec]
+mkShowDimInstance dimName dimStr prettyStr = [d|
+  instance ShowDim $(conT dimName) where
+    type ShowDimType $(conT dimName) = Text $(pure (LitT (StrTyLit prettyStr)))
+    showDim  = $(litE (StringL dimStr))
+    prettyDim = $(litE (StringL prettyStr))
   |]
 
 -- | Make a dimension.
@@ -310,12 +316,12 @@ mkShowDimTypeInstance dimName str = [d|
 -- @ \$(mkDim "Time" "T" 400) @
 --
 mkDim :: String -> String -> Integer -> Q [Dec]
-mkDim dimStr showStr n = do
+mkDim dimStr prettyStr n = do
   let dimName = mkName dimStr
   newtypeDec <- mkDimNewtype deriveListDim dimName
   -- isDimDec <- mkIsDimInstance dimName unitName
   dimIdDec <- mkDimIdTypeInstance dimName n
-  showDimDec <- mkShowDimTypeInstance dimName showStr
+  showDimDec <- mkShowDimInstance dimName dimStr prettyStr
   return $ [newtypeDec]  ++ dimIdDec ++ showDimDec
 
 

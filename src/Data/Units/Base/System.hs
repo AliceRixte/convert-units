@@ -23,7 +23,12 @@ module Data.Units.Base.System
   -- * Dimensions
     Dim
   , DimId
-  , ShowDim
+  , ShowDim (..)
+  , prettysDim
+  , showsDim
+  , showDimOf
+  , prettyDimOf
+  , putDimOf
   , NoDim (..)
   , IsDim (..)
   , DimEq
@@ -34,6 +39,7 @@ module Data.Units.Base.System
   , NormalizeUnit'
   , ShowUnit (..)
   , prettysUnit
+  , showsUnit
   , IsUnit (..)
   , NoUnit (..)
   , MetaUnit (..)
@@ -144,7 +150,52 @@ type family DimId (d:: Dim) :: ZZ
 --
 -- will show @L.T⁻¹@
 --
-type family ShowDim (d :: Dim) :: ErrorMessage
+
+-- | Dimensions that can be shown as a string, or as a type error message.
+--
+class ShowDim (d :: Dim) where
+  {-# MINIMAL showDim |  showsDimPrec #-}
+
+  -- | Allows to print dimensions in conversion error messages
+  --
+  -- >>> type ShowDimType Length = "L"
+  --
+  type ShowDimType d :: ErrorMessage
+
+  showsDimPrec :: Int -> ShowS
+  showsDimPrec _ = (showDim @d ++)
+
+  showDim :: String
+  showDim = showsDim @d ""
+
+  -- | Same as @'showsDimPrec'@ but for pretty printing.
+  --
+  prettysDimPrec :: Int -> ShowS
+  prettysDimPrec _ = (prettyDim @d ++)
+
+  -- | Same as @'showDim'@ but for pretty printing
+  --
+  -- >>> putStrLn $ prettyDim @(Kilo Meter ./. Second)
+  -- km.s⁻¹
+  --
+  prettyDim :: String
+  prettyDim = prettysDim @d ""
+
+
+showsDim :: forall d. ShowDim d => ShowS
+showsDim = showsDimPrec @d 0
+
+prettysDim :: forall d. ShowDim d => ShowS
+prettysDim = prettysDimPrec @d 0
+
+showDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> String
+showDimOf _ = showDim @(DimOf u)
+
+prettyDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> String
+prettyDimOf _ = prettyDim @(DimOf u)
+
+putDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> IO ()
+putDimOf = putStrLn . prettyDimOf
 
 
 -- | The dimension of non dimensional quantities
@@ -155,7 +206,11 @@ newtype NoDim a = NoDim a
 
 
 type instance DimId NoDim = Pos 1
-type instance ShowDim NoDim = Text "NoDim"
+
+instance ShowDim NoDim where
+  type ShowDimType NoDim = Text "NoDim"
+  showDim = "NoDim"
+  prettyDim = "NoDim"
 
 
 type family DimEq (u :: Unit) (v :: Unit) :: Constraint where
@@ -172,16 +227,17 @@ type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
           Text "Cannot convert unit ‘"
           :<>: ShowUnitType u
           :<>: Text "’ of dimension ‘"
-          :<>: ShowDim du
+          :<>: ShowDimType du
           :<>: Text "’"
           :$$: Text "to unit ‘"
           :<>: ShowUnitType v
           :<>: Text "’ of dimension ‘"
-          :<>: ShowDim dv
+          :<>: ShowDimType dv
           :<>: Text "’."
     )))
 
--------------------------- Dimension standardization ---------------------------
+
+-------------------------- Dimension normalization ---------------------------
 
 
 -- | Helper type family for defining DimOf for .*. and .^.
@@ -247,7 +303,7 @@ type family MulPowDim d e where
     :<>: Text "’ and ‘"
     :<>: ShowUnitType e
     :<>: Text "’ with the same dimension ‘"
-    :<>: ShowDim (DimOf d)
+    :<>: ShowDimType (DimOf d)
     :<>: Text "’."
     :$$: Text "Hint : Did you try to multiply via (.*.) two quantities with"
     :$$: Text "       the same dimension but different units ?"
@@ -410,8 +466,6 @@ newtype ((u :: Unit) .*. (v :: Unit)) a = MulUnit a
 
 infixr 7 .*.
 
-type instance ShowDim (u .*. v) = ShowDim u :<>: Text "⋅" :<>: ShowDim v
-
 instance (ShowUnit u, ShowUnit v) => ShowUnit (u .*. v) where
   type ShowUnitType (u .*. v) =
     ShowUnitType u
@@ -420,6 +474,15 @@ instance (ShowUnit u, ShowUnit v) => ShowUnit (u .*. v) where
     prettysUnitPrec @u 7 . showString "⋅" .  prettysUnitPrec @v 7
   showsUnitPrec d = showParen (d > 7) $
     showsUnitPrec @u 7 . showString " .*. " .  showsUnitPrec @v 7
+
+instance (ShowDim u, ShowDim v) => ShowDim (u .*. v) where
+  type ShowDimType (u .*. v) =
+    ShowDimType u
+    :<>: Text "⋅" :<>: ShowDimType v
+  prettysDimPrec d = showParen (d > 7) $
+    prettysDimPrec @u 7 . showString "⋅" .  prettysDimPrec @v 7
+  showsDimPrec d = showParen (d > 7) $
+    showsDimPrec @u 7 . showString " .*. " .  showsDimPrec @v 7
 
 
 instance (IsUnit u, IsUnit v) => IsUnit (u .*. v) where
@@ -489,7 +552,6 @@ type a .^- b = a .^. Neg b
 infix 8 .^-
 
 type instance DimId (d .^. n) = DimId d
-type instance ShowDim (d .^. n) = ShowDim d :<>: ShowIntExponent n
 
 type family ShowIntExponent (n :: ZZ) :: ErrorMessage where
   ShowIntExponent (Pos n) =
@@ -525,9 +587,22 @@ instance (ShowUnit u, KnownInt n) => ShowUnit (u .^. n) where
     prettysUnitPrec @u 8 .  showString (toSuperscript <$> show (intVal (Proxy :: Proxy n)))
   showsUnitPrec d = showParen (d >= 8) $
     if n >= 0 then
-      showsUnitPrec @u 8 . showString " .^+ " . shows n
+      showsUnitPrec @u 8 . showString ".^+" . shows n
     else
-      showsUnitPrec @u 8 . showString " .^- " . shows (-n)
+      showsUnitPrec @u 8 . showString ".^-" . shows (-n)
+    where
+      n = intVal (Proxy :: Proxy n)
+
+instance (ShowDim u, KnownInt n) => ShowDim (u .^. n) where
+  type ShowDimType (u .^. n) =
+         ShowDimType u :<>: ShowIntExponent n
+  prettysDimPrec d = showParen (d >= 8) $
+    prettysDimPrec @u 8 .  showString (toSuperscript <$> show (intVal (Proxy :: Proxy n)))
+  showsDimPrec d = showParen (d >= 8) $
+    if n >= 0 then
+      showsDimPrec @u 8 . showString ".^+" . shows n
+    else
+      showsDimPrec @u 8 . showString ".^-" . shows (-n)
     where
       n = intVal (Proxy :: Proxy n)
 
@@ -638,7 +713,7 @@ type family MulSameDim u v where
     :<>: Text "’ and ‘"
     :<>: ShowUnitType v
     :<>: Text "’ with the same dimension ‘"
-    :<>: ShowDim (DimOf u)
+    :<>: ShowDimType (DimOf u)
     :<>: Text "’."
     :$$: Text "Hint : Did you try to multiply via (.*.) or divide (./.) "
     :$$: Text "       two quantities with the same dimension but different"
