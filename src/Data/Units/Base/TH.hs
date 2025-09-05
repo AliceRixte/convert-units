@@ -143,8 +143,8 @@ mkConvFactorToInstance unitName factor = [d|
 -- instance Fractional a => ConvertibleUnit Minute a
 -- @
 --
-mkDefaultSigConvertibleUnitInstance :: Quote m => Name -> m [Dec]
-mkDefaultSigConvertibleUnitInstance unitName = [d|
+mkDefaultSigConvertibleInstance :: Quote m => Name -> m [Dec]
+mkDefaultSigConvertibleInstance unitName = [d|
   instance Fractional a => ConvertibleUnit $(conT unitName) a
   |]
 
@@ -152,19 +152,19 @@ mkDefaultSigConvertibleUnitInstance unitName = [d|
 --
 -- @
 -- instance Fractional a => ConvertibleUnit Meter a where
---    toBaseUnit = coerce
---    {-# INLINE toBaseUnit #-}
---    fromBaseUnit = coerce
---    {-# INLINE fromBaseUnit #-}
+--    toNormalUnit = coerce
+--    {-# INLINE toNormalUnit #-}
+--    fromNormalUnit = coerce
+--    {-# INLINE fromNormalUnit #-}
 -- @
 --
-mkStdConvertibleUnitInstance :: Quote m => Name -> m [Dec]
-mkStdConvertibleUnitInstance unitName = [d|
+mkNormalConvertibleInstance :: Quote m => Name -> m [Dec]
+mkNormalConvertibleInstance unitName = [d|
   instance Fractional a => ConvertibleUnit $(conT unitName) a where
-    toBaseUnit = coerce
-    {-# INLINE toBaseUnit #-}
-    fromBaseUnit = coerce
-    {-# INLINE fromBaseUnit #-}
+    toNormalUnit = coerce
+    {-# INLINE toNormalUnit #-}
+    fromNormalUnit = coerce
+    {-# INLINE fromNormalUnit #-}
   |]
 
 
@@ -185,9 +185,9 @@ mkUnitFrom unitStr prettyStr dimName factor = do
   convFactorDec <- mkConvFactorFromInstance unitName factor
   convUnitDec <-
     if factor == 1 then
-      mkStdConvertibleUnitInstance unitName
+      mkNormalConvertibleInstance unitName
     else
-      mkDefaultSigConvertibleUnitInstance unitName
+      mkDefaultSigConvertibleInstance unitName
   return $
     [newtypeDec] ++ isUnitDec ++ showUnitDec ++ convFactorDec ++ convUnitDec
 
@@ -208,9 +208,9 @@ mkUnitTo unitStr prettyStr dimName factor = do
   convFactorDec <- mkConvFactorToInstance unitName factor
   convUnitDec <-
     if factor == 1 then
-      mkStdConvertibleUnitInstance unitName
+      mkNormalConvertibleInstance unitName
     else
-      mkDefaultSigConvertibleUnitInstance unitName
+      mkDefaultSigConvertibleInstance unitName
   return $
     [newtypeDec] ++ isUnitDec ++ showUnitDec ++ convFactorDec ++ convUnitDec
 
@@ -451,20 +451,20 @@ mkPrefixConvFactorInstance prefixName = [d|
 -- @
 -- instance (ConvertibleUnit u a, Fractional a)
 --   => ConvertibleUnit (Milli u) a where
---   toBaseUnit = prefixFrom
---   {-# INLINE toBaseUnit #-}
---   fromBaseUnit = prefixTo
---   {-# INLINE fromBaseUnit #-}
+--   toNormalUnit = prefixFrom
+--   {-# INLINE toNormalUnit #-}
+--   fromNormalUnit = prefixTo
+--   {-# INLINE fromNormalUnit #-}
 -- @
 --
 mkPrefixConvUnitInstance :: Name -> Q [Dec]
 mkPrefixConvUnitInstance prefixName = [d|
   instance (ConvertibleUnit u a, Fractional a)
     => ConvertibleUnit ($(conT prefixName) u) a where
-    toBaseUnit = prefixFrom
-    {-# INLINE toBaseUnit #-}
-    fromBaseUnit = prefixTo
-    {-# INLINE fromBaseUnit #-}
+    toNormalUnit = prefixFrom
+    {-# INLINE toNormalUnit #-}
+    fromNormalUnit = prefixTo
+    {-# INLINE fromNormalUnit #-}
   |]
 
 -- | Make a unit prefix.

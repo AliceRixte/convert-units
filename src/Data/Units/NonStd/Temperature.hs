@@ -16,8 +16,8 @@ instance Fractional a => ConversionFactor Celsius a where
   {-# INLINE factorFrom #-}
 
 instance Fractional a => ConvertibleUnit Celsius a where
-  toBaseUnit (Celsius x) = Kelvin (x + 273.15)
-  {-# INLINE toBaseUnit #-}
+  toNormalUnit (Celsius x) = Kelvin (x + 273.15)
+  {-# INLINE toNormalUnit #-}
 
-  fromBaseUnit (Kelvin x) = Celsius (x - 273.15)
-  {-# INLINE fromBaseUnit #-}
+  fromNormalUnit (Kelvin x) = Celsius (x - 273.15)
+  {-# INLINE fromNormalUnit #-}

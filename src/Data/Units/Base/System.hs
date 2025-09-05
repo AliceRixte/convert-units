@@ -27,11 +27,11 @@ module Data.Units.Base.System
   , NoDim (..)
   , IsDim (..)
   , DimEq
-  , StandardizeDim
+  , NormalizeDim
   -- * Units
   , Unit
-  , BaseUnitOf
   , NormalizeUnit
+  , NormalizeUnit'
   , ShowUnit (..)
   , prettysUnit
   , IsUnit (..)
@@ -81,7 +81,7 @@ type Dim = Type -> Type
 --
 -- >>> type instance DimId Length = 300
 --
--- >>> :kind! BaseUnitOf (Second .^- 1 .*. Meter)
+-- >>> :kind! NormalizeUnit (Second .^- 1 .*. Meter)
 -- Meter .*. (Second .^. Neg 1)
 --
 --
@@ -181,16 +181,16 @@ type family DimOf' (u :: Unit) :: Dim where
   DimOf' u = DimOf u
 
 
-type family StandardizeDim d where
-  StandardizeDim (d .*. NoDim) = StandardizeDim d
-  StandardizeDim (NoDim .*. e) = StandardizeDim e
-  StandardizeDim ((d .*. e) .*. f) = StandardizeDim (d .*. (e .*. f))
-  StandardizeDim (d .*. e) = InsertDim (StandardizeDim d) (StandardizeDim e)
-  StandardizeDim (NoDim .^. n) = NoDim
-  StandardizeDim ((d .*. e) .^. n) = StandardizeDim (d .^. n .*. e .^. n)
-  StandardizeDim ((d .^. n) .^. m) = StandardizeDim (d .^. Mul n m)
-  StandardizeDim (d .^. n) = NormalizeExpDim (d .^. n)
-  StandardizeDim d = d
+type family NormalizeDim d where
+  NormalizeDim (d .*. NoDim) = NormalizeDim d
+  NormalizeDim (NoDim .*. e) = NormalizeDim e
+  NormalizeDim ((d .*. e) .*. f) = NormalizeDim (d .*. (e .*. f))
+  NormalizeDim (d .*. e) = InsertDim (NormalizeDim d) (NormalizeDim e)
+  NormalizeDim (NoDim .^. n) = NoDim
+  NormalizeDim ((d .*. e) .^. n) = NormalizeDim (d .^. n .*. e .^. n)
+  NormalizeDim ((d .^. n) .^. m) = NormalizeDim (d .^. Mul n m)
+  NormalizeDim (d .^. n) = NormalizeExpDim (d .^. n)
+  NormalizeDim d = d
 
 type family InsertDim d e where
   InsertDim NoDim e = e
@@ -246,7 +246,7 @@ type family NormalizeExpDim u where
 --
 type Unit = Type -> Type
 
-type BaseUnitOf u = DimToUnit (DimOf u)
+type NormalizeUnit u = DimToUnit (DimOf u)
 
 class (IsUnit (DimToUnit d), forall a. Coercible (d a) a)
   => IsDim (d :: Dim) where
@@ -530,26 +530,26 @@ toSuperscript a = a
 -- | Sort a unit by dimension, and try to collapse them into exponents without
 -- converting it to standard units.
 --
--- >>> :kind! NormalizeUnit (Minute .*. Minute)
+-- >>> :kind! NormalizeUnit' (Minute .*. Minute)
 -- Minute .^. Pos 2
 --
--- >>> 1 :: NormalizeUnit (Minute .*. Second) Double
+-- >>> 1 :: NormalizeUnit' (Minute .*. Second) Double
 -- <interactive>:39:1: error: [GHC-47403]
 -- • Failed to multiply two different units ‘min’ and ‘s’ with the same
 --   dimension ‘T’.
 --   Hint : Did you try to multiply via (.*.) two quantities with
 --          the same dimension but different units ?
 --
-type family NormalizeUnit u where
-  NormalizeUnit (u .*. NoUnit) = NormalizeUnit u
-  NormalizeUnit (NoUnit .*. v) = NormalizeUnit v
-  NormalizeUnit ((u .*. v) .*. w) = NormalizeUnit (u .*. (v .*. w))
-  NormalizeUnit (u .*. v) = InsertForNormalize (NormalizeUnit u) (NormalizeUnit v)
-  NormalizeUnit (NoUnit .^. n) = NoUnit
-  NormalizeUnit ((u .*. v) .^. n) = NormalizeUnit (u .^. n .*. v .^. n)
-  NormalizeUnit ((u .^. n) .^. m) = NormalizeUnit (u .^. Mul n m)
-  NormalizeUnit (u .^. n) = NormalizeExp (u .^. n)
-  NormalizeUnit u = u -- ^ This is the only difference with StandardizeUnit
+type family NormalizeUnit' u where
+  NormalizeUnit' (u .*. NoUnit) = NormalizeUnit' u
+  NormalizeUnit' (NoUnit .*. v) = NormalizeUnit' v
+  NormalizeUnit' ((u .*. v) .*. w) = NormalizeUnit' (u .*. (v .*. w))
+  NormalizeUnit' (u .*. v) = InsertForNormalize (NormalizeUnit' u) (NormalizeUnit' v)
+  NormalizeUnit' (NoUnit .^. n) = NoUnit
+  NormalizeUnit' ((u .*. v) .^. n) = NormalizeUnit' (u .^. n .*. v .^. n)
+  NormalizeUnit' ((u .^. n) .^. m) = NormalizeUnit' (u .^. Mul n m)
+  NormalizeUnit' (u .^. n) = NormalizeExp (u .^. n)
+  NormalizeUnit' u = u -- ^ This is the only difference with StandardizeUnit
 
 type family Insert u v where
   Insert NoUnit v = v

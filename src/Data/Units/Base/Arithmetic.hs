@@ -99,8 +99,8 @@ infixr 5 ~+.
   ( DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   )
- => u a -> v a -> (BaseUnitOf u) a
-u ~+~ v = quantity (unQuantity (toBaseUnit' u) + unQuantity (toBaseUnit' v))
+ => u a -> v a -> (NormalizeUnit u) a
+u ~+~ v = quantity (unQuantity (toNormalUnit' u) + unQuantity (toNormalUnit' v))
 {-# INLINE (~+~) #-}
 
 infixr 5 ~+~
@@ -138,8 +138,8 @@ infixr 5 ~-.
   ( DimEq u v
   , ConversionFactor v a, ConversionFactor u a
   )
- => u a -> v a -> (BaseUnitOf u) a
-u ~-~ v = quantity $ unQuantity (toBaseUnit' u) - unQuantity (toBaseUnit' v)
+ => u a -> v a -> (NormalizeUnit u) a
+u ~-~ v = quantity $ unQuantity (toNormalUnit' u) - unQuantity (toNormalUnit' v)
 {-# INLINE (~-~) #-}
 
 infixr 5 ~-~
@@ -167,7 +167,7 @@ infixr 5 ~-~
 --          units ?
 --   If so, you might want to use (~*.), (.*~), (~*~), or (~/~) instead.
 (.*.) ::
-  ( uv ~ NormalizeUnit (u .*. v)
+  ( uv ~ NormalizeUnit' (u .*. v)
   , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
@@ -191,7 +191,7 @@ infixr 7 .*.
 --       to unit ‘s’ of dimension ‘T’.
 --
 (.*~) :: forall u v u2 a.
-  ( u2 ~ NormalizeUnit (u .^+ 2) , IsUnit u2
+  ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
   , FromTo' v u a
   )
  => u a -> v a -> u2 a
@@ -209,7 +209,7 @@ infix 7 .*~
 -- quantity @(Meter .^+ 2) 6000.0
 --
 (~*.) ::
-  ( v2 ~ NormalizeUnit (v .^+ 2), IsUnit v2
+  ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
   , FromTo' u v a
   )
  => u a -> v a -> v2 a
@@ -229,12 +229,12 @@ infix 7 ~*.
 --   Dimension of ‘s’ is: T
 --
 (~*~) ::
-  ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
+  ( u2 ~ NormalizeUnit u .^+ 2, IsUnit u2
   , DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   )
  => u a -> v a -> u2 a
-u ~*~ v = quantity $ unQuantity (toBaseUnit' u) * unQuantity (toBaseUnit' v)
+u ~*~ v = quantity $ unQuantity (toNormalUnit' u) * unQuantity (toNormalUnit' v)
 {-# INLINE (~*~) #-}
 
 infix 7 ~*~
@@ -251,7 +251,7 @@ infix 7 ~*~
 --
 --
 (./.) ::
-  (uv ~ NormalizeUnit (u ./. v)
+  (uv ~ NormalizeUnit' (u ./. v)
   , IsUnit u, IsUnit v, IsUnit uv
   , Fractional a
   )
@@ -275,7 +275,7 @@ infix 6 ./.
   , ConversionFactor u a, ConversionFactor v a
   )
   => u a -> v a -> NoUnit a
-u ~/~ v = quantity $ unQuantity (toBaseUnit' u)  / unQuantity (toBaseUnit' v)
+u ~/~ v = quantity $ unQuantity (toNormalUnit' u)  / unQuantity (toNormalUnit' v)
 {-# INLINE (~/~) #-}
 
 infix 6 ~/~
@@ -303,9 +303,9 @@ infix 8 .^.
 -- quantity @(Meter .^- 1) 5.0e-4
 --
 (~^.) :: forall (n :: ZZ) proxy u un a.
-  (KnownInt n, ConversionFactor u a, un ~ BaseUnitOf u .^. n )
+  (KnownInt n, ConversionFactor u a, un ~ NormalizeUnit u .^. n )
   => u a -> proxy n -> un a
-u ~^. p = quantity @un $ unQuantity (toBaseUnit' u) ^^ intVal p
+u ~^. p = quantity @un $ unQuantity (toNormalUnit' u) ^^ intVal p
 {-# INLINE (~^.) #-}
 
 infix 8 ~^.

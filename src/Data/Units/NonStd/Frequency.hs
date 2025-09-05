@@ -17,11 +17,11 @@ newtype Tet (b :: Nat) (offs :: ZZ) a = Tet a
 
 instance (Floating a, KnownNat b, KnownInt offs)
   => ConvertibleUnit (Tet b offs) a where
-  toBaseUnit (Tet a) = quantity $ 440 * 2 ** ((a + offs) / b)
+  toNormalUnit (Tet a) = quantity $ 440 * 2 ** ((a + offs) / b)
     where
      b = fromIntegral $ natVal (Proxy :: Proxy b)
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100
-  fromBaseUnit a = Tet $ b * logBase 2 (unQuantity a/ 440) - offs
+  fromNormalUnit a = Tet $ b * logBase 2 (unQuantity a/ 440) - offs
     where
      b = fromIntegral $ natVal (Proxy :: Proxy b)
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100

@@ -57,9 +57,9 @@
 --
 -- You will get instances for @'From'@ and @'To'@ for free.
 --
--- >>> toBaseUnit (Hour 1)
+-- >>> toNormalUnit (Hour 1)
 -- Second 3600.0
--- >>> toBaseUnit' (Hour 1)
+-- >>> toNormalUnit' (Hour 1)
 -- Second 3600.0
 --
 -- === Affine conversion (with an offset)
@@ -105,8 +105,8 @@ module Data.Units.Base.Convert
   , from
   , to
   , ConversionFactor (..)
-  , toBaseUnit'
-  , fromBaseUnit'
+  , toNormalUnit'
+  , fromNormalUnit'
   , FromTo'
   , fromTo'
   , from'
@@ -127,40 +127,40 @@ import Data.Units.Base.System
 --
 -- Instances must satisfy the following law :
 --
--- * @'toBaseUnit' . 'fromBaseUnit' == 'id'@
+-- * @'toNormalUnit' . 'fromNormalUnit' == 'id'@
 --
-class (IsUnit u, IsUnit (BaseUnitOf u)) => ConvertibleUnit u a where
+class (IsUnit u, IsUnit (NormalizeUnit u)) => ConvertibleUnit u a where
   -- | Convert a quantity to its standard unit.
   --
   -- >>> import Data.Units.NonStd.Time
-  -- >>> toBaseUnit @Hour 1
+  -- >>> toNormalUnit @Hour 1
   -- Second 3600.0
-  -- >>> toBaseUnit (Hour 1)
+  -- >>> toNormalUnit (Hour 1)
   -- Second 3600.0
-  -- >>> toBaseUnit @(Kilo Meter ./. Hour) 36
+  -- >>> toNormalUnit @(Kilo Meter ./. Hour) 36
   -- quantity @(Meter .*. Second .^- 1) 10.0
-  -- >>> toBaseUnit (Celsius 0)
+  -- >>> toNormalUnit (Celsius 0)
   -- Kelvin 273.15
-  toBaseUnit :: u a -> BaseUnitOf u a
-  default toBaseUnit :: ConversionFactor u a => u a -> BaseUnitOf u a
-  toBaseUnit = toBaseUnit'
-  {-# INLINE toBaseUnit #-}
+  toNormalUnit :: u a -> NormalizeUnit u a
+  default toNormalUnit :: ConversionFactor u a => u a -> NormalizeUnit u a
+  toNormalUnit = toNormalUnit'
+  {-# INLINE toNormalUnit #-}
 
   -- | Convert a quantity to its standard unit.
   --
-  -- >>> fromBaseUnit @Hour 1800
+  -- >>> fromNormalUnit @Hour 1800
   -- Hour 0.5
-  -- >>> fromBaseUnit 1800 :: Hour Double
+  -- >>> fromNormalUnit 1800 :: Hour Double
   -- Hour 0.5
-  -- >>> fromBaseUnit @(Kilo Meter ./. Hour) 10
+  -- >>> fromNormalUnit @(Kilo Meter ./. Hour) 10
   -- quantity @(Kilo Meter .*. Hour .^- 1) 36.0
-  -- >>> fromBaseUnit @Celsius 0
+  -- >>> fromNormalUnit @Celsius 0
   -- Celsius (-273.15)
   --
-  fromBaseUnit :: BaseUnitOf u a -> u a
-  default fromBaseUnit :: ConversionFactor u a => BaseUnitOf u a -> u a
-  fromBaseUnit = fromBaseUnit'
-  {-# INLINE fromBaseUnit #-}
+  fromNormalUnit :: NormalizeUnit u a -> u a
+  default fromNormalUnit :: ConversionFactor u a => NormalizeUnit u a -> u a
+  fromNormalUnit = fromNormalUnit'
+  {-# INLINE fromNormalUnit #-}
 
 
 -- | A constraint that is satisfied when both units have the same dimension and
@@ -182,7 +182,7 @@ type FromTo u v a = (DimEq u v, ConvertibleUnit u a, ConvertibleUnit v a)
 -- quantity @(Milli Meter .*. Milli Second .^- 1) 10.0
 --
 fromTo :: FromTo u v a => u a -> v a
-fromTo = fromBaseUnit . toBaseUnit
+fromTo = fromNormalUnit . toNormalUnit
 {-# INLINE fromTo #-}
 
 -- | A mere synonym of @'fromTo'@ where it is more intuitive to use only one
@@ -214,13 +214,13 @@ to = fromTo
 -- Instances must satisfy the following laws:
 --
 -- * @'factorFrom' == 1 / 'factorTo'@
--- * @'toBaseUnit' == (* 'factorFrom')@
--- * @'fromBaseUnit' == (* 'factorTo')@
+-- * @'toNormalUnit' == (* 'factorFrom')@
+-- * @'fromNormalUnit' == (* 'factorTo')@
 --
 class (ConvertibleUnit u a, Fractional a) => ConversionFactor u a where
   {-# MINIMAL factorFrom | factorTo #-}
   -- | Multiplying a quantity of type @u a@ with @'factorFrom'@ will convert it
-  -- to its corresponding standard unit @BaseUnitOf u a@
+  -- to its corresponding standard unit @NormalizeUnit u a@
   --
   -- >>> factorFrom @Hour :: Double
   -- 3600.0
@@ -232,7 +232,7 @@ class (ConvertibleUnit u a, Fractional a) => ConversionFactor u a where
   factorFrom = 1 / factorTo @u
   {-# INLINE factorFrom #-}
 
-  -- | Multiplying a quantity of type @BaseUnitOf u a@ with @'factorTo'@
+  -- | Multiplying a quantity of type @NormalizeUnit u a@ with @'factorTo'@
   -- will convert it to the unit @u a@
   --
   -- >>> factorTo @Hour :: Double
@@ -266,18 +266,18 @@ instance Fractional a => ConversionFactor NoUnit a where
   factorFrom = 1
   {-# INLINE factorFrom #-}
 
-instance (Num a, ConversionFactor u a, ConversionFactor v a, IsUnit (BaseUnitOf (u .*. v)))
+instance (Num a, ConversionFactor u a, ConversionFactor v a, IsUnit (NormalizeUnit (u .*. v)))
   => ConvertibleUnit (u .*. v) a
 
-instance (Num a, ConversionFactor u a, ConversionFactor v a, IsUnit (BaseUnitOf (u .*. v)))
+instance (Num a, ConversionFactor u a, ConversionFactor v a, IsUnit (NormalizeUnit (u .*. v)))
   =>  ConversionFactor (u .*. v) a where
   factorFrom = factorFrom @u * factorFrom @v
   {-# INLINE factorFrom #-}
 
-instance (ConversionFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
+instance (ConversionFactor u a, IsUnit (NormalizeUnit (u .^. n)),  KnownInt n)
   => ConvertibleUnit (u .^. n) a
 
-instance (ConversionFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
+instance (ConversionFactor u a, IsUnit (NormalizeUnit (u .^. n)),  KnownInt n)
   =>  ConversionFactor (u .^. n) a where
   factorFrom = factorFrom @u ^^ intVal (Proxy :: Proxy n)
   {-# INLINE factorFrom #-}
@@ -285,36 +285,36 @@ instance (ConversionFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
 -- | Convert a quantity to its corresponding standard unit by multiplying it
 -- by  @'fromFactor'@.
 --
--- >>> toBaseUnit' @Hour 1
+-- >>> toNormalUnit' @Hour 1
 -- Second 3600.0
--- >>> toBaseUnit' (Hour 1)
+-- >>> toNormalUnit' (Hour 1)
 -- Second 3600.0
--- >>> toBaseUnit' @(Kilo Meter ./. Hour) 36
+-- >>> toNormalUnit' @(Kilo Meter ./. Hour) 36
 -- quantity @(Meter .*. Second .^- 1) 10.0
--- >>> toBaseUnit' (Celsius 0)
+-- >>> toNormalUnit' (Celsius 0)
 -- Kelvin 0.0
 --
-toBaseUnit' :: forall u a. ConversionFactor u a
-  => u a -> BaseUnitOf u a
-toBaseUnit' q = quantity (unQuantity q * factorFrom @u)
-{-# INLINE toBaseUnit' #-}
+toNormalUnit' :: forall u a. ConversionFactor u a
+  => u a -> NormalizeUnit u a
+toNormalUnit' q = quantity (unQuantity q * factorFrom @u)
+{-# INLINE toNormalUnit' #-}
 
 -- | Convert a standard quantity to a unit @u@ by multiplying it by
 -- by  @'toFactor'@.
 --
--- >>> fromBaseUnit' @Hour 1800
+-- >>> fromNormalUnit' @Hour 1800
 -- Hour 0.5
--- >>> fromBaseUnit' 1800 :: Hour Double
+-- >>> fromNormalUnit' 1800 :: Hour Double
 -- Hour 0.5
--- >>> fromBaseUnit' @(Kilo Meter ./. Hour) 10
+-- >>> fromNormalUnit' @(Kilo Meter ./. Hour) 10
 -- quantity @(Kilo Meter .*. Hour .^- 1) 36.0
--- >>> fromBaseUnit' @Celsius 0
+-- >>> fromNormalUnit' @Celsius 0
 -- Celsius 0.0
 --
-fromBaseUnit' :: forall u a. ConversionFactor u a
-  => BaseUnitOf u a -> u a
-fromBaseUnit' q = quantity (unQuantity q * factorTo @u)
-{-# INLINE fromBaseUnit' #-}
+fromNormalUnit' :: forall u a. ConversionFactor u a
+  => NormalizeUnit u a -> u a
+fromNormalUnit' q = quantity (unQuantity q * factorTo @u)
+{-# INLINE fromNormalUnit' #-}
 
 -- | A constraint that is satisfied when both units have the same dimension and
 -- are such that @u@ can be converted to @v@ by using a conversion factor.

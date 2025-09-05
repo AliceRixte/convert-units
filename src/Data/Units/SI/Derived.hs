@@ -53,7 +53,7 @@ type Force = Mass .*. Acceleration
 --
 $(mkUnitFrom "Newton" "N" ''Force 1)
 
-type Pressure = StandardizeDim (Force ./. (Length .^+ 2))
+type Pressure = NormalizeDim (Force ./. (Length .^+ 2))
 
 -- | Pressure in pascals
 --
