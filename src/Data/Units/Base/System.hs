@@ -143,19 +143,6 @@ class (IsUnit (DimToUnit d), forall a. Coercible (d a) a)
 --
 type family DimId (d:: Dim) :: ZZ
 
--- | Pretty print a dimension in error messages
---
--- >>> type instance ShowDim Length = Text "L"
---
--- Using the following in a @'TypeError'@
---
--- @
--- ShowDim (Length .*. Time .^- 1)
--- @
---
--- will show @L.T⁻¹@
---
-
 -- | Dimensions that can be shown as a string, or as a type error message.
 --
 class ShowDim (d :: Dim) where
@@ -167,13 +154,26 @@ class ShowDim (d :: Dim) where
   --
   type ShowDimType d :: ErrorMessage
 
+  -- | Convert a dimension to a readable string
+  --
+  -- @'showsDimPrec'@ should satisfy the law :
+  --
+  -- @showsDimPrec d x r ++ s  ==  showsPrec d x (r ++ s)@
   showsDimPrec :: Int -> ShowS
   showsDimPrec _ = (showDim @d ++)
 
+  -- | Convert a dimension's corresponding newtype.
+  --
+  -- >>> showDim  @(Length ./. Time)
+  -- "Length .*. Time.^-1"
   showDim :: String
   showDim = showsDim @d ""
 
   -- | Same as @'showsDimPrec'@ but for pretty printing.
+  --
+  -- @'prettysDimPrec'@ should satisfy the law :
+  --
+  -- @prettysDimPrec d x r ++ s  ==  prettysPrec d x (r ++ s)@
   --
   prettysDimPrec :: Int -> ShowS
   prettysDimPrec _ = (prettyDim @d ++)
@@ -186,19 +186,36 @@ class ShowDim (d :: Dim) where
   prettyDim :: String
   prettyDim = prettysDim @d ""
 
-
+-- | Equivalent to 'showsDimPrec' with a precedence of 0.
+--
 showsDim :: forall d. ShowDim d => ShowS
 showsDim = showsDimPrec @d 0
 
+-- | Equivalent to 'prettysDimPrec' with a precedence of 0.
+--
 prettysDim :: forall d. ShowDim d => ShowS
 prettysDim = prettysDimPrec @d 0
 
+-- | Show the dimension of a quantity.
+--
+-- >>>  showDimOf (quantity @(Kilo Meter ./. Second) 1)
+-- "Length .*. Time.^-1"
+--
 showDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> String
 showDimOf _ = showDim @(DimOf u)
 
+-- | Same as 'showDimOf' but for pretty printing.
+--
+-- >>> putStrLn $ prettyDimOf (quantity @(Kilo Meter ./. Second) 1)
+-- L.T⁻¹
 prettyDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> String
 prettyDimOf _ = prettyDim @(DimOf u)
 
+-- | Print the dimension of a quantity.
+--
+-- >>> putDimOf (quantity @(Kilo Meter ./. Second) 1)
+-- L.T⁻¹
+--
 putDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> IO ()
 putDimOf = putStrLn . prettyDimOf
 
