@@ -19,7 +19,7 @@ module Data.Units.AngleSI.NonStd.Angle where
 
 import Data.Units.Base
 
-import Data.Units.AngleSI.Angle
+import Data.Units.AngleSI.System
 
 
 

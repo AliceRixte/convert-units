@@ -26,13 +26,12 @@
 --------------------------------------------------------------------------------
 
 module Data.Units.AngleSI
-  ( module Data.Units.SI.System
+  ( module Data.Units.AngleSI.System
+  , module Data.Units.AngleSI.Derived
   , module Data.Units.SI.Prefixes
-  , module Data.Units.SI.Derived
-  , module Data.Units.AngleSI.Angle
+
   ) where
 
-import Data.Units.SI.System
+import Data.Units.AngleSI.System
+import Data.Units.AngleSI.Derived
 import Data.Units.SI.Prefixes
-import Data.Units.SI.Derived
-import Data.Units.AngleSI.Angle

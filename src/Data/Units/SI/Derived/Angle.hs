@@ -9,9 +9,9 @@
 -- Stability   :  unstable
 -- Portability :  non-portable (GHC extensions)
 --
--- This module defines radians and steradians as dimensionless units.
+-- This module defines radians and steradians as derived dimensionless units.
 --
--- See "Data.Units.AngleSI.Angle" for radians and steradians in an angle
+-- See "Data.Units.AngleSI" for radians and steradians in an angle
 -- dimension `@A@`.
 --
 --------------------------------------------------------------------------------
@@ -24,6 +24,7 @@ import Data.Coerce
 
 import Data.Units.Base
 import Data.Units.SI.System
+import Data.Units.SI.Derived.NonAngle
 
 -- | The angle derived dimension in SI. Equal to
 --
@@ -51,3 +52,19 @@ normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
   where
     twoPi = 2 * pi
     xmod = x `mod'` twoPi
+
+-- | Luminous flux quantity. Equal to
+--
+-- @ 'LuminousIntensity'@
+--
+type LuminousFlux = NormalizeDim (LuminousIntensity .*. SolidAngle)
+
+-- | Illuminance quantity. Equal to
+--
+-- @ Length.^-2 .*. LuminousIntensity @
+--
+type Illuminance = NormalizeDim (LuminousFlux ./. Area)
+
+-- | Illuminance in lux
+--
+$(mkUnit "Lux" "lx" ''Illuminance 1)

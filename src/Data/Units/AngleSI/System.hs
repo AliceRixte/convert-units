@@ -2,8 +2,8 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.AngleSI.Angle
--- Description :  Angles with a dimension A
+-- Module      :  Data.Units.AngleSI.System
+-- Description :  SI unit system with dimensional angles of dimension A
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
 -- Maintainer  :  alice.rixte@u-bordeaux.fr
@@ -18,12 +18,19 @@
 --------------------------------------------------------------------------------
 
 
-module Data.Units.AngleSI.Angle where
+module Data.Units.AngleSI.System
+  ( module Data.Units.SI.System
+  , Angle (..)
+  , Radian (..)
+  , normalizeRadians
+  )
+  where
 
 import Data.Fixed
 import Data.Coerce
 
 import Data.Units.Base
+import Data.Units.SI.System
 
 -- | The angle dimension, denotated @A@.
 --
@@ -40,11 +47,4 @@ normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
   where
     twoPi = 2 * pi
     xmod = x `mod'` twoPi
-
-type SolidAngle = Angle .^+ 2
-
--- | A solid angle in steradians.
---
-$(mkUnit "Steradian" "sr" ''SolidAngle 1)
-
 
