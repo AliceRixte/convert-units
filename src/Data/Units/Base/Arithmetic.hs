@@ -19,17 +19,17 @@
 -- >>> 3 * a
 -- quantity @(Milli Second) 15
 --
--- [Warning] These instances are provided because they are convenient, but be careful !  This means that you can write
+-- [Warning] These instances are provided because they are convenient, but be careful !  This means that you can write:
 --
 -- >>> Second 2 * Second 3
 -- Second 6
 --
--- Which does not respect dimension analysis: the multiplication of two time
+-- which does not respect dimension analysis: the multiplication of two time
 -- quantities should be of dimension @T²@ and here it has dimension @T@.
 --
--- All the operators proposed here solve this problem:
+-- Some of the operators proposed here solve this problem:
 --
--- >>> Second 2 .*. Second 3
+-- >>> Second 2 .*~ Second 3
 -- quantity @(Second .^+ 2) 6
 --
 --------------------------------------------------------------------------------
@@ -68,7 +68,8 @@ import Data.Units.Base.Convert
 
 ----------------------------------- Addition -----------------------------------
 
--- | Add two quantities of same dimension. The unit of the right operand is converted to the unit of the left operand
+-- | Add two quantities of same dimension. The unit of the right operand is
+-- converted to the unit of the left operand
 --
 -- >>> Kilo (Meter 5) .+~ Meter 80
 -- quantity @(Kilo Meter) 5.08
@@ -160,6 +161,7 @@ infixr 5 ~-~
 --
 -- >>> Kilo (Meter 2) .*. Milli (Meter 4)
 -- quantity @(Kilo Meter .*. Milli Meter) 8
+--
 (.*.) ::
   ( IsUnit u, IsUnit v
   , Num a
@@ -173,24 +175,24 @@ infixr 7 .*.
 -- | Multiply two quantities, and tries to normalize the resulting unit, without
 -- converting to base units.
 --
--- >>> Meter 2 *. Meter 3 *. Meter 4
+-- >>> Meter 2 .*~ Meter 3 .*~ Meter 4
 -- quantity @(Meter.^+3) 24
 --
 -- When two multiplied units have the same dimension, the right most unit is
 -- converted to left most unit:
 --
--- >>> Milli (Meter 2) *. Micro (Meter 3)
+-- >>> Milli (Meter 2) .*~ Micro (Meter 3)
 -- quantity @(Milli Meter.^+2) 6.0e-3
 --
 -- Derived units are not unfolded:
 --
--- >>> Kilo Watt 3 *. Hour 5
+-- >>> Kilo Watt 3 .*~ Hour 5
 -- quantity @(Kilo Watt .*. Hour) 14.999999999999998
 --
 -- Units are ordered, so that the result unit do not depend on the order of the
 -- computations.
 --
--- >>> Meter 2 *. Newton 2 *. Kilo (Meter 2) *. Kilo (Gram 1)
+-- >>> Meter 2 .*~ Newton 2 .*~ Kilo (Meter 2) .*~ Kilo (Gram 1)
 -- quantity @(Newton .*. Kilo Gram .*. Meter.^+2) 8000.0
 --
 (.*~) :: forall u v a uv.
@@ -205,6 +207,14 @@ u .*~ v = to' @uv (u .*. v)
 
 infixr 7 .*~
 
+-- | Same as '(.*~)' but with right priority
+--
+-- >>> Meter 2 ~*. Meter 3 ~*. Meter 4
+-- quantity @(Meter.^+3) 24
+--
+-- >>> Milli (Meter 2) ~*. Micro (Meter 3)
+-- quantity @(Micro Meter.^+2) 6000.000000000001
+--
 (~*.) :: forall u v a uv.
   ( uv ~ u ~*. v
   , FromTo' (u .*. v) uv a
@@ -281,6 +291,7 @@ infix 7 ./~
 --
 -- >>> Milli (Meter 3) ~/. quantity @(Meter .^+ 2) 2
 -- quantity @(Meter.^-1) 1.5e-3
+--
 (~/.) :: forall u v a uv.
   ( uv ~ u ~/. v
   , FromTo' (u ./. v) uv a
@@ -301,7 +312,6 @@ infix 7 ~/.
 -- >>> Meter 4 ~/~ Kilo (Meter 1)
 -- NoUnit 4.0e-3
 --
---
 (~/~) ::
   ( DimEq u v
   , ConversionFactor u a, ConversionFactor v a
@@ -318,12 +328,15 @@ infix 6 ~/~
 --
 -- This is meant to be used with @'Data.Type.Int.Proxy'@
 --
+-- >>> Meter 2 .^. pos2
+-- quantity @(Meter.^+2) 4.
+--
 -- Usage is not recommended, as this will result non standard units.
 --
 -- For instance:
 --
--- >>> (Meter 2 .*. Second 1) .^. pos2
--- quantity @((Meter .*. Second).^+2) 4.0
+-- >>> (Meter 2 .*. Centi (Meter 30)) .^. pos2
+-- quantity @((Meter .*. Centi Meter).^+2) 3600.0
 --
 (.^.) :: forall (n :: ZZ) proxy u a. (IsUnit u, KnownInt n, Fractional a)
   => u a -> proxy n -> (u .^. n) a
@@ -335,6 +348,11 @@ infix 8 .^.
 -- | Raise a quantity to a power and tries to normalize the resulting unit,
 -- without converting to base units.
 --
+-- >>> Meter 2 ~^. pos2
+-- quantity @(Meter.^+2) 4.0
+--
+-- >>> (Meter 2 .*. Centi (Meter 30)) ~^. pos2
+-- quantity @(Centi Meter.^+4) 3.6e7
 (~^.) :: forall (n :: ZZ) proxy u a un.
   (un ~ u ~^. n, FromTo' (u .^. n) un a, IsUnit u, KnownInt n, Fractional a)
   => u a -> proxy n -> un a
@@ -344,6 +362,12 @@ u ~^. p = to' @un (u .^. p)
 infix 8 ~^.
 
 -- | Same as @'(.^~)'@ but with priority to rightmost units.
+--
+-- >>> Meter 2 .^~ pos2
+-- quantity @(Meter.^+2) 4.0
+--
+-- >>> (Meter 2 .*. Centi (Meter 30)) ~^. pos2
+-- quantity @(Meter.^+4) 0.36000000000000004
 --
 (.^~ ) :: forall (n :: ZZ) proxy u a un.
   (un ~ u .^~  n, FromTo' (u .^. n) un a, IsUnit u, KnownInt n, Fractional a)
