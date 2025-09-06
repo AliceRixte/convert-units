@@ -23,13 +23,13 @@ module Data.Units.Base.System
   -- * Dimensions
     Dim
   , DimId
+  , IsDim (..)
   , ShowDim (..)
   , prettysDim
   , showsDim
   , showDimOf
   , prettyDimOf
   , putDimOf
-  , IsDim (..)
   , NormalizeDim
 
   -- * Units
@@ -53,6 +53,9 @@ module Data.Units.Base.System
   , MetaUnit (..)
   , type (.*.) (..)
   , type (.^.) (..)
+  , type (.^+)
+  , type (.^-)
+
 
   -- * Unit normalization
   , NormalizeUnit
@@ -65,10 +68,9 @@ module Data.Units.Base.System
   , type (./~)
   , type (~/.)
   , type (~/~)
-
   , type (~^.)
-  , type (.^+)
-  , type (.^-)
+  , type (.^~)
+  , type (~^~)
   )
   where
 
@@ -94,6 +96,9 @@ import Data.Type.Int
 --
 type Dim = Type -> Type
 
+class (IsUnit (DimToUnit d), forall a. Coercible (d a) a)
+  => IsDim (d :: Dim) where
+  type DimToUnit d :: Unit
 
 -- | A dimension identifier.
 --
@@ -116,7 +121,7 @@ type Dim = Type -> Type
 --  | Dimension                            | Id              |
 --  +======================================+=================+
 --  | Reserved                             |   0             |
---  +======================================+=================+
+--  +--------------------------------------+-----------------+
 --  | @'NoDim'@                            |   1             |
 --  +--------------------------------------+-----------------+
 --  | @'Data.Units.AngleSI.Angle.Angle'@   | 1000            |
@@ -196,6 +201,7 @@ prettyDimOf _ = prettyDim @(DimOf u)
 
 putDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> IO ()
 putDimOf = putStrLn . prettyDimOf
+
 
 
 -- | The dimension of non dimensional quantities
@@ -306,21 +312,13 @@ type family NormalizeExpDim u where
 
 ------------------------------------ Units -------------------------------------
 
-
-
 -- | A unit is represented by a newtype constructor. A quantity of some unit
 -- @u@ is of type @u a@.
 --
 type Unit = Type -> Type
 
-class (IsUnit (DimToUnit d), forall a. Coercible (d a) a)
-  => IsDim (d :: Dim) where
-  type DimToUnit d :: Unit
 
 
-
-
---------------------------------------------------------------------------------
 
 -- | Any unit must have a dimension. Additionally, a unit is a newtype
 -- constructor : a quantity @u a@ can always be coerced to its magnitude @a@.
@@ -637,19 +635,24 @@ type family NormalizeExp u where
   NormalizeExp (u .^. Zero) = NoUnit
   NormalizeExp u = u
 
----------------------- Unit normalization left priotiy -----------------------
 
-type (u :: Unit) ~*. (v :: Unit) = NormalizeUnitL (u .*. v)
+--------------------- Unit normalization left priority ----------------------
 
-infixr 7 ~*.
+type (u :: Unit) .*~ (v :: Unit) = NormalizeUnitL (u .*. v)
 
-type (u :: Unit) ~/. (v :: Unit) = NormalizeUnitL (u ./. v)
+infixr 7 .*~
 
-infixr 7 ~/.
+type (u :: Unit) ./~ (v :: Unit) = NormalizeUnitL (u ./. v)
+
+infixr 7 ./~
+
+type (u :: Unit) .^~ (n :: ZZ) = NormalizeUnitL (u .^. n)
+
+infixr 8 .^~
 
 -- | Tries to normalize a unit without converting to base units.
 --
--- >>> :kind! NormalizeUnitL (Minute .*. Minute)
+-- >>> :kind! NormalizeUnitR (Minute .*. Second)
 -- Minute .^. Pos 2
 --
 type NormalizeUnitL u = NormalizeFlatUnitL (Flatten u)
@@ -664,13 +667,12 @@ type family NormalizeFlatUnitL u where
   NormalizeFlatUnitL (u .^. n) = NormalizeExp (u .^. n)
   NormalizeFlatUnitL u = u
 
-
 type family InsertUnitL u v where
   InsertUnitL NoUnit v = v
   InsertUnitL u NoUnit = u
   InsertUnitL (u .*. v) w =
     TypeError (Text
-      "Insert unit : Lemoving left association failed in NormalizeFlatUnitL")
+      "Insert unit : Removing left association failed in NormalizeFlatUnitL")
   InsertUnitL (u .^. n) (v .^. m .*. w) =
       InsertCmpL (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .^. m .*. w)
   InsertUnitL (u .^. n) (v .*. w) =
@@ -696,7 +698,6 @@ type family InsertCmpL cmp u v where
   InsertCmpL 'GT u v = v .*. u
   InsertCmpL 'EQ u v = MulSameDimL u v
 
-
 type family MulSameDimL u v where
   MulSameDimL (u .^. n) (v .^. m) = NormalizeExp (u .^. Add n m)
   MulSameDimL u (v .^. m) = NormalizeExp (u .^. Add (Pos 1) m)
@@ -704,26 +705,32 @@ type family MulSameDimL u v where
   MulSameDimL u v = u .^. Pos 2
 
 
---------------------- Unit normalization right priority ----------------------
 
--- The only difference with Left is MulSameDim
+---------------------- Unit normalization right priotiy -----------------------
 
-type (u :: Unit) .*~ (v :: Unit) = NormalizeUnitR (u .*. v)
+-- The only difference with right is MulSameDim
 
-infixr 7 .*~
+-- | Same as @'(~*.)'@ but with priority to right most units
+type (u :: Unit) ~*. (v :: Unit) = NormalizeUnitR (u .*. v)
 
-type (u :: Unit) ./~ (v :: Unit) = NormalizeUnitR (u ./. v)
+infixr 7 ~*.
 
-infixr 7 ./~
+-- | Same as @'(~/.)'@ but with priority to right most units
+type (u :: Unit) ~/. (v :: Unit) = NormalizeUnitR (u ./. v)
 
+infixr 7 ~/.
+
+-- | Same as @'(.^~)'@ but with priority to right most units
 type (u :: Unit) ~^. (n :: ZZ) = NormalizeUnitR (u .^. n)
 
-infixr 8 ~^.
+infix 8  ~^.
 
--- | Tries to normalize a unit without converting to base units.
+-- | Tries to normalize a unit without converting to base units. When two units
+-- have the same dimension, they will be collapsed to an exponentiation right
+-- most unit.
 --
--- >>> :kind! NormalizeUnitR (Minute .*. Minute)
--- Minute .^. Pos 2
+-- >>> :kind! NormalizeUnitR (Minute .*. Second)
+-- Second .^. Pos 2
 --
 type NormalizeUnitR u = NormalizeFlatUnitR (Flatten u)
 
@@ -736,7 +743,6 @@ type family NormalizeFlatUnitR u where
   NormalizeFlatUnitR (NoUnit .^. n) = NoUnit
   NormalizeFlatUnitR (u .^. n) = NormalizeExp (u .^. n)
   NormalizeFlatUnitR u = u
-
 
 type family InsertUnitR u v where
   InsertUnitR NoUnit v = v
@@ -769,11 +775,8 @@ type family InsertCmpR cmp u v where
   InsertCmpR 'GT u v = v .*. u
   InsertCmpR 'EQ u v = MulSameDimR u v
 
-
 type family MulSameDimR u v where
   MulSameDimR (u .^. n) (v .^. m) = NormalizeExp (v .^. Add n m)
   MulSameDimR u (v .^. m) = NormalizeExp (v .^. Add (Pos 1) m)
   MulSameDimR (u .^. n) v = NormalizeExp (v .^. Add n (Pos 1))
   MulSameDimR u v = v .^. Pos 2
-
-

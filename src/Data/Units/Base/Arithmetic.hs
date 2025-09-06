@@ -45,16 +45,19 @@ module Data.Units.Base.Arithmetic
   , (~-.)
   , (~-~)
   -- ** Multiplication
-  , (.*~)
   , (.*.)
+  , (.*~)
+  , (~*.)
   , (~*~)
   -- ** Division
-  , (./~)
   , (./.)
+  , (./~)
+  , (~/.)
   , (~/~)
   -- ** Exponentiation
   , (.^.)
   , (~^.)
+  , (.^~)
   , (~^~)
   ) where
 
@@ -147,6 +150,26 @@ infixr 5 ~-~
 
 -------------------------------- Multiplication --------------------------------
 
+
+
+-- | Multiply two quantities.
+--
+-- Usage is not recommended, as this will result non standard units.
+--
+-- For instance:
+--
+-- >>> Kilo (Meter 2) .*. Milli (Meter 4)
+-- quantity @(Kilo Meter .*. Milli Meter) 8
+(.*.) ::
+  ( IsUnit u, IsUnit v
+  , Num a
+  )
+ => u a -> v a -> (u .*. v) a
+u .*. v = quantity $ unQuantity u * unQuantity v
+{-# INLINE (.*.) #-}
+
+infixr 7 .*.
+
 -- | Multiply two quantities, and tries to normalize the resulting unit, without
 -- converting to base units.
 --
@@ -182,23 +205,17 @@ u .*~ v = to' @uv (u .*. v)
 
 infixr 7 .*~
 
--- | Multiply two quantities.
---
--- Usage is not recommended, as this will result non standard units.
---
--- For instance:
---
--- >>> Kilo (Meter 2) .*. Milli (Meter 4)
--- quantity @(Kilo Meter .*. Milli Meter) 8
-(.*.) ::
-  ( IsUnit u, IsUnit v
+(~*.) :: forall u v a uv.
+  ( uv ~ u ~*. v
+  , FromTo' (u .*. v) uv a
+  , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
- => u a -> v a -> (u .*. v) a
-u .*. v = quantity $ unQuantity u * unQuantity v
-{-# INLINE (.*.) #-}
+  => u a -> v a -> uv a
+u ~*. v = to' @uv (u .*. v)
+{-# INLINE (~*.) #-}
 
-infixr 7 .*.
+infixr 7 ~*.
 
 -- | Multiply two quantities of the same dimension and convert both of them to the corresponding standard unity.
 --
@@ -221,22 +238,8 @@ u ~*~ v = quantity $ unQuantity (toNormalUnit' u) * unQuantity (toNormalUnit' v)
 
 infix 7 ~*~
 
+
 ----------------------------------- Division -----------------------------------
-
--- | Same '(*.)' but for division.
---
--- >>> Newton 1 /. Meter 2 *. Meter 2
-(./~) :: forall u v a uv.
-  ( uv ~ u ./~ v
-  , FromTo' (u ./. v) uv a
-  , IsUnit u, IsUnit v, IsUnit uv
-  , Num a
-  )
-  => u a -> v a -> uv a
-u ./~ v = to' @uv (u ./. v)
-{-# INLINE (./~) #-}
-
-infix 7 ./~
 
 -- | Multiply two quantities.
 --
@@ -256,6 +259,39 @@ u ./. v = quantity (unQuantity u / unQuantity v)
 {-# INLINE (./.) #-}
 
 infix 7 ./.
+
+-- | Same '(.*~)' but for division.
+--
+-- >>> Milli (Meter 3) ./~ quantity @(Meter .^+ 2) 2
+-- quantity @(Milli Meter.^-1) 1.5e-6
+--
+(./~) :: forall u v a uv.
+  ( uv ~ u ./~ v
+  , FromTo' (u ./. v) uv a
+  , IsUnit u, IsUnit v, IsUnit uv
+  , Num a
+  )
+  => u a -> v a -> uv a
+u ./~ v = to' @uv (u ./. v)
+{-# INLINE (./~) #-}
+
+infix 7 ./~
+
+-- | Same '(~/.)' but with right priority
+--
+-- >>> Milli (Meter 3) ~/. quantity @(Meter .^+ 2) 2
+-- quantity @(Meter.^-1) 1.5e-3
+(~/.) :: forall u v a uv.
+  ( uv ~ u ~/. v
+  , FromTo' (u ./. v) uv a
+  , IsUnit u, IsUnit v, IsUnit uv
+  , Num a
+  )
+  => u a -> v a -> uv a
+u ~/. v = to' @uv (u ./. v)
+{-# INLINE (~/.) #-}
+
+infix 7 ~/.
 
 -- | Divide two quantities of same dimensions. The numerator will be converted
 -- to the denominator
@@ -306,6 +342,16 @@ u ~^. p = to' @un (u .^. p)
 {-# INLINE (~^.) #-}
 
 infix 8 ~^.
+
+-- | Same as @'(.^~)'@ but with priority to rightmost units.
+--
+(.^~ ) :: forall (n :: ZZ) proxy u a un.
+  (un ~ u .^~  n, FromTo' (u .^. n) un a, IsUnit u, KnownInt n, Fractional a)
+  => u a -> proxy n -> un a
+u .^~  p = to' @un (u .^. p)
+{-# INLINE (.^~ ) #-}
+
+infix 8 .^~
 
 -- | Raise a quantity to a power and convert to the standard unit.
 --
