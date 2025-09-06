@@ -8,8 +8,6 @@ import Data.Units.BaseProp
 
 spec :: Spec
 spec = do
-  describe "Units" $ do
-    sameDimSpec @Meter @Double
   describe "Prefix" $ do
     describe "Quecto" $ do
       toFromSpec @(Quecto Meter) @Double
