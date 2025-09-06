@@ -636,13 +636,7 @@ infixr 7 .*~
 -- >>> :kind! NormalizeUnit' (Minute .*. Minute)
 -- Minute .^. Pos 2
 --
--- >>> 1 :: NormalizeUnit' (Minute .*. Second) Double
--- <interactive>:39:1: error: [GHC-47403]
--- • Failed to multiply two different units ‘min’ and ‘s’ with the same
---   dimension ‘T’.
---   Hint : Did you try to multiply via (.*.) two quantities with
---          the same dimension but different units ?
---
+
 type NormalizeUnit' u = NormalizeFlatUnit' (Flatten u)
 
 type family NormalizeFlatUnit' u where
@@ -683,7 +677,6 @@ type family InsertUnit u v where
   InsertUnit u v =
       InsertCmp (CmpDim (DimOf u) (DimOf v)) u v
 
-
 type family InsertCmp cmp u v where
   InsertCmp 'LT u (v .*. w) = u .*. v .*. w
   InsertCmp 'GT u (v .*. w) = v .*. InsertUnit u w
@@ -691,53 +684,15 @@ type family InsertCmp cmp u v where
   InsertCmp 'LT u v = u .*. v
   InsertCmp 'GT u v = v .*. u
   InsertCmp 'EQ u v = MulSameDim u v
-  -- InsertCmp b c u v = TypeError (
-  --       Text  "InsertCmp must be called with arguments of"
-  --  :<>: Text " the form InsertCmp cmp u (v .*. w)"
-  --  :$$: Text " instead, it was called with InsertCmp."
-  --  :<>: ShowType c
-  --  :<>: Text " ("
-  --  :<>: ShowType u
-  --  :<>: Text ") ("
-  --  :<>: ShowType v
-  --  :<>: Text ")"
-  --  )
 
 type family MulNoUnit d e where
   MulNoUnit NoUnit e = e
   MulNoUnit d NoUnit = d
   MulNoUnit d e = d .*. e
 
-type family SwapCmp b cmp u v where
-  SwapCmp b 'LT u v = u .*. v
-  SwapCmp b 'GT u v = v .*. u
-  SwapCmp True 'EQ u v = MulSameDim u v
-  SwapCmp False 'EQ u v = MulOther u v
-
-type family MulOther u v where
-  MulOther (u .^. n) (u .^. m) = NormalizeExp (u .^. Add n m)
-  MulOther u (u .^. m) = NormalizeExp (u .^. Add (Pos 1) m)
-  MulOther (u .^. n) u = NormalizeExp (u .^. Add n (Pos 1))
-  MulOther u u = u .^. Pos 2
-  MulOther u v = u .*. v
-
 type family MulSameDim u v where
   MulSameDim (u .^. n) (v .^. m) = NormalizeExp (u .^. Add n m)
   MulSameDim u (v .^. m) = NormalizeExp (u .^. Add (Pos 1) m)
   MulSameDim (u .^. n) v = NormalizeExp (u .^. Add n (Pos 1))
   MulSameDim u v = u .^. Pos 2
-  -- MulSameDim u v = TypeError (
-  --        Text "Failed to multiply two different units ‘"
-  --   :<>: ShowUnitType u
-  --   :<>: Text "’ and ‘"
-  --   :<>: ShowUnitType v
-  --   :<>: Text "’ with the same dimension ‘"
-  --   :<>: ShowDimType (DimOf u)
-  --   :<>: Text "’."
-  --   :$$: Text "Hint : Did you try to multiply via (.*.) or divide (./.) "
-  --   :$$: Text "       two quantities with the same dimension but different"
-  --   :$$: Text "       units ?"
-  --   :$$: Text "If so, you might want to use (~*.), (.*~), (~*~), or (~/~) instead."
-  --   )
-
 
