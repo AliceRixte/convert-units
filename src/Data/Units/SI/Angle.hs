@@ -31,7 +31,7 @@ type Angle = NoDim
 
 -- | An angle in radians.
 --
-$(mkUnitFrom "Radian" "rad" ''Angle 1)
+$(mkUnit "Radian" "rad" ''Angle 1)
 
 -- | The solid angle derived dimension in SI.
 --
@@ -39,7 +39,7 @@ type SolidAngle = NoDim
 
 -- | A solid angle in steradians.
 --
-$(mkUnitFrom "Steradian" "sr" ''SolidAngle 1)
+$(mkUnit "Steradian" "sr" ''SolidAngle 1)
 
 -- | Normalize an angle to the range ]-pi, pi]
 normalizeRadians :: (RealFrac a, Floating a) => Radian a -> Radian a

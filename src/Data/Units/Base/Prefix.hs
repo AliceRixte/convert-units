@@ -39,25 +39,14 @@ instance (forall (u :: Unit). IsUnit u => IsUnit (p u))
 
 -- | A prefix that has a conversion factor.
 class (Fractional a, IsPrefix p) => PrefixFactor (p :: Prefix) a where
-  {-# MINIMAL prefixFactorFrom | prefixFactorTo #-}
   -- | Prefix conversion factor from the prefixed unit to the corresponding
   -- standard unit
   --
-  -- >>> prefixFactorFrom @Kilo
+  -- >>> prefixFactor @Kilo
   -- 1000.0
   --
-  prefixFactorFrom :: a
-  prefixFactorFrom = 1 / prefixFactorTo @p
-  {-# INLINE prefixFactorFrom #-}
+  prefixFactor :: a
 
-  -- | Prefix conversion factor fromthe standard unit to the prefixed unit
-  --
-  -- >>> prefixFactorTo @Kilo
-  -- 1000.0
-  --
-  prefixFactorTo :: a
-  prefixFactorTo = 1 / prefixFactorFrom @p
-  {-# INLINE prefixFactorTo #-}
 
 -- | Prefixes that can be shown as a string, or as a type error message.
 class IsPrefix p => ShowPrefix (p :: Prefix) where
@@ -103,18 +92,14 @@ newtype MetaPrefix (p :: Prefix) (u :: Unit) a = MetaPrefix (p u a)
   deriving Show via (MetaUnit (p u) a)
 
 instance PrefixFactor p a => PrefixFactor (MetaPrefix p) a where
-  prefixFactorFrom = prefixFactorFrom @p
-  {-# INLINE prefixFactorFrom #-}
-  prefixFactorTo = prefixFactorTo @p
-  {-# INLINE prefixFactorTo #-}
+  prefixFactor = prefixFactor @p
+  {-# INLINE prefixFactor #-}
 
 instance
   (PrefixFactor p a, ConversionFactor u a, NormalizeUnit (p u) ~ NormalizeUnit u)
   => ConversionFactor (MetaPrefix p u) a where
-  factorFrom = prefixFactorFrom @p * factorFrom @u
-  {-# INLINE factorFrom #-}
-  factorTo= prefixFactorTo @p * factorTo @u
-  {-# INLINE factorTo #-}
+  factor = prefixFactor @p * factor @u
+  {-# INLINE factor #-}
 
 instance
   (PrefixFactor p a, ConvertibleUnit u a, NormalizeUnit (p u) ~ NormalizeUnit u)
@@ -128,14 +113,14 @@ prefixFrom :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, ConvertibleUnit u a, NormalizeUnit (p u) ~ NormalizeUnit u)
   => p u a -> NormalizeUnit u a
 prefixFrom u =
-    toNormalUnit @u $ quantity @u (prefixFactorFrom @p * unQuantity u)
+    toNormalUnit @u $ quantity @u (prefixFactor @p * unQuantity u)
 {-# INLINE prefixFrom #-}
 
 prefixTo :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, ConvertibleUnit u a
   , NormalizeUnit (p u) a ~ NormalizeUnit u a)
   => NormalizeUnit (p u) a -> p u a
-prefixTo a = quantity  $ unQuantity (fromNormalUnit @u a) * prefixFactorTo @p
+prefixTo a = quantity  $ unQuantity (fromNormalUnit @u a) / prefixFactor @p
 {-# INLINE prefixTo #-}
 
 

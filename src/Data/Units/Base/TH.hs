@@ -18,15 +18,13 @@
 
 module Data.Units.Base.TH
   ( -- * Units
-    mkUnitFrom
-  , mkUnitTo
+    mkUnit
   , mkUnitNoFactor
   , mkBaseUnit
   -- * Dimensions
   , mkDim
   -- * Prefixes
-  , mkPrefixFrom
-  , mkPrefixTo
+  , mkPrefix
   )
   where
 
@@ -116,27 +114,15 @@ mkShowUnitInstance unitName unitStr prettyStr = [d|
 --
 -- @
 -- instance Fractional a => ConversionFactor Minute a where
---    factorFrom = 60
+--    factor = 60
 -- @
 --
-mkConvFactorFromInstance :: Quote m => Name -> Rational -> m [Dec]
-mkConvFactorFromInstance unitName factor = [d|
+mkConvFactorInstance :: Quote m => Name -> Rational -> m [Dec]
+mkConvFactorInstance unitName fctr = [d|
   instance Fractional a => ConversionFactor $(conT unitName) a where
-    factorFrom = $(litE (RationalL factor))
+    factor = $(litE (RationalL fctr))
   |]
 
--- | Make an instance of the form
---
--- @
--- instance Fractional a => ConversionFactor Minute a where
---    factorTo = 60
--- @
---
-mkConvFactorToInstance :: Quote m => Name -> Rational -> m [Dec]
-mkConvFactorToInstance unitName factor = [d|
-  instance Fractional a => ConversionFactor $(conT unitName) a where
-    factorTo = $(litE (RationalL factor))
-  |]
 
 -- | Make an instance of the form
 --
@@ -177,45 +163,20 @@ mkNormalConvertibleInstance unitName = [d|
 -- \$(mkUnit "Minute" "min" ''Time 60)
 -- @
 --
-mkUnitFrom :: String -> String -> Name -> Rational -> Q [Dec]
-mkUnitFrom unitStr prettyStr dimName factor = do
+mkUnit :: String -> String -> Name -> Rational -> Q [Dec]
+mkUnit unitStr prettyStr dimName fctr = do
   let unitName = mkName unitStr
   newtypeDec <- mkUnitNewtype deriveListUnit unitName
   isUnitDec <- mkIsUnitInstance unitName dimName
   showUnitDec <- mkShowUnitInstance unitName unitStr prettyStr
-  convFactorDec <- mkConvFactorFromInstance unitName factor
+  convFactorDec <- mkConvFactorInstance unitName fctr
   convUnitDec <-
-    if factor == 1 then
+    if fctr == 1 then
       mkNormalConvertibleInstance unitName
     else
       mkDefaultSigConvertibleInstance unitName
   return $
     [newtypeDec] ++ isUnitDec ++ showUnitDec ++ convFactorDec ++ convUnitDec
-
--- | Make a unit that can be converted via a factor
---
--- [Usage:]
---
--- @
--- \$(mkUnitTo "Minute" "min" ''Time (1/60))
--- @
---
-mkUnitTo :: String -> String -> Name -> Rational -> Q [Dec]
-mkUnitTo unitStr prettyStr dimName factor = do
-  let unitName = mkName unitStr
-  newtypeDec <- mkUnitNewtype deriveListUnit unitName
-  isUnitDec <- mkIsUnitInstance unitName dimName
-  showUnitDec <- mkShowUnitInstance unitName unitStr prettyStr
-  convFactorDec <- mkConvFactorToInstance unitName factor
-  convUnitDec <-
-    if factor == 1 then
-      mkNormalConvertibleInstance unitName
-    else
-      mkDefaultSigConvertibleInstance unitName
-  return $
-    [newtypeDec] ++ isUnitDec ++ showUnitDec ++ convFactorDec ++ convUnitDec
-
-
 
 -- | Make a unit without declaring any conversion instances.
 --
@@ -238,7 +199,7 @@ mkUnitNoFactor unitStr prettyStr dimName = do
 
 -- | Make a base unit.
 --
--- In addition to calling 'mkUnitFrom' with factor 1, this also makes an
+-- In addition to calling 'mkUnit' with factor 1, this also makes an
 -- instance of 'IsDim', which cannot be done in 'mkDim' since the base unit is
 -- not yet declared.
 --
@@ -249,7 +210,7 @@ mkUnitNoFactor unitStr prettyStr dimName = do
 mkBaseUnit :: String -> String -> Name -> Q [Dec]
 mkBaseUnit unitStr prettyStr dimName = do
   let unitName = mkName unitStr
-  unitDec <- mkUnitFrom unitStr prettyStr dimName 1
+  unitDec <- mkUnit unitStr prettyStr dimName 1
   isDimDec <- mkIsDimInstance dimName unitName
   return $ unitDec ++ isDimDec
 
@@ -410,47 +371,29 @@ mkShowPrefixInstance prefixName prefixStr prettyStr = [d|
 --
 -- @
 -- instance Fractional a => PrefixFactor Kilo a where
---   prefixFactorFrom = 1000
---   {-# INLINE prefixFactorFrom #-}
+--   prefixFactor = 1000
+--   {-# INLINE prefixFactor #-}
 --
-mkPrefixFactorFromInstance :: Name -> Rational -> Q [Dec]
-mkPrefixFactorFromInstance prefixName factor = [d|
+mkPrefixFactorInstance :: Name -> Rational -> Q [Dec]
+mkPrefixFactorInstance prefixName fctr = [d|
   instance Fractional a => PrefixFactor $(conT prefixName) a where
-    prefixFactorFrom = $(litE (RationalL factor))
-    {-# INLINE prefixFactorFrom #-}
-  |]
-
--- | Make an instance of the form
---
--- @
--- instance Fractional a => PrefixFactor Milli a where
---   prefixFactorTo = 1000
---   {-# INLINE prefixFactorTo #-}
---
-mkPrefixFactorToInstance :: Name -> Rational -> Q [Dec]
-mkPrefixFactorToInstance prefixName factor = [d|
-  instance Fractional a => PrefixFactor $(conT prefixName) a where
-    prefixFactorTo = $(litE (RationalL factor))
-    {-# INLINE prefixFactorTo #-}
+    prefixFactor = $(litE (RationalL fctr))
+    {-# INLINE prefixFactor #-}
   |]
 
 -- | Make an instance of the form
 --
 -- @
 -- instance ConversionFactor u a => ConversionFactor (Milli u) a where
---   factorFrom = factorFrom @(MetaPrefix Milli u)
---   {-# INLINE factorFrom #-}
--- factorTo = factorTo @(MetaPrefix Milli u)
---   {-# INLINE factorTo #-}
+--   factor = factor @(MetaPrefix Milli u)
+--   {-# INLINE factor #-}
 -- @
 --
 mkPrefixConvFactorInstance :: Name -> Q [Dec]
 mkPrefixConvFactorInstance prefixName = [d|
   instance ConversionFactor u a => ConversionFactor ($(conT prefixName) u) a where
-    factorFrom = factorFrom @(MetaPrefix $(conT prefixName) u)
-    {-# INLINE factorFrom #-}
-    factorTo = factorTo @(MetaPrefix $(conT prefixName) u)
-    {-# INLINE factorTo #-}
+    factor = factor @(MetaPrefix $(conT prefixName) u)
+    {-# INLINE factor #-}
   |]
 
 -- | Make an instance of the form
@@ -479,39 +422,20 @@ mkPrefixConvUnitInstance prefixName = [d|
 -- [Usage:]
 --
 -- @
--- \$(mkPrefixFrom "Kilo" "k" 1000)
+-- \$(mkPrefix "Kilo" "k" 1000)
 -- @
 --
-mkPrefixFrom :: String -> String -> Rational -> Q [Dec]
-mkPrefixFrom prefixStr prettyStr factor = do
+mkPrefix :: String -> String -> Rational -> Q [Dec]
+mkPrefix prefixStr prettyStr fctr = do
   let prefixName = mkName prefixStr
   newtypeDec <- mkPrefixNewtype deriveList prefixName
   isUnitDec <- mkPrefixIsUnitInstance prefixName
   showPrefixDec <- mkShowPrefixInstance prefixName prefixStr prettyStr
-  factorDec <- mkPrefixFactorFromInstance prefixName factor
+  factorDec <- mkPrefixFactorInstance prefixName fctr
   convFactorDec <- mkPrefixConvFactorInstance prefixName
   convUnitDec <- mkPrefixConvUnitInstance prefixName
   return $ [newtypeDec] ++ isUnitDec ++ showPrefixDec
         ++ factorDec ++ convFactorDec ++ convUnitDec
 
--- | Make a unit prefix.
---
--- [Usage:]
---
--- @
--- \$(mkPrefixTo "Milli" "m" 1000)
--- @
---
-mkPrefixTo :: String -> String -> Rational -> Q [Dec]
-mkPrefixTo prefixStr prettyStr factor = do
-  let prefixName = mkName prefixStr
-  newtypeDec <- mkPrefixNewtype deriveList prefixName
-  isUnitDec <- mkPrefixIsUnitInstance prefixName
-  showPrefixDec <- mkShowPrefixInstance prefixName prefixStr prettyStr
-  factorDec <- mkPrefixFactorToInstance prefixName factor
-  convFactorDec <- mkPrefixConvFactorInstance prefixName
-  convUnitDec <- mkPrefixConvUnitInstance prefixName
-  return $ [newtypeDec] ++ isUnitDec ++ showPrefixDec
-        ++ factorDec ++ convFactorDec ++ convUnitDec
 
 

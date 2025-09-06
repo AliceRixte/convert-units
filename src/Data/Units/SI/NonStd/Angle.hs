@@ -37,18 +37,18 @@ $(mkUnitNoFactor "Gradian" "grad" ''NoDim)
 instance Floating a => ConvertibleUnit Degree a
 
 instance Floating a => ConversionFactor Degree a where
-  factorFrom = pi / 180
-  {-# INLINE factorFrom #-}
+  factor = pi / 180
+  {-# INLINE factor #-}
 
 instance Floating a => ConvertibleUnit Turn a
 
 instance Floating a => ConversionFactor Turn a where
-  factorFrom = 2 * pi
-  {-# INLINE factorFrom #-}
+  factor = 2 * pi
+  {-# INLINE factor #-}
 
 instance Floating a => ConvertibleUnit Gradian a
 
 instance Floating a => ConversionFactor Gradian a where
-  factorFrom = pi / 200
-  {-# INLINE factorFrom #-}
+  factor = pi / 200
+  {-# INLINE factor #-}
 

@@ -45,6 +45,6 @@ type SolidAngle = Angle .^+ 2
 
 -- | A solid angle in steradians.
 --
-$(mkUnitFrom "Steradian" "sr" ''SolidAngle 1)
+$(mkUnit "Steradian" "sr" ''SolidAngle 1)
 
 

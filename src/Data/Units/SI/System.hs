@@ -84,8 +84,8 @@ $(mkUnitNoFactor "Gram" "g" ''Mass)
 instance Fractional a => ConvertibleUnit Gram a
 
 instance Fractional a => ConversionFactor Gram a where
-  factorTo = 1000
-  {-# INLINE factorTo #-}
+  factor = 1e-3
+  {-# INLINE factor #-}
 
 instance IsDim Mass where
   type DimToUnit Mass = Kilo Gram

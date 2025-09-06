@@ -75,7 +75,7 @@
 --
 -- @
 -- instance Fractional a => ConversionFactor Celsius a where
---   factorFrom = 1
+--   factor = 1
 --
 -- instance Fractional a => From Celsius a where
 --   from (Celsius x) = Kelvin (x - 273.15)
@@ -245,74 +245,73 @@ to = fromTo
 --
 -- Instances must satisfy the following laws:
 --
--- * @'factorFrom' == 1 / 'factorTo'@
--- * @'toNormalUnit' == (* 'factorFrom')@
+-- * @'factor' == 1 / 'factorTo'@
+-- * @'toNormalUnit' == (* 'factor')@
 -- * @'fromNormalUnit' == (* 'factorTo')@
 --
 class (ConvertibleUnit u a, Fractional a) => ConversionFactor u a where
-  {-# MINIMAL factorFrom | factorTo #-}
-  -- | Multiplying a quantity of type @u a@ with @'factorFrom'@ will convert it
+  {-# MINIMAL factor #-}
+
+  -- | Multiplying a quantity of type @u a@ with @'factor'@ will convert it
   -- to its corresponding standard unit @NormalizeUnit u a@
   --
-  -- >>> factorFrom @Hour :: Double
+  -- >>> factor @Hour :: Double
   -- 3600.0
-  -- >>> factorFrom @Celsius :: Double
+  -- >>> factor @Celsius :: Double
   -- 1.0
-  -- >>> factorFrom @(Kilo Meter ./. Hour) :: Double
+  -- >>> factor @(Kilo Meter ./. Hour) :: Double
   -- 0.2777777777777778
-  factorFrom :: a
-  factorFrom = 1 / factorTo @u
-  {-# INLINE factorFrom #-}
+  factor :: a
 
-  -- | Multiplying a quantity of type @NormalizeUnit u a@ with @'factorTo'@
-  -- will convert it to the unit @u a@
-  --
-  -- >>> factorTo @Hour :: Double
-  -- 2.777777777777778e-4
-  -- >>> factorTo @Celsius :: Double
-  -- 1.0
-  -- >>> factorTo @(Kilo Meter ./. Hour) :: Double
-  -- 3.5999999999999996
-  --
-  -- Notice the small error due to the fact that the factor computed is @1 /
-  -- (1000 / 3600)@. This does not mean however that the conversion will be less
-  -- efficient, because this is likely to be done at compile time by GHC and
-  -- inlined.
-  --
-  factorTo :: a
-  factorTo = 1 / factorFrom @u
-  {-# INLINE factorTo #-}
+-- -- | Multiplying a quantity of type @NormalizeUnit u a@ with @'factorTo'@
+-- -- will convert it to the unit @u a@
+-- --
+-- -- >>> factorTo @Hour :: Double
+-- -- 2.777777777777778e-4
+-- -- >>> factorTo @Celsius :: Double
+-- -- 1.0
+-- -- >>> factorTo @(Kilo Meter ./. Hour) :: Double
+-- -- 3.5999999999999996
+-- --
+-- -- Notice the small error due to the fact that the factor computed is @1 /
+-- -- (1000 / 3600)@. This does not mean however that the conversion will be less
+-- -- efficient, because this is likely to be done at compile time by GHC and
+-- -- inlined.
+-- --
+-- factorTo :: a
+-- factorTo = 1 / factor @u
+-- {-# INLINE factorTo #-}
 
 instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a)
   => ConvertibleUnit (MetaUnit u) a where
 
 instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a)
   => ConversionFactor (MetaUnit u) a where
-  factorFrom = 1
-  {-# INLINE factorFrom #-}
+  factor = 1
+  {-# INLINE factor #-}
 
 
 instance Fractional a => ConvertibleUnit NoUnit a
 
 instance Fractional a => ConversionFactor NoUnit a where
-  factorFrom = 1
-  {-# INLINE factorFrom #-}
+  factor = 1
+  {-# INLINE factor #-}
 
 instance (Num a, ConversionFactor u a, ConversionFactor v a, IsUnit (NormalizeUnit (u .*. v)))
   => ConvertibleUnit (u .*. v) a
 
 instance (Num a, ConversionFactor u a, ConversionFactor v a, IsUnit (NormalizeUnit (u .*. v)))
   =>  ConversionFactor (u .*. v) a where
-  factorFrom = factorFrom @u * factorFrom @v
-  {-# INLINE factorFrom #-}
+  factor = factor @u * factor @v
+  {-# INLINE factor #-}
 
 instance (ConversionFactor u a, IsUnit (NormalizeUnit (u .^. n)),  KnownInt n)
   => ConvertibleUnit (u .^. n) a
 
 instance (ConversionFactor u a, IsUnit (NormalizeUnit (u .^. n)),  KnownInt n)
   =>  ConversionFactor (u .^. n) a where
-  factorFrom = factorFrom @u ^^ intVal (Proxy :: Proxy n)
-  {-# INLINE factorFrom #-}
+  factor = factor @u ^^ intVal (Proxy :: Proxy n)
+  {-# INLINE factor #-}
 
 -- | Convert a quantity to its corresponding standard unit by multiplying it
 -- by  @'fromFactor'@.
@@ -328,7 +327,7 @@ instance (ConversionFactor u a, IsUnit (NormalizeUnit (u .^. n)),  KnownInt n)
 --
 toNormalUnit' :: forall u a. ConversionFactor u a
   => u a -> NormalizeUnit u a
-toNormalUnit' q = quantity (unQuantity q * factorFrom @u)
+toNormalUnit' q = quantity (unQuantity q * factor @u)
 {-# INLINE toNormalUnit' #-}
 
 -- | Convert a standard quantity to a unit @u@ by multiplying it by
@@ -345,7 +344,7 @@ toNormalUnit' q = quantity (unQuantity q * factorFrom @u)
 --
 fromNormalUnit' :: forall u a. ConversionFactor u a
   => NormalizeUnit u a -> u a
-fromNormalUnit' q = quantity (unQuantity q * factorTo @u)
+fromNormalUnit' q = quantity (unQuantity q / factor @u)
 {-# INLINE fromNormalUnit' #-}
 
 -- | A constraint that is satisfied when both units have the same dimension and
@@ -370,7 +369,7 @@ type FromTo' u v a = (DimEq u v, ConversionFactor u a, ConversionFactor v a)
 fromTo' :: forall u v a.
   FromTo' u v a
   => u a -> v a
-fromTo' q = quantity (unQuantity q * (factorFrom @u * factorTo @v))
+fromTo' q = quantity (unQuantity q * (factor @u / factor @v))
 {-# INLINE fromTo' #-}
 
 

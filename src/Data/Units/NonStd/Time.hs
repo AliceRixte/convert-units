@@ -27,10 +27,10 @@ import Data.Units.SI
 
 -- | Time quantity in minutes
 --
-$(mkUnitFrom "Minute" "min" ''Time 60)
+$(mkUnit "Minute" "min" ''Time 60)
 
 -- | Time quantity in hours
 --
-$(mkUnitFrom "Hour" "hr" ''Time 3600)
+$(mkUnit "Hour" "hr" ''Time 3600)
 
 

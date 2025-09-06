@@ -12,12 +12,27 @@ import Data.Units.SI
 $(mkUnitNoFactor "Celsius" "°C" ''Temperature)
 
 instance Fractional a => ConversionFactor Celsius a where
-  factorFrom = 1
-  {-# INLINE factorFrom #-}
+  factor = 1
+  {-# INLINE factor #-}
 
 instance Fractional a => ConvertibleUnit Celsius a where
   toNormalUnit (Celsius x) = Kelvin (x + 273.15)
   {-# INLINE toNormalUnit #-}
 
   fromNormalUnit (Kelvin x) = Celsius (x - 273.15)
+  {-# INLINE fromNormalUnit #-}
+
+-- | Thermodynamic temperature in Fahrenheit degrees
+--
+$(mkUnitNoFactor "Fahrenheit" "°F" ''Temperature)
+
+instance Fractional a => ConversionFactor Fahrenheit a where
+  factor = 5 / 9
+  {-# INLINE factor #-}
+
+instance Fractional a => ConvertibleUnit Fahrenheit a where
+  toNormalUnit (Fahrenheit x) = Kelvin ((x + 459.67) * 5 / 9)
+  {-# INLINE toNormalUnit #-}
+
+  fromNormalUnit (Kelvin x) = Fahrenheit (x * 9 / 5 - 459.67)
   {-# INLINE fromNormalUnit #-}
