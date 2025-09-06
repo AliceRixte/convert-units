@@ -162,7 +162,7 @@ class ShowDim (d :: Dim) where
   showsDimPrec :: Int -> ShowS
   showsDimPrec _ = (showDim @d ++)
 
-  -- | Convert a dimension's corresponding newtype.
+  -- | Convert a dimension to a string representing its type.
   --
   -- >>> showDim  @(Length ./. Time)
   -- "Length .*. Time.^-1"
@@ -205,7 +205,6 @@ showDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> String
 showDimOf _ = showDim @(DimOf u)
 
 -- | Same as 'showDimOf' but for pretty printing.
---
 -- >>> putStrLn $ prettyDimOf (quantity @(Kilo Meter ./. Second) 1)
 -- L.T⁻¹
 prettyDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> String
@@ -420,7 +419,11 @@ putQuantity = putStrLn . prettyQuantity
 --------------------------------------------------------------------------------
 
 
-
+-- | A unit that can represent any unit.
+--
+-- This can be used with the `deriving via` mechanism to derive some of the
+-- unit instances.
+--
 newtype MetaUnit (u :: Unit) a = MetaUnit a
   deriving ( Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)

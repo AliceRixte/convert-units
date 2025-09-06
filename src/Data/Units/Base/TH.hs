@@ -401,9 +401,9 @@ mkPrefixConvFactorInstance prefixName = [d|
 -- @
 -- instance (ConvertibleUnit u a, Fractional a)
 --   => ConvertibleUnit (Milli u) a where
---   toNormalUnit = prefixFrom
+--   toNormalUnit = prefixToNormalUnit
 --   {-# INLINE toNormalUnit #-}
---   fromNormalUnit = prefixTo
+--   fromNormalUnit = prefixFromNormalUnit
 --   {-# INLINE fromNormalUnit #-}
 -- @
 --
@@ -411,9 +411,9 @@ mkPrefixConvUnitInstance :: Name -> Q [Dec]
 mkPrefixConvUnitInstance prefixName = [d|
   instance (ConvertibleUnit u a, Fractional a)
     => ConvertibleUnit ($(conT prefixName) u) a where
-    toNormalUnit = prefixFrom
+    toNormalUnit = prefixToNormalUnit
     {-# INLINE toNormalUnit #-}
-    fromNormalUnit = prefixTo
+    fromNormalUnit = prefixFromNormalUnit
     {-# INLINE fromNormalUnit #-}
   |]
 
