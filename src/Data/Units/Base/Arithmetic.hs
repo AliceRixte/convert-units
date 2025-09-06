@@ -45,15 +45,18 @@ module Data.Units.Base.Arithmetic
   , (~-.)
   , (~-~)
   -- ** Multiplication
+  , (*.)
   , (.*.)
   , (.*~)
   , (~*.)
   , (~*~)
   -- ** Division
+  , (/.)
   , (./.)
   , (~/~)
   -- ** Exponentiation
   , (.^.)
+  , (^.)
   , (~^.)
   ) where
 
@@ -146,32 +149,54 @@ infixr 5 ~-~
 
 -------------------------------- Multiplication --------------------------------
 
-
--- | Multiply two quantities of different dimensions.
+-- | Multiply two quantities, and tries to normalize the resulting unit, without
+-- converting to base units.
 --
--- Units of the same dimension are authorized only when the units are equal.
+-- >>> Meter 2 *. Meter 3 *. Meter 4
+-- quantity @(Meter.^+3) 24
 --
--- >>> Meter 2 .*. Second 3
--- quantity @(Meter .*. Second) 6
+-- When two multiplied units have the same dimension, the right most unit is
+-- converted to left most unit:
 --
--- >>> Second 5 .*. Meter 2
--- quantity @(Meter .*. Second) 10
+-- >>> Milli (Meter 2) *. Micro (Meter 3)
+-- quantity @(Milli Meter.^+2) 6.0e-3
 --
--- >>> Meter 5 .*. Meter 8
--- quantity @(Meter .^+ 2) 40
+-- Derived units are not unfolded:
 --
--- >>> Meter 2 .*. Kilo (Meter 3)
---  • Failed to multiply two different units ‘m’ and ‘km’ with the same dimension ‘L’.
---   Hint : Did you try to multiply via (.*.) or divide (./.)
---          two quantities with the same dimension but different
---          units ?
---   If so, you might want to use (~*.), (.*~), (~*~), or (~/~) instead.
-(.*.) ::
-  ( uv ~ NormalizeUnit' (u .*. v)
+-- >>> Kilo Watt 3 *. Hour 5
+-- quantity @(Kilo Watt .*. Hour) 14.999999999999998
+--
+-- Units are ordered, so that the result unit do not depend on the order of the
+-- computations.
+--
+-- >>> Meter 2 *. Newton 2 *. Kilo (Meter 2) *. Kilo (Gram 1)
+-- quantity @(Newton .*. Kilo Gram .*. Meter.^+2) 8000.0
+--
+(*.) :: forall u v a uv.
+  ( uv ~ u *. v
+  , FromTo' (u .*. v) uv a
   , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
- => u a -> v a -> uv a
+  => u a -> v a -> uv a
+u *. v = to' @uv (u .*. v)
+{-# INLINE (*.) #-}
+
+infixr 7 *.
+
+-- | Multiply two quantities.
+--
+-- Usage is not recommended, as this will result non standard units.
+--
+-- For instance:
+--
+-- >>> Kilo (Meter 2) .*. Milli (Meter 4)
+-- quantity @(Kilo Meter .*. Milli Meter) 8
+(.*.) ::
+  ( IsUnit u, IsUnit v
+  , Num a
+  )
+ => u a -> v a -> (u .*. v) a
 u .*. v = quantity $ unQuantity u * unQuantity v
 {-# INLINE (.*.) #-}
 
@@ -241,25 +266,39 @@ infix 7 ~*~
 
 ----------------------------------- Division -----------------------------------
 
-
--- | Divide two quantities of different dimensions.
+-- | Same '(*.)' but for division.
 --
--- Units of the same dimension are authorized only when the units are equal.
---
--- >>> Meter 4 ./. Second 2
--- quantity @(Meter .*. Second .^- 1) 2.0
---
---
-(./.) ::
-  ( uv ~ NormalizeUnit' (u ./. v)
+-- >>> Newton 1 /. Meter 2 *. Meter 2
+(/.) :: forall u v a uv.
+  ( uv ~ u /. v
+  , FromTo' (u ./. v) uv a
   , IsUnit u, IsUnit v, IsUnit uv
-  , Fractional a
+  , Num a
   )
   => u a -> v a -> uv a
+u /. v = to' @uv (u ./. v)
+{-# INLINE (/.) #-}
+
+infix 7 /.
+
+-- | Multiply two quantities.
+--
+-- Usage is not recommended, as this will result non standard units.
+--
+-- For instance:
+--
+-- >>> Kilo (Meter 2) ./. Milli (Meter 4)
+-- quantity @(Kilo Meter .*. Milli Meter.^-1) 0.5
+--
+(./.) ::
+  ( IsUnit u, IsUnit v, IsUnit (u ./. v)
+  , Fractional a
+  )
+  => u a -> v a -> (u ./. v) a
 u ./. v = quantity (unQuantity u / unQuantity v)
 {-# INLINE (./.) #-}
 
-infix 6 ./.
+infix 7 ./.
 
 -- | Divide two quantities of same dimensions. The numerator will be converted
 -- to the denominator
@@ -286,8 +325,12 @@ infix 6 ~/~
 --
 -- This is meant to be used with @'Data.Type.Int.Proxy'@
 --
--- >>> Kilo (Meter 2) .^. pos2
--- quantity @(Kilo Meter .^+ 2) 4.0
+-- Usage is not recommended, as this will result non standard units.
+--
+-- For instance:
+--
+-- >>> (Meter 2 .*. Second 1) .^. pos2
+-- quantity @((Meter .*. Second).^+2) 4.0
 --
 (.^.) :: forall (n :: ZZ) proxy u a. (IsUnit u, KnownInt n, Fractional a)
   => u a -> proxy n -> (u .^. n) a
@@ -296,6 +339,13 @@ u .^. p = quantity $ unQuantity u ^^ intVal p
 
 infix 8 .^.
 
+-- | Raise a quantity to a power and tries to normalize the resulting unit,
+-- without converting to base units.
+--
+(^.) :: forall (n :: ZZ) proxy u a un.
+  (un ~ u ^. n, FromTo' (u .^. n) un a, IsUnit u, KnownInt n, Fractional a)
+  => u a -> proxy n -> un a
+u ^. p = to' @un (u .^. p)
 
 -- | Raise a quantity to a power and convert to the standard unit.
 --

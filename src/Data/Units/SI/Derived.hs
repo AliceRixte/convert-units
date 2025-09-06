@@ -26,6 +26,8 @@ module Data.Units.SI.Derived
   , Pressure
   , Newton (..)
   , Pascal (..)
+  , Joule (..)
+  , Watt (..)
   )
   where
 
@@ -59,5 +61,15 @@ type Pressure = NormalizeDim (Force ./. (Length .^+ 2))
 -- | Pressure in pascals
 --
 $(mkUnitFrom "Pascal" "Pa" ''Pressure 1)
+
+type Energy = NormalizeDim (Length .*. Force)
+
+-- | Energy in joules
+--
+$(mkUnitFrom "Joule" "J" ''Energy 1)
+
+type Power = NormalizeDim (Energy ./. Time)
+
+$(mkUnitFrom "Watt" "W" ''Power 1)
 
 

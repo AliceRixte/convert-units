@@ -51,7 +51,9 @@ module Data.Units.Base.System
   , prettyQuantity
   , putQuantity
   -- * Unit and dimension constructors
-  , type (.*~)
+  , type (*.)
+  , type (/.)
+  , type (^.)
   , type (.*.) (..)
   , type (./.)
   , type (.^.) (..)
@@ -227,10 +229,8 @@ type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
 type family CmpDim (d :: Dim) (e :: Dim) :: Ordering where
   CmpDim (d .*. d') (e .*. e') =
     If (CmpDim d e == 'EQ) (CmpDim d' e') (CmpDim d e)
-  CmpDim (d .*. d') e =
-    If (CmpDim d e == 'EQ) 'GT (CmpDim d e)
-  CmpDim d (e .*. e') =
-    If (CmpDim d e == 'EQ) 'LT (CmpDim d e)
+  CmpDim (d .*. d') e ='LT
+  CmpDim d (e .*. e') = 'GT
   CmpDim (d .^. dn) (e .^. en) =
     If (CmpDim d e == 'EQ) (CmpSigned dn en) (CmpDim d e)
   CmpDim (d .^. dn) e =
@@ -626,9 +626,17 @@ toSuperscript a = a
 
 ------------------------------ Unit normalization ------------------------------
 
-type (u :: Unit) .*~ (v :: Unit) = NormalizeUnit' (u .*. v)
+type (u :: Unit) *. (v :: Unit) = NormalizeUnit' (u .*. v)
 
-infixr 7 .*~
+infixr 7 *.
+
+type (u :: Unit) /. (v :: Unit) = NormalizeUnit' (u ./. v)
+
+infixr 7 /.
+
+type (u :: Unit) ^. (n :: ZZ) = NormalizeUnit' (u .^. n)
+
+infixr 8 ^.
 
 
 -- | Tries to normalize a unit without converting to base units.
