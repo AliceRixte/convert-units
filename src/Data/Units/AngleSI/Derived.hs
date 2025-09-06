@@ -54,7 +54,7 @@ $(mkUnit "Lumen" "lm" ''LuminousFlux 1)
 
 -- | Illuminance quantity. Equal to
 --
--- @ Angle.^+2 .*. Length.^-2 .*. LuminousIntensity @
+-- @ 'Angle'.^+2 .*. 'Length'.^-2 .*. 'LuminousIntensity' @
 --
 type Illuminance = NormalizeDim (LuminousFlux ./. Area)
 

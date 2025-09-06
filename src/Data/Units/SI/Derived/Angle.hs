@@ -16,11 +16,21 @@
 --
 --------------------------------------------------------------------------------
 
-module Data.Units.SI.Derived.Angle where
+module Data.Units.SI.Derived.Angle
+  ( Angle
+  , Radian (..)
+  , normalizeRadians
+  , SolidAngle
+  , Steradian (..)
+  , LuminousFlux
+  , Lumen (..)
+  , Illuminance
+  , Lux (..)
+  )
+  where
 
 import Data.Fixed
 import Data.Coerce
-
 
 import Data.Units.Base
 import Data.Units.SI.System
@@ -59,9 +69,13 @@ normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
 --
 type LuminousFlux = NormalizeDim (LuminousIntensity .*. SolidAngle)
 
+-- | Luminous flux in lumens
+--
+$(mkUnit "Lumen" "lm" ''LuminousFlux 1)
+
 -- | Illuminance quantity. Equal to
 --
--- @ Length.^-2 .*. LuminousIntensity @
+-- @ 'Length'.^-2 .*. 'LuminousIntensity' @
 --
 type Illuminance = NormalizeDim (LuminousFlux ./. Area)
 

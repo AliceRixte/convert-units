@@ -15,7 +15,12 @@
 --------------------------------------------------------------------------------
 
 
-module Data.Units.AngleSI.NonStd.Angle where
+module Data.Units.AngleSI.NonStd.Angle
+  ( Degree (..)
+  , Turn (..)
+  , Gradian (..)
+  )
+where
 
 import Data.Units.Base
 

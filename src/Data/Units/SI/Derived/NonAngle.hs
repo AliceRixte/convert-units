@@ -12,12 +12,62 @@
 -- Derived units and dimensions for the International System of Units that do
 -- not contain angles.
 --
+-- This follows the wikipedia page https://en.wikipedia.org/wiki/SI_derived_unit.
+--
 --------------------------------------------------------------------------------
 
 
 module Data.Units.SI.Derived.NonAngle
   ( -- * Official derived units from SI
-    module Data.Units.SI.Derived.NonAngle
+    Celsius (..)
+  , Area
+  , Volume
+  , Frequency
+  , Hertz (..)
+  , Radioactivity
+  , Becquerel (..)
+  , Speed
+  , Acceleration
+  , Force
+  , Newton (..)
+  , Pressure
+  , Pascal (..)
+  , Stress
+  , Energy
+  , Joule (..)
+  , Work
+  , Heat
+  , Power
+  , RadiantFlux
+  , Watt (..)
+  , ElectricCharge
+  , Coulomb (..)
+  , QuantityOfElectricity
+  , Voltage
+  , Volt (..)
+  , ElectricPotential
+  , ElectromotiveForce
+  , Capacitance
+  , Farad (..)
+  , Resistance
+  , Ohm (..)
+  , Impedance
+  , Reactance
+  , Conductance
+  , Siemens (..)
+  , MagneticFlux
+  , Weber (..)
+  , MagneticInduction
+  , MagneticFluxDensity
+  , Tesla (..)
+  , Inductance
+  , Henry (..)
+  , EquivalentDose
+  , AbsorbedDose
+  , Gray (..)
+  , Sievert (..)
+  , CatalyticActivity
+  , Katal (..)
   )
   where
 
@@ -32,6 +82,12 @@ type Frequency = Time .^- 1
 -- | Frequency in hertz
 --
 $(mkUnit "Hertz" "Hz" ''Frequency 1)
+
+type Radioactivity = Time .^- 1
+
+-- | Radioactivity in becquerels
+--
+$(mkUnit "Becquerel" "Bq" ''Radioactivity 1)
 
 -- | Speed quantity. Equal to
 --
@@ -173,3 +229,27 @@ instance Fractional a => ConvertibleUnit Celsius a where
   fromNormalUnit (Kelvin x) = Celsius (x - 273.15)
   {-# INLINE fromNormalUnit #-}
 
+-- | Absorbed dose quantity. Equal to
+--
+-- @ 'Length'.^+2 .*. 'Time'.^-2 @
+--
+type AbsorbedDose = NormalizeDim (Energy ./. Mass)
+type EquivalentDose = AbsorbedDose
+
+-- | Absorbed dose in grays
+--
+$(mkUnit "Gray" "Gy" ''AbsorbedDose 1)
+
+-- | Dose equivalent in sieverts
+--
+$(mkUnit "Sievert" "Sv" ''EquivalentDose 1)
+
+-- | Catalytic activity quantity. Equal to
+--
+-- @ 'Time'.^-1 .*. 'AmountOfSubstance' @
+--
+type CatalyticActivity = NormalizeDim (AmountOfSubstance ./. Time)
+
+-- | Catalytic activity in katal
+--
+$(mkUnit "Katal" "kat" ''CatalyticActivity 1)

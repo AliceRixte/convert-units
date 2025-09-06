@@ -1,5 +1,22 @@
 {-# LANGUAGE NoStarIsType #-}
 {-# LANGUAGE ExistentialQuantification #-}
+
+--------------------------------------------------------------------------------
+-- |
+--
+-- Module      :  Data.Type.Int
+-- Description :  Type-level integers
+-- Copyright   :  (c) Alice Rixte 2025
+-- License     :  BSD 3
+-- Maintainer  :  alice.rixte@u-bordeaux.fr
+-- Stability   :  unstable
+-- Portability :  non-portable (GHC extensions)
+--
+-- Type level integers.
+--
+--------------------------------------------------------------------------------
+
+
 module Data.Type.Int
   ( module Data.Type.Int
   ) where
