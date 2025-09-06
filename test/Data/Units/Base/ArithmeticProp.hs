@@ -348,14 +348,14 @@ mulDiffDimSpec :: forall u v a.
 mulDiffDimSpec = it (showUnit @u ++ " .*. " ++ showUnit @v)
     $ mulDiffDimProp @u @v @a
 
-divDiffDim :: forall u v a uv .
+divDiffDim :: forall u v a.
   ( IsUnit u, IsUnit v, IsUnit (u ./. v)
   , Fractional a
   )
   => a -> a -> a
 divDiffDim u v = coerce $ (coerce u :: u a) ./. (coerce v :: v a)
 
-divDiffDimProp :: forall u v a uv.
+divDiffDimProp :: forall u v a.
   ( IsUnit u, IsUnit v, IsUnit (u ./. v)
   , ConversionFactor (u ./. v) a
   , IsUnit (u ./. v)
@@ -366,7 +366,7 @@ divDiffDimProp =
   property (\a b -> b == 0 || aboutEqual (a / b) (divDiffDim @u @v @a a b) )
   .&&. toFromProp @(u ./. v) @a
 
-divDiffDimSpec :: forall u v a uv.
+divDiffDimSpec :: forall u v a.
   (IsUnit u, IsUnit v, IsUnit (u ./. v)
   , ConversionFactor (u ./. v) a
   , IsUnit (u ./. v)

@@ -1,8 +1,6 @@
 module Data.Units.NonStd.FrequencySpec where
 
 import Test.Hspec
-import Control.Monad.IO.Class
-import Control.Exception
 
 import Data.Units.SI
 import Data.Units.NonStd.Frequency
