@@ -96,13 +96,11 @@ instance IsDim Mass where
 --
 $(mkDim "Length" "L" 3000)
 
-
 -- | A quantity in meters, denotated @m@ in SI.
 --
 -- This is the base unit of the length dimension in the SI system.
 --
 $(mkBaseUnit "Meter" "m" ''Length)
-
 
 
 -- | The time dimension, denotated @T@ in SI.
@@ -137,9 +135,6 @@ $(mkBaseUnit "Ampere" "A" ''Current)
 --  This may contain a temperature quantity with unspecified unit.
 --
 $(mkDim "Temperature" "Θ" 6000)
-
-
-
 
 
 -- | A quantity in Kelvin, denotated @K@ in SI.

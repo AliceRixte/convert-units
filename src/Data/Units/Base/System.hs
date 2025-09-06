@@ -29,20 +29,16 @@ module Data.Units.Base.System
   , showDimOf
   , prettyDimOf
   , putDimOf
-  , NoDim (..)
   , IsDim (..)
-  , DimEq
   , NormalizeDim
+
   -- * Units
   , Unit
-  , NormalizeUnit
-  , NormalizeUnit'
   , ShowUnit (..)
   , prettysUnit
   , showsUnit
   , IsUnit (..)
-  , NoUnit (..)
-  , MetaUnit (..)
+
   -- * Quantity
   , quantity
   , unQuantity
@@ -50,13 +46,27 @@ module Data.Units.Base.System
   , showQuantity
   , prettyQuantity
   , putQuantity
+
   -- * Unit and dimension constructors
-  , type (.*~)
-  , type (./~)
-  , type (~^.)
+  , NoDim (..)
+  , NoUnit (..)
+  , MetaUnit (..)
   , type (.*.) (..)
-  , type (./.)
   , type (.^.) (..)
+
+  -- * Unit normalization
+  , NormalizeUnit
+  , NormalizeUnitL
+  , NormalizeUnitR
+  , type (.*~)
+  , type (~*.)
+  , type (~*~)
+  , type (./.)
+  , type (./~)
+  , type (~/.)
+  , type (~/~)
+
+  , type (~^.)
   , type (.^+)
   , type (.^-)
   )
@@ -203,32 +213,6 @@ instance ShowDim NoDim where
   prettyDim = "NoDim"
 
 
-type family DimEq (u :: Unit) (v :: Unit) :: Constraint where
-  DimEq u v = DimEqStd u v (DimOf u) (DimOf v)
-
-type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
-  :: Constraint where
-  DimEqStd u v du dv =
-    ( IsUnit u
-    , IsUnit v
-    , du ~ dv
-    , If (du == dv) (() :: Constraint)
-      (TypeError (
-            Text "Cannot convert unit ‘"
-            :<>: ShowUnitType u
-            :<>: Text "’ to unit ‘"
-            :<>: ShowUnitType v
-            :<>: Text "’ because their dimensions do not match."
-            :$$: Text "Dimension of ‘"
-            :<>: ShowUnitType u
-            :<>: Text "’ is: "
-            :<>: ShowDimType du
-            :$$: Text "Dimension of ‘"
-            :<>: ShowUnitType v
-            :<>: Text "’ is: "
-            :<>: ShowDimType dv
-    )))
-
 type family CmpDim (d :: Dim) (e :: Dim) :: Ordering where
   CmpDim (d .*. d') (e .*. e') =
     If (CmpDim d e == 'EQ) (CmpDim d' e') (CmpDim d e)
@@ -329,11 +313,10 @@ type family NormalizeExpDim u where
 --
 type Unit = Type -> Type
 
-type NormalizeUnit u = DimToUnit (DimOf u)
-
 class (IsUnit (DimToUnit d), forall a. Coercible (d a) a)
   => IsDim (d :: Dim) where
   type DimToUnit d :: Unit
+
 
 
 
@@ -629,80 +612,168 @@ toSuperscript a = a
 
 ------------------------------ Unit normalization ------------------------------
 
-type (u :: Unit) .*~ (v :: Unit) = NormalizeUnit' (u .*. v)
+type NormalizeUnit u = DimToUnit (DimOf u)
 
-infixr 7 .*~
+type (u :: Unit) ~*~ (v :: Unit) = NormalizeUnit (u .*. v)
 
-type (u :: Unit) ./~ (v :: Unit) = NormalizeUnit' (u ./. v)
+infixr 7 ~*~
 
-infixr 7 ./~
+type (u :: Unit) ~/~ (v :: Unit) = NormalizeUnit (u ./. v)
 
-type (u :: Unit) ~^. (n :: ZZ) = NormalizeUnit' (u .^. n)
+infixr 7 ~/~
 
-infixr 8 ~^.
+type (u :: Unit) ~^~ (n :: ZZ) = NormalizeUnit (u .^. n)
 
+infixr 8 ~^~
 
--- | Tries to normalize a unit without converting to base units.
---
--- >>> :kind! NormalizeUnit' (Minute .*. Minute)
--- Minute .^. Pos 2
---
-type NormalizeUnit' u = NormalizeFlatUnit' (Flatten u)
-
-type family NormalizeFlatUnit' u where
-  NormalizeFlatUnit' (u .*. NoUnit) = NormalizeFlatUnit' u
-  NormalizeFlatUnit' (NoUnit .*. v) = NormalizeFlatUnit' v
-  NormalizeFlatUnit' ((u .*. v) .*. w) = NormalizeFlatUnit' (u .*. (v .*. w))
-  NormalizeFlatUnit' (u .*. v) =
-    InsertUnit (NormalizeFlatUnit' u) (NormalizeFlatUnit' v)
-  NormalizeFlatUnit' (NoUnit .^. n) = NoUnit
-  NormalizeFlatUnit' (u .^. n) = NormalizeExp (u .^. n)
-  NormalizeFlatUnit' u = u
-
-type family NormalizeExp u where
-  NormalizeExp (u .^. Pos 1) = u
-  NormalizeExp (u .^. Zero) = NoUnit
-  NormalizeExp u = u
-
-type family InsertUnit u v where
-  InsertUnit NoUnit v = v
-  InsertUnit u NoUnit = u
-  InsertUnit (u .*. v) w =
-    TypeError (Text
-      "Insert unit : Removing left association failed in NormalizeFlatUnit'")
-  InsertUnit (u .^. n) (v .^. m .*. w) =
-      InsertCmp (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .^. m .*. w)
-  InsertUnit (u .^. n) (v .*. w) =
-      InsertCmp (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .*. w)
-  InsertUnit (u .^. n) (v .^. m) =
-      InsertCmp (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .^. m)
-  InsertUnit (u .^. n) v =
-      InsertCmp (CmpDim (DimOf u) (DimOf v)) (u .^. n) v
-  InsertUnit u (v .^. m .*. w) =
-      InsertCmp (CmpDim (DimOf u) (DimOf v)) u (v .^. m .*. w)
-  InsertUnit u (v .*. w) =
-      InsertCmp (CmpDim (DimOf u) (DimOf v)) u (v .*. w)
-  InsertUnit u (v .^. m) =
-      InsertCmp (CmpDim (DimOf u) (DimOf v)) u (v .^. m)
-  InsertUnit u v =
-      InsertCmp (CmpDim (DimOf u) (DimOf v)) u v
-
-type family InsertCmp cmp u v where
-  InsertCmp 'LT u (v .*. w) = u .*. v .*. w
-  InsertCmp 'GT u (v .*. w) = v .*. InsertUnit u w
-  InsertCmp 'EQ u (v .*. w) = MulNoUnit (MulSameDim u v) w
-  InsertCmp 'LT u v = u .*. v
-  InsertCmp 'GT u v = v .*. u
-  InsertCmp 'EQ u v = MulSameDim u v
 
 type family MulNoUnit d e where
   MulNoUnit NoUnit e = e
   MulNoUnit d NoUnit = d
   MulNoUnit d e = d .*. e
 
-type family MulSameDim u v where
-  MulSameDim (u .^. n) (v .^. m) = NormalizeExp (u .^. Add n m)
-  MulSameDim u (v .^. m) = NormalizeExp (u .^. Add (Pos 1) m)
-  MulSameDim (u .^. n) v = NormalizeExp (u .^. Add n (Pos 1))
-  MulSameDim u v = u .^. Pos 2
+type family NormalizeExp u where
+  NormalizeExp (u .^. Pos 1) = u
+  NormalizeExp (u .^. Zero) = NoUnit
+  NormalizeExp u = u
+
+---------------------- Unit normalization left priotiy -----------------------
+
+type (u :: Unit) ~*. (v :: Unit) = NormalizeUnitL (u .*. v)
+
+infixr 7 ~*.
+
+type (u :: Unit) ~/. (v :: Unit) = NormalizeUnitL (u ./. v)
+
+infixr 7 ~/.
+
+-- | Tries to normalize a unit without converting to base units.
+--
+-- >>> :kind! NormalizeUnitL (Minute .*. Minute)
+-- Minute .^. Pos 2
+--
+type NormalizeUnitL u = NormalizeFlatUnitL (Flatten u)
+
+type family NormalizeFlatUnitL u where
+  NormalizeFlatUnitL (u .*. NoUnit) = NormalizeFlatUnitL u
+  NormalizeFlatUnitL (NoUnit .*. v) = NormalizeFlatUnitL v
+  NormalizeFlatUnitL ((u .*. v) .*. w) = NormalizeFlatUnitL (u .*. (v .*. w))
+  NormalizeFlatUnitL (u .*. v) =
+    InsertUnitL (NormalizeFlatUnitL u) (NormalizeFlatUnitL v)
+  NormalizeFlatUnitL (NoUnit .^. n) = NoUnit
+  NormalizeFlatUnitL (u .^. n) = NormalizeExp (u .^. n)
+  NormalizeFlatUnitL u = u
+
+
+type family InsertUnitL u v where
+  InsertUnitL NoUnit v = v
+  InsertUnitL u NoUnit = u
+  InsertUnitL (u .*. v) w =
+    TypeError (Text
+      "Insert unit : Lemoving left association failed in NormalizeFlatUnitL")
+  InsertUnitL (u .^. n) (v .^. m .*. w) =
+      InsertCmpL (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .^. m .*. w)
+  InsertUnitL (u .^. n) (v .*. w) =
+      InsertCmpL (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .*. w)
+  InsertUnitL (u .^. n) (v .^. m) =
+      InsertCmpL (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .^. m)
+  InsertUnitL (u .^. n) v =
+      InsertCmpL (CmpDim (DimOf u) (DimOf v)) (u .^. n) v
+  InsertUnitL u (v .^. m .*. w) =
+      InsertCmpL (CmpDim (DimOf u) (DimOf v)) u (v .^. m .*. w)
+  InsertUnitL u (v .*. w) =
+      InsertCmpL (CmpDim (DimOf u) (DimOf v)) u (v .*. w)
+  InsertUnitL u (v .^. m) =
+      InsertCmpL (CmpDim (DimOf u) (DimOf v)) u (v .^. m)
+  InsertUnitL u v =
+      InsertCmpL (CmpDim (DimOf u) (DimOf v)) u v
+
+type family InsertCmpL cmp u v where
+  InsertCmpL 'LT u (v .*. w) = u .*. v .*. w
+  InsertCmpL 'GT u (v .*. w) = v .*. InsertUnitL u w
+  InsertCmpL 'EQ u (v .*. w) = MulNoUnit (MulSameDimL u v) w
+  InsertCmpL 'LT u v = u .*. v
+  InsertCmpL 'GT u v = v .*. u
+  InsertCmpL 'EQ u v = MulSameDimL u v
+
+
+type family MulSameDimL u v where
+  MulSameDimL (u .^. n) (v .^. m) = NormalizeExp (u .^. Add n m)
+  MulSameDimL u (v .^. m) = NormalizeExp (u .^. Add (Pos 1) m)
+  MulSameDimL (u .^. n) v = NormalizeExp (u .^. Add n (Pos 1))
+  MulSameDimL u v = u .^. Pos 2
+
+
+--------------------- Unit normalization right priority ----------------------
+
+-- The only difference with Left is MulSameDim
+
+type (u :: Unit) .*~ (v :: Unit) = NormalizeUnitR (u .*. v)
+
+infixr 7 .*~
+
+type (u :: Unit) ./~ (v :: Unit) = NormalizeUnitR (u ./. v)
+
+infixr 7 ./~
+
+type (u :: Unit) ~^. (n :: ZZ) = NormalizeUnitR (u .^. n)
+
+infixr 8 ~^.
+
+-- | Tries to normalize a unit without converting to base units.
+--
+-- >>> :kind! NormalizeUnitR (Minute .*. Minute)
+-- Minute .^. Pos 2
+--
+type NormalizeUnitR u = NormalizeFlatUnitR (Flatten u)
+
+type family NormalizeFlatUnitR u where
+  NormalizeFlatUnitR (u .*. NoUnit) = NormalizeFlatUnitR u
+  NormalizeFlatUnitR (NoUnit .*. v) = NormalizeFlatUnitR v
+  NormalizeFlatUnitR ((u .*. v) .*. w) = NormalizeFlatUnitR (u .*. (v .*. w))
+  NormalizeFlatUnitR (u .*. v) =
+    InsertUnitR (NormalizeFlatUnitR u) (NormalizeFlatUnitR v)
+  NormalizeFlatUnitR (NoUnit .^. n) = NoUnit
+  NormalizeFlatUnitR (u .^. n) = NormalizeExp (u .^. n)
+  NormalizeFlatUnitR u = u
+
+
+type family InsertUnitR u v where
+  InsertUnitR NoUnit v = v
+  InsertUnitR u NoUnit = u
+  InsertUnitR (u .*. v) w =
+    TypeError (Text
+      "Insert unit : Removing left association failed in NormalizeFlatUnitR")
+  InsertUnitR (u .^. n) (v .^. m .*. w) =
+      InsertCmpR (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .^. m .*. w)
+  InsertUnitR (u .^. n) (v .*. w) =
+      InsertCmpR (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .*. w)
+  InsertUnitR (u .^. n) (v .^. m) =
+      InsertCmpR (CmpDim (DimOf u) (DimOf v)) (u .^. n) (v .^. m)
+  InsertUnitR (u .^. n) v =
+      InsertCmpR (CmpDim (DimOf u) (DimOf v)) (u .^. n) v
+  InsertUnitR u (v .^. m .*. w) =
+      InsertCmpR (CmpDim (DimOf u) (DimOf v)) u (v .^. m .*. w)
+  InsertUnitR u (v .*. w) =
+      InsertCmpR (CmpDim (DimOf u) (DimOf v)) u (v .*. w)
+  InsertUnitR u (v .^. m) =
+      InsertCmpR (CmpDim (DimOf u) (DimOf v)) u (v .^. m)
+  InsertUnitR u v =
+      InsertCmpR (CmpDim (DimOf u) (DimOf v)) u v
+
+type family InsertCmpR cmp u v where
+  InsertCmpR 'LT u (v .*. w) = u .*. v .*. w
+  InsertCmpR 'GT u (v .*. w) = v .*. InsertUnitR u w
+  InsertCmpR 'EQ u (v .*. w) = MulNoUnit (MulSameDimR u v) w
+  InsertCmpR 'LT u v = u .*. v
+  InsertCmpR 'GT u v = v .*. u
+  InsertCmpR 'EQ u v = MulSameDimR u v
+
+
+type family MulSameDimR u v where
+  MulSameDimR (u .^. n) (v .^. m) = NormalizeExp (v .^. Add n m)
+  MulSameDimR u (v .^. m) = NormalizeExp (v .^. Add (Pos 1) m)
+  MulSameDimR (u .^. n) v = NormalizeExp (v .^. Add n (Pos 1))
+  MulSameDimR u v = v .^. Pos 2
+
 

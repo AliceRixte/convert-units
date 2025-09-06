@@ -99,7 +99,8 @@
 --------------------------------------------------------------------------------
 
 module Data.Units.Base.Convert
-  ( ConvertibleUnit (..)
+  ( DimEq
+  , ConvertibleUnit (..)
   , FromTo
   , fromTo
   , from
@@ -115,10 +116,41 @@ module Data.Units.Base.Convert
   where
 
 import Data.Proxy
+import Data.Kind
+import Data.Type.Bool
+import Data.Type.Equality
+import GHC.TypeError
 
 import Data.Type.Int
 
 import Data.Units.Base.System
+
+-- | A constraint to test whether two units have
+type family DimEq (u :: Unit) (v :: Unit) :: Constraint where
+  DimEq u v = DimEqStd u v (DimOf u) (DimOf v)
+
+type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
+  :: Constraint where
+  DimEqStd u v du dv =
+    ( IsUnit u
+    , IsUnit v
+    , du ~ dv
+    , If (du == dv) (() :: Constraint)
+      (TypeError (
+            Text "Cannot convert unit ‘"
+            :<>: ShowUnitType u
+            :<>: Text "’ to unit ‘"
+            :<>: ShowUnitType v
+            :<>: Text "’ because their dimensions do not match."
+            :$$: Text "Dimension of ‘"
+            :<>: ShowUnitType u
+            :<>: Text "’ is: "
+            :<>: ShowDimType du
+            :$$: Text "Dimension of ‘"
+            :<>: ShowUnitType v
+            :<>: Text "’ is: "
+            :<>: ShowDimType dv
+    )))
 
 
 

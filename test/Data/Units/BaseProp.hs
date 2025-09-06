@@ -24,7 +24,7 @@ sameDimSpec :: forall u a.
   , Show a, Epsilon a, Floating a, Eq a, Arbitrary a
   , FromTo' u u a
   , DimEq u u
-  , IsUnit (NormalizeUnit' (u .^+ 2))
+  , IsUnit (NormalizeUnitL (u .^+ 2))
   , IsUnit (NormalizeUnit u)
   )
   => Spec
