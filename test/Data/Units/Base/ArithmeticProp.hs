@@ -264,6 +264,65 @@ divSameSpec = it (showUnit @u ++ " ~/~ " ++ showUnit @v)
 
 ------------------ Arithmetic with two different dimensions  -------------------
 
+-- mulRight :: forall u v a u2.
+--   ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
+--   , DimEq u v
+--   , FromTo' v u a
+--   )
+--   => a -> a -> a
+-- mulRight u v = coerce $ (coerce u :: u a) .*~ (coerce v :: v a)
+
+-- mulRightProp :: forall u v a u2.
+--   ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
+--   , DimEq u v
+--   , FromTo' v u a
+--   , Show a, Epsilon a, Arbitrary a
+--   )
+--   => Property
+-- mulRightProp = property (\(a :: a) (b :: a) ->
+--   aboutEqual (coerce (fromTo' (coerce a :: u a) :: v a) * b :: a)
+--              (mulRight @u @v a b))
+
+-- mulRightSpec :: forall u v a u2.
+--   ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
+--   , DimEq u v
+--   , FromTo' v u a
+--   , ShowUnit u, ShowUnit v
+--   , Show a, Epsilon a, Arbitrary a
+--   ) => Spec
+-- mulRightSpec = it (showUnit @u ++ " .*~ " ++ showUnit @v)
+--   $ mulRightProp @u @v @a
+
+-- mulLeft :: forall u v a v2.
+--   ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
+--   , DimEq v u
+--   , FromTo' u v a
+--   )
+--   => a -> a -> a
+-- mulLeft u v = coerce $ (coerce u :: u a) ~*. (coerce v :: v a)
+
+-- mulLeftProp :: forall u v a v2.
+--   ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
+--   , DimEq v u
+--   , FromTo' u v a
+--   , Show a, Epsilon a, Arbitrary a
+--   )
+--   => Property
+-- mulLeftProp = property (\(a :: a) (b :: a) ->
+--   aboutEqual (coerce (fromTo' (coerce a :: u a) :: v a) * b :: a)
+--              (mulLeft @u @v a b))
+
+-- mulLeftSpec :: forall u v a v2.
+--   ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
+--   , DimEq v u
+--   , FromTo' u v a
+--   , ShowUnit u, ShowUnit v
+--   , Show a, Epsilon a, Arbitrary a
+--   ) => Spec
+-- mulLeftSpec = it (showUnit @u ++ " ~*. " ++ showUnit @v)
+--   $ mulLeftProp @u @v @a
+
+
 mulDiffDim :: forall u v a.
   ( ConversionFactor u a, ConversionFactor v a)
   => a -> a -> a
@@ -358,12 +417,12 @@ expSpec = it (showUnit @u ++ " .^+ 2  ," ++ showUnit @u ++ " .^- 1") $
 exp2Conv :: forall u a.
   ConversionFactor u a
   => a -> a
-exp2Conv u = coerce $ (coerce u :: u a) ~^. pos2
+exp2Conv u = coerce $ (coerce u :: u a) ~^~ pos2
 
 expm1Conv :: forall u a.
   ConversionFactor u a
   => a -> a
-expm1Conv u = coerce $ (coerce u :: u a) ~^. neg1
+expm1Conv u = coerce $ (coerce u :: u a) ~^~ neg1
 
 exp2ConvProp :: forall u a.
   ( ConversionFactor u a
@@ -390,6 +449,6 @@ expConvSpec :: forall u a.
   , Arbitrary a, Show a,  Eq a, Epsilon a
   )
   => Spec
-expConvSpec = it (showUnit @u ++ "~^. pos2  ," ++ showUnit @u ++ "~^. neg1") $
+expConvSpec = it (showUnit @u ++ "~^~ pos2  ," ++ showUnit @u ++ "~^~ neg1") $
   exp2ConvProp @u @a .&&. expm1ConvProp @u @a
 

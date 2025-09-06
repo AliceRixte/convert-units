@@ -51,9 +51,9 @@ module Data.Units.Base.System
   , prettyQuantity
   , putQuantity
   -- * Unit and dimension constructors
-  , type (*.)
-  , type (/.)
-  , type (^.)
+  , type (.*~)
+  , type (./~)
+  , type (~^.)
   , type (.*.) (..)
   , type (./.)
   , type (.^.) (..)
@@ -629,17 +629,17 @@ toSuperscript a = a
 
 ------------------------------ Unit normalization ------------------------------
 
-type (u :: Unit) *. (v :: Unit) = NormalizeUnit' (u .*. v)
+type (u :: Unit) .*~ (v :: Unit) = NormalizeUnit' (u .*. v)
 
-infixr 7 *.
+infixr 7 .*~
 
-type (u :: Unit) /. (v :: Unit) = NormalizeUnit' (u ./. v)
+type (u :: Unit) ./~ (v :: Unit) = NormalizeUnit' (u ./. v)
 
-infixr 7 /.
+infixr 7 ./~
 
-type (u :: Unit) ^. (n :: ZZ) = NormalizeUnit' (u .^. n)
+type (u :: Unit) ~^. (n :: ZZ) = NormalizeUnit' (u .^. n)
 
-infixr 8 ^.
+infixr 8 ~^.
 
 
 -- | Tries to normalize a unit without converting to base units.
@@ -647,7 +647,6 @@ infixr 8 ^.
 -- >>> :kind! NormalizeUnit' (Minute .*. Minute)
 -- Minute .^. Pos 2
 --
-
 type NormalizeUnit' u = NormalizeFlatUnit' (Flatten u)
 
 type family NormalizeFlatUnit' u where

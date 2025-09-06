@@ -45,17 +45,17 @@ module Data.Units.Base.Arithmetic
   , (~-.)
   , (~-~)
   -- ** Multiplication
-  , (*.)
+  , (.*~)
   , (.*.)
   , (~*~)
   -- ** Division
-  , (/.)
+  , (./~)
   , (./.)
   , (~/~)
   -- ** Exponentiation
   , (.^.)
-  , (^.)
   , (~^.)
+  , (~^~)
   ) where
 
 import Data.Type.Int
@@ -170,17 +170,17 @@ infixr 5 ~-~
 -- >>> Meter 2 *. Newton 2 *. Kilo (Meter 2) *. Kilo (Gram 1)
 -- quantity @(Newton .*. Kilo Gram .*. Meter.^+2) 8000.0
 --
-(*.) :: forall u v a uv.
-  ( uv ~ u *. v
+(.*~) :: forall u v a uv.
+  ( uv ~ u .*~ v
   , FromTo' (u .*. v) uv a
   , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
   => u a -> v a -> uv a
-u *. v = to' @uv (u .*. v)
-{-# INLINE (*.) #-}
+u .*~ v = to' @uv (u .*. v)
+{-# INLINE (.*~) #-}
 
-infixr 7 *.
+infixr 7 .*~
 
 -- | Multiply two quantities.
 --
@@ -226,17 +226,17 @@ infix 7 ~*~
 -- | Same '(*.)' but for division.
 --
 -- >>> Newton 1 /. Meter 2 *. Meter 2
-(/.) :: forall u v a uv.
-  ( uv ~ u /. v
+(./~) :: forall u v a uv.
+  ( uv ~ u ./~ v
   , FromTo' (u ./. v) uv a
   , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
   => u a -> v a -> uv a
-u /. v = to' @uv (u ./. v)
-{-# INLINE (/.) #-}
+u ./~ v = to' @uv (u ./. v)
+{-# INLINE (./~) #-}
 
-infix 7 /.
+infix 7 ./~
 
 -- | Multiply two quantities.
 --
@@ -299,22 +299,25 @@ infix 8 .^.
 -- | Raise a quantity to a power and tries to normalize the resulting unit,
 -- without converting to base units.
 --
-(^.) :: forall (n :: ZZ) proxy u a un.
-  (un ~ u ^. n, FromTo' (u .^. n) un a, IsUnit u, KnownInt n, Fractional a)
+(~^.) :: forall (n :: ZZ) proxy u a un.
+  (un ~ u ~^. n, FromTo' (u .^. n) un a, IsUnit u, KnownInt n, Fractional a)
   => u a -> proxy n -> un a
-u ^. p = to' @un (u .^. p)
-
--- | Raise a quantity to a power and convert to the standard unit.
---
--- >>> Kilo (Meter 2) ~^. neg1
--- quantity @(Meter .^- 1) 5.0e-4
---
-(~^.) :: forall (n :: ZZ) proxy u un a.
-  (KnownInt n, ConversionFactor u a, un ~ NormalizeUnit u .^. n )
-  => u a -> proxy n -> un a
-u ~^. p = quantity @un $ unQuantity (toNormalUnit' u) ^^ intVal p
+u ~^. p = to' @un (u .^. p)
 {-# INLINE (~^.) #-}
 
 infix 8 ~^.
+
+-- | Raise a quantity to a power and convert to the standard unit.
+--
+-- >>> Kilo (Meter 2) ~^~ neg1
+-- quantity @(Meter .^- 1) 5.0e-4
+--
+(~^~) :: forall (n :: ZZ) proxy u un a.
+  (KnownInt n, ConversionFactor u a, un ~ NormalizeUnit u .^. n )
+  => u a -> proxy n -> un a
+u ~^~ p = quantity @un $ unQuantity (toNormalUnit' u) ^^ intVal p
+{-# INLINE (~^~) #-}
+
+infix 8 ~^~
 
 
