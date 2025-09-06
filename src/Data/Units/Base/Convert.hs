@@ -263,34 +263,6 @@ class (ConvertibleUnit u a, Fractional a) => ConversionFactor u a where
   -- 0.2777777777777778
   factor :: a
 
--- -- | Multiplying a quantity of type @NormalizeUnit u a@ with @'factorTo'@
--- -- will convert it to the unit @u a@
--- --
--- -- >>> factorTo @Hour :: Double
--- -- 2.777777777777778e-4
--- -- >>> factorTo @Celsius :: Double
--- -- 1.0
--- -- >>> factorTo @(Kilo Meter ./. Hour) :: Double
--- -- 3.5999999999999996
--- --
--- -- Notice the small error due to the fact that the factor computed is @1 /
--- -- (1000 / 3600)@. This does not mean however that the conversion will be less
--- -- efficient, because this is likely to be done at compile time by GHC and
--- -- inlined.
--- --
--- factorTo :: a
--- factorTo = 1 / factor @u
--- {-# INLINE factorTo #-}
-
-instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a)
-  => ConvertibleUnit (MetaUnit u) a where
-
-instance (IsUnit u, IsUnit (DimToUnit (DimOf u)), Fractional a)
-  => ConversionFactor (MetaUnit u) a where
-  factor = 1
-  {-# INLINE factor #-}
-
-
 instance Fractional a => ConvertibleUnit NoUnit a
 
 instance Fractional a => ConversionFactor NoUnit a where
