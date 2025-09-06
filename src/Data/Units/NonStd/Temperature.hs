@@ -1,26 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Data.Units.NonStd.Temperature
-  ( module Data.Units.NonStd.Temperature
+  ( Data.Units.SI.Derived.Celsius (..)
+  , Fahrenheit(..)
   ) where
 
 import Data.Units.Base
 import Data.Units.SI
+import Data.Units.SI.Derived
 
-
--- | Thermodynamic temperature in Celsius degrees
---
-$(mkUnitNoFactor "Celsius" "°C" ''Temperature)
-
-instance Fractional a => ConversionFactor Celsius a where
-  factor = 1
-  {-# INLINE factor #-}
-
-instance Fractional a => ConvertibleUnit Celsius a where
-  toNormalUnit (Celsius x) = Kelvin (x + 273.15)
-  {-# INLINE toNormalUnit #-}
-
-  fromNormalUnit (Kelvin x) = Celsius (x - 273.15)
-  {-# INLINE fromNormalUnit #-}
 
 -- | Thermodynamic temperature in Fahrenheit degrees
 --

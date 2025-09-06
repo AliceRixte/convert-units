@@ -18,16 +18,7 @@
 
 module Data.Units.SI.Derived
   ( -- * Official derived units from SI
-    Frequency
-  , Hertz (..)
-  , Speed
-  , Acceleration
-  , Force
-  , Pressure
-  , Newton (..)
-  , Pascal (..)
-  , Joule (..)
-  , Watt (..)
+    module Data.Units.SI.Derived
   )
   where
 
