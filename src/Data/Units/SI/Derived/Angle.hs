@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.SI.Angle
+-- Module      :  Data.Units.SI.Derived.Angle
 -- Description :  Dimensionless angles
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -9,33 +9,37 @@
 -- Stability   :  unstable
 -- Portability :  non-portable (GHC extensions)
 --
--- This module defines radians and steradians as dimension less units. as the
--- standard unit for the angle (`@A@`)
+-- This module defines radians and steradians as dimensionless units.
 --
 -- See "Data.Units.AngleSI.Angle" for radians and steradians in an angle
 -- dimension `@A@`.
 --
 --------------------------------------------------------------------------------
 
-module Data.Units.SI.Angle where
+module Data.Units.SI.Derived.Angle where
 
 import Data.Fixed
 import Data.Coerce
 
 
 import Data.Units.Base
+import Data.Units.SI.System
 
--- | The angle derived dimension in SI.
+-- | The angle derived dimension in SI. Equal to
 --
-type Angle = NoDim
+-- @'NoDim'@
+--
+type Angle = NormalizeDim (Length ./. Length)
 
 -- | An angle in radians.
 --
 $(mkUnit "Radian" "rad" ''Angle 1)
 
--- | The solid angle derived dimension in SI.
+-- | The solid angle derived dimension in SI. Equal to
 --
-type SolidAngle = NoDim
+-- @'NoDim'@
+--
+type SolidAngle = NormalizeDim (Angle .^+ 2)
 
 -- | A solid angle in steradians.
 --
@@ -47,4 +51,3 @@ normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
   where
     twoPi = 2 * pi
     xmod = x `mod'` twoPi
-
