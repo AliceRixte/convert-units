@@ -37,6 +37,8 @@ module Data.Units.Base.System
   , ShowUnit (..)
   , prettysUnit
   , showsUnit
+  , prettyUnitInfo
+  , putInfoU
   , IsUnit (..)
 
   -- * Quantity
@@ -46,6 +48,7 @@ module Data.Units.Base.System
   , showQuantity
   , prettyQuantity
   , putQuantity
+  , putInfoQ
 
   -- * Unit and dimension constructors
   , NoDim (..)
@@ -370,9 +373,19 @@ class IsUnit u => ShowUnit (u :: Unit) where
   --
   type ShowUnitType u :: ErrorMessage
 
+  -- | Convert a unit to a readable string
+  --
+  -- @'showsUnitPrec'@ should satisfy the law :
+  --
+  -- @showsUnitPrec d x r ++ s  ==  showsPrec d x (r ++ s)@
+  --
   showsUnitPrec :: Int -> ShowS
   showsUnitPrec _ = (showUnit @u ++)
 
+  -- | Convert a unit to a string representing its type.
+  --
+  -- >>> showUnit @(Kilo Meter ./. Second)
+  -- "Kilo Meter .*. Second.^-1"
   showUnit :: String
   showUnit = showsUnit @u ""
 
@@ -390,28 +403,115 @@ class IsUnit u => ShowUnit (u :: Unit) where
   prettyUnit = prettysUnit @u ""
 
 
+-- | Equivalent to 'showsUnitPrec' with a precedence of 0.
+--
 showsUnit :: forall u. ShowUnit u => ShowS
 showsUnit = showsUnitPrec @u 0
 
+-- | Equivalent to 'prettysUnitPrec' with a precedence of 0.
+--
 prettysUnit :: forall u. ShowUnit u => ShowS
 prettysUnit = prettysUnitPrec @u 0
 
+-- | Pretty print information about a unit, its dimension and its normalized
+-- form.
+--
+prettyUnitInfo :: forall u du nu.
+  ( du ~ DimOf u
+  , nu ~ NormalizeUnit u
+  , ShowUnit u
+  , ShowDim du
+  , ShowUnit nu
+  ) => String
+prettyUnitInfo =
+  "Unit:       " ++ showUnit @u  ++ "\n" ++
+  " abbr:      " ++ prettyUnit @u  ++ "\n" ++
+  "Dimension:  " ++ showDim @du  ++ "\n" ++
+  " abbr:      " ++ prettyDim @du  ++ "\n" ++
+  "Normalized: " ++ showUnit @nu ++ "\n" ++
+  " abbr:      " ++ prettyUnit @nu ++ "\n"
 
+-- | Print information about a unit, its dimension and its normalized form.
+--
+-- >>> putInfoU @Newton
+-- Unit:       Newton
+--  abbr:      N
+-- Dimension:  Mass .*. Length .*. Time.^-2
+--  abbr:      M⋅L⋅T⁻²
+-- Normalized: Kilo Gram .*. Meter .*. Second.^-2
+--  abbr:      kg⋅m⋅s⁻²
+--
+putInfoU :: forall u du nu.
+  ( du ~ DimOf u
+  , nu ~ NormalizeUnit u
+  , ShowUnit u
+  , ShowDim du
+  , ShowUnit nu
+  ) => IO ()
+putInfoU = putStr $ prettyUnitInfo @u
+
+-- | Same as 'prettyUnitInfo' but for quantities.
+--
+prettyQuantityInfo :: forall u a.
+  ( ShowUnit u
+  , ShowDim (DimOf u)
+  , ShowUnit (NormalizeUnit u)
+  , Show a
+  ) => u a -> String
+prettyQuantityInfo u = prettyUnitInfo @u ++
+  "Magnitude:  " ++ show (unQuantity u) ++ "\n"
+
+-- | Same as 'putInfoU' but for quantities.
+--
+-- >>> putInfoQ (Newton 4)
+-- Unit:       Newton
+--  abbr:      N
+-- Dimension:  Mass .*. Length .*. Time.^-2
+--  abbr:      M⋅L⋅T⁻²
+-- Normalized: Kilo Gram .*. Meter .*. Second.^-2
+--  abbr:      kg⋅m⋅s⁻²
+-- Magnitude:  4
+putInfoQ :: forall u a.
+  ( ShowUnit u
+  , ShowDim (DimOf u)
+  , ShowUnit (NormalizeUnit u)
+  , Show a
+  ) => u a -> IO ()
+putInfoQ u = putStr $ prettyQuantityInfo @u u
+
+
+-- | Same as 'showsUnitPrec' but for quantities.
+--
 showsQuantityPrec :: forall u a. (ShowUnit u, Show a) => Int -> u a -> ShowS
 showsQuantityPrec d u = showParen (d > 10) $
     showString "quantity @" . showsUnitPrec @u 11 . showString " " .
       showsPrec 11 (unQuantity u)
 
+-- | Equivalent to 'showsQuantityPrec' with a precedence of 0.
+--
 showsQuantity :: (ShowUnit u, Show a) => u a -> ShowS
 showsQuantity  = showsQuantityPrec 0
 
+-- | Same as 'showUnit' but for quantities
+--
+-- >>> showQuantity (quantity @(Kilo Meter ./. Second) 1)
+-- "quantity @(Kilo Meter .*. Second.^-1) 1.0"
+--
 showQuantity :: (ShowUnit u, Show a) => u a -> String
 showQuantity u = showsQuantity u ""
 
-
+-- | Same as 'prettyUnit' but for quantities
+--
+-- >>> putStrLn $ prettyQuantity (quantity @(Kilo Meter ./. Second) 1)
+-- 1 km.s⁻¹
+--
 prettyQuantity :: forall u a. (ShowUnit u, Show a) => u a -> String
 prettyQuantity u  = show (unQuantity u) ++ " " ++  prettyUnit @u
 
+-- | Pretty print a quantity.
+--
+-- >>> putQuantity (quantity @(Kilo Meter ./. Second) 1)
+-- 1 km.s⁻¹
 putQuantity :: (Show a, ShowUnit u) => u a -> IO ()
 putQuantity = putStrLn . prettyQuantity
 
