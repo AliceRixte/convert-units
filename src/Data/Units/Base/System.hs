@@ -44,7 +44,6 @@ module Data.Units.Base.System
   -- * Quantity
   , quantity
   , unQuantity
-  , showsQuantity
   , showQuantity
   , prettyQuantity
   , putQuantity
@@ -64,13 +63,17 @@ module Data.Units.Base.System
   , NormalizeUnit
   , NormalizeUnitL
   , NormalizeUnitR
+  -- ** Normalization operators
+  -- *** Multiplication
   , type (.*~)
   , type (~*.)
   , type (~*~)
+  -- *** Division
   , type (./.)
   , type (./~)
   , type (~/.)
   , type (~/~)
+  -- *** Exponentiation
   , type (~^.)
   , type (.^~)
   , type (~^~)
@@ -120,29 +123,29 @@ class (IsUnit (DimToUnit d), forall a. Coercible (d a) a)
 --
 -- [This package:]
 --
---  +--------------------------------------+-----------------+
---  | Dimension                            | Id              |
---  +======================================+=================+
---  | Reserved                             |   0             |
---  +--------------------------------------+-----------------+
---  | @'NoDim'@                            |   1             |
---  +--------------------------------------+-----------------+
---  | @'Data.Units.AngleSI.Angle.Angle'@   | 1000            |
---  +--------------------------------------+-----------------+
---  | @'Data.Units.SI.Mass'@               | 2000            |
---  +--------------------------------------+-----------------+
---  | @'Data.Units.SI.Length'@             | 3000            |
---  +--------------------------------------+-----------------+
---  | @'Data.Units.SI.Time'@               | 4000            |
---  +--------------------------------------+-----------------+
---  | @'Data.Units.SI.ElectricCurrent'@    | 5000            |
---  +--------------------------------------+-----------------+
---  | @'Data.Units.SI.Temperature'@        | 6000            |
---  +--------------------------------------+-----------------+
---  | @'Data.Units.SI.AmountOfSubstance'@  | 7000            |
---  +--------------------------------------+-----------------+
---  | @'Data.Units.SI.LuminousIntensity'@  | 8000            |
---  +--------------------------------------+-----------------+
+--  +----------------------------------------------------+----------------+
+--  | Dimension                                          | Id             |
+--  +====================================================+================+
+--  | Reserved                                           |   0            |
+--  +----------------------------------------------------+----------------+
+--  | @'NoDim'@                                          |   1            |
+--  +----------------------------------------------------+----------------+
+--  | @'Data.Units.AngleSI.System.Angle'@                | 1000           |
+--  +----------------------------------------------------+----------------+
+--  | @'Data.Units.SI.System.Mass'@                      | 2000           |
+--  +----------------------------------------------------+----------------+
+--  | @'Data.Units.SI.System.Length'@                    | 3000           |
+--  +----------------------------------------------------+----------------+
+--  | @'Data.Units.SI.System.Time'@                      | 4000           |
+--  +----------------------------------------------------+----------------+
+--  | @'Data.Units.SI.System.ElectricCurrent'@           | 5000           |
+--  +----------------------------------------------------+----------------+
+--  | @'Data.Units.SI.System.Temperature'@               | 6000           |
+--  +----------------------------------------------------+----------------+
+--  | @'Data.Units.SI.System.AmountOfSubstance'@         | 7000           |
+--  +----------------------------------------------------+----------------+
+--  | @'Data.Units.SI.System.LuminousIntensity'@         | 8000           |
+--  +----------------------------------------------------+----------------+
 --
 type family DimId (d:: Dim) :: ZZ
 
@@ -335,9 +338,6 @@ type family NormalizeExpDim u where
 -- @u@ is of type @u a@.
 --
 type Unit = Type -> Type
-
-
-
 
 -- | Any unit must have a dimension. Additionally, a unit is a newtype
 -- constructor : a quantity @u a@ can always be coerced to its magnitude @a@.
@@ -730,16 +730,24 @@ toSuperscript a = a
 
 ------------------------------ Unit normalization ------------------------------
 
+-- | Normalizes a unit by converting it to a product of  exponentiations of base
+-- units.
 type NormalizeUnit u = DimToUnit (DimOf u)
 
+-- | Multiplies two units and normalizes the result.
+--
 type (u :: Unit) ~*~ (v :: Unit) = NormalizeUnit (u .*. v)
 
 infixr 7 ~*~
 
+-- | Divides two units and normalizes the result.
+--
 type (u :: Unit) ~/~ (v :: Unit) = NormalizeUnit (u ./. v)
 
-infixr 7 ~/~
+infixr 6 ~/~
 
+-- | Exponentiates a unit and normalizes the result.
+--
 type (u :: Unit) ~^~ (n :: ZZ) = NormalizeUnit (u .^. n)
 
 infixr 8 ~^~
@@ -758,24 +766,28 @@ type family NormalizeExp u where
 
 --------------------- Unit normalization left priority ----------------------
 
-type (u :: Unit) .*~ (v :: Unit) = NormalizeUnitL (u .*. v)
-
-infixr 7 .*~
-
-type (u :: Unit) ./~ (v :: Unit) = NormalizeUnitL (u ./. v)
-
-infixr 7 ./~
-
-type (u :: Unit) .^~ (n :: ZZ) = NormalizeUnitL (u .^. n)
-
-infixr 8 .^~
-
 -- | Tries to normalize a unit without converting to base units.
 --
 -- >>> :kind! NormalizeUnitR (Minute .*. Second)
 -- Minute .^. Pos 2
 --
 type NormalizeUnitL u = NormalizeFlatUnitL (Flatten u)
+
+-- | Multiplies two units and use left weak normalization.
+type (u :: Unit) .*~ (v :: Unit) = NormalizeUnitL (u .*. v)
+
+infixr 7 .*~
+
+-- | Divides two units and use left weak normalization.
+type (u :: Unit) ./~ (v :: Unit) = NormalizeUnitL (u ./. v)
+
+infixr 6 ./~
+
+-- | Exponentiates a unit and use left weak normalization.
+type (u :: Unit) .^~ (n :: ZZ) = NormalizeUnitL (u .^. n)
+
+infixr 8 .^~
+
 
 type family NormalizeFlatUnitL u where
   NormalizeFlatUnitL (u .*. NoUnit) = NormalizeFlatUnitL u
@@ -830,6 +842,16 @@ type family MulSameDimL u v where
 
 -- The only difference with right is MulSameDim
 
+
+-- | Tries to normalize a unit without converting to base units. When two units
+-- have the same dimension, they will be collapsed to an exponentiation right
+-- most unit.
+--
+-- >>> :kind! NormalizeUnitR (Minute .*. Second)
+-- Second .^. Pos 2
+--
+type NormalizeUnitR u = NormalizeFlatUnitR (Flatten u)
+
 -- | Same as @'(~*.)'@ but with priority to right most units
 type (u :: Unit) ~*. (v :: Unit) = NormalizeUnitR (u .*. v)
 
@@ -845,14 +867,6 @@ type (u :: Unit) ~^. (n :: ZZ) = NormalizeUnitR (u .^. n)
 
 infix 8  ~^.
 
--- | Tries to normalize a unit without converting to base units. When two units
--- have the same dimension, they will be collapsed to an exponentiation right
--- most unit.
---
--- >>> :kind! NormalizeUnitR (Minute .*. Second)
--- Second .^. Pos 2
---
-type NormalizeUnitR u = NormalizeFlatUnitR (Flatten u)
 
 type family NormalizeFlatUnitR u where
   NormalizeFlatUnitR (u .*. NoUnit) = NormalizeFlatUnitR u
