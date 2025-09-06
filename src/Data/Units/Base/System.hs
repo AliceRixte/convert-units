@@ -214,16 +214,19 @@ type family DimEqStd (u :: Unit) (v :: Unit) (du :: Dim) (dv :: Dim)
     , du ~ dv
     , If (du == dv) (() :: Constraint)
       (TypeError (
-          Text "Cannot convert unit ‘"
-          :<>: ShowUnitType u
-          :<>: Text "’ of dimension ‘"
-          :<>: ShowDimType du
-          :<>: Text "’"
-          :$$: Text "to unit ‘"
-          :<>: ShowUnitType v
-          :<>: Text "’ of dimension ‘"
-          :<>: ShowDimType dv
-          :<>: Text "’."
+            Text "Cannot convert unit ‘"
+            :<>: ShowUnitType u
+            :<>: Text "’ to unit ‘"
+            :<>: ShowUnitType v
+            :<>: Text "’ because their dimensions do not match."
+            :$$: Text "Dimension of ‘"
+            :<>: ShowUnitType u
+            :<>: Text "’ is: "
+            :<>: ShowDimType du
+            :$$: Text "Dimension of ‘"
+            :<>: ShowUnitType v
+            :<>: Text "’ is: "
+            :<>: ShowDimType dv
     )))
 
 type family CmpDim (d :: Dim) (e :: Dim) :: Ordering where
