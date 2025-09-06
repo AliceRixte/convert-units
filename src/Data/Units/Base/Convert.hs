@@ -15,8 +15,8 @@
 -- Stability   :  unstable
 -- Portability :  non-portable (GHC extensions)
 --
--- Conversion between units. Use @'fromTo'@ to convert between two units of the
--- same dimension.
+-- Conversion between units. Use @'from'@, @'to'@, or  @'fromTo'@ to convert
+-- between two units of the same dimension.
 --
 -- = Implementing conversions for custom units
 --
@@ -24,24 +24,26 @@
 -- three ways to implement its conversion summarized in the following table and
 -- described with further details afterwards:
 --
---  +--------------------------+------------------------+----------------------+
---  |                          | Which instances        | Note                 |
---  |                          | to declare             |                      |
---  +==========================+========================+======================+
---  | Conversion factor        | Only @'ConversionFactor'@    | @'from' == 'from''@, |
---  |                          | (@'From'@ and @'To'@   | @'to' == 'to''@,     |
---  |                          | have a default         | @'fromTo' == @       |
---  |                          | overlappable instance) | @'fromTo''@          |
---  +--------------------------+------------------------+----------------------+
---  | Affine conversion        | @'ConversionFactor'@,        | @'from' /= 'from''@, |
---  |                          | @'From'@ and @'To'@    | @'to' /= 'to''@,     |
---  |                          |                        | @'fromTo' /= @       |
---  |                          |                        | @'fromTo''@          |
---  +--------------------------+------------------------+----------------------+
---  | Non linear conversion    |                        | @'from''@, @'to''@   |
---  |                          | @'From'@ and @'To'@    | and @'fromTo''@      |
---  |                          |                        | cannot be used       |
---  +--------------------------+------------------------+----------------------+
+--  +-----------------------+---------------------------+----------------------+
+--  |                       | Which instances           | Note                 |
+--  |                       | to declare                |                      |
+--  +=======================+===========================+======================+
+--  | Conversion factor     | @'ConversionFactor'@ and  |                      |
+--  |                       | @'ConvertibleUnit'@ using |                      |
+--  |                       | the default               | @'fromTo' == @       |
+--  |                       | implementations           | @'fromTo''@          |
+--  |                       | for 'fromNormalUnit' and  |                      |
+--  |                       | 'toNormalUnit'            |                      |
+--  +-----------------------+---------------------------+----------------------+
+--  | Affine conversion     | @'ConversionFactor'@ and  |                      |
+--  |                       | @'ConvertibleUnit'@       |                      |
+--  |                       |                           | @'fromTo' /= @       |
+--  |                       |                           | @'fromTo''@          |
+--  +-----------------------+---------------------------+----------------------+
+--  | Non linear conversion |                           | @'from''@, @'to''@   |
+--  |                       | @'ConvertibleUnit'@       | and @'fromTo''@      |
+--  |                       |                           | cannot be used       |
+--  +-----------------------+---------------------------+----------------------+
 --
 --
 -- === Multiplication by a conversion factor
@@ -51,15 +53,16 @@
 -- instance of @'ConversionFactor'@, like
 --
 -- @
--- instance Fractional a => ConversionFactor Hour a where f
---   actorFrom = 3600
+-- instance Fractional a => ConversionFactor Hour a where
+--   factor = 3600
+--
+-- instance Fractional a => ConvertibleUnit Hour a
+--    -- uses default implementations for 'fromNormalUnit' and 'toNormalUnit'
 -- @
 --
--- You will get instances for @'From'@ and @'To'@ for free.
---
--- >>> toNormalUnit (Hour 1)
+-- >>> fromTo @Hour @Second 1
 -- Second 3600.0
--- >>> toNormalUnit' (Hour 1)
+-- >>> fromTo' @Hour @Second 1
 -- Second 3600.0
 --
 -- === Affine conversion (with an offset)
@@ -74,25 +77,23 @@
 -- This can be expressed by the following instances:
 --
 -- @
--- instance Fractional a => ConversionFactor Celsius a where
+-- instance Num a => ConversionFactor Celsius a where
 --   factor = 1
 --
--- instance Fractional a => From Celsius a where
---   from (Celsius x) = Kelvin (x - 273.15)
---
--- instance Fractional a => To Celsius a where
---   to (Kelvin x) = Celsius (x + 273.15)
+-- instance Fractional a => ConvertibleUnit Celsius a where
+--   toNormalUnit (Celsius x) = Kelvin (x - 273.15)
+--   fromNormalUnit (Kelvin x) = Celsius (x + 273.15)
 -- @
 --
--- >>> from (Celsius 0)
+-- >>> fromTo @Celsius @Kelvin 0
 -- Kelvin 273.15
--- >>> from' (Celsius 0)
+-- >>> fromTo' @Celsius @Kelvin 0
 -- Kelvin 0.0
 --
 -- === Other conversions
 --
 -- Any other conversion can be implemented, like for instance logarithmic units.
--- In this case, you should only give an instance for @'From'@ and @'To'@, and
+-- In this case, you should only give an instance for @'ConvertibleUnit'@, and
 -- no instance for @'ConversionFactor'@. See for instance linear picth
 -- @'Data.Unit.NonStd.Frequency.Tet'@.
 --
@@ -100,11 +101,13 @@
 
 module Data.Units.Base.Convert
   ( DimEq
+  -- * Generic conversion between units
   , ConvertibleUnit (..)
   , FromTo
   , fromTo
   , from
   , to
+  -- * Conversion using conversion factors
   , ConversionFactor (..)
   , toNormalUnit'
   , fromNormalUnit'
