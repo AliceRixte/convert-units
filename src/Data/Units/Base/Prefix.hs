@@ -38,6 +38,7 @@ instance (forall (u :: Unit). IsUnit u => IsUnit (p u))
   => IsPrefix (p :: Prefix)
 
 -- | A prefix that has a conversion factor.
+--
 class (Fractional a, IsPrefix p) => PrefixFactor (p :: Prefix) a where
   -- | Prefix conversion factor from the prefixed unit to the corresponding
   -- standard unit
@@ -46,7 +47,6 @@ class (Fractional a, IsPrefix p) => PrefixFactor (p :: Prefix) a where
   -- 1000.0
   --
   prefixFactor :: a
-
 
 -- | Prefixes that can be shown as a string, or as a type error message.
 class IsPrefix p => ShowPrefix (p :: Prefix) where
@@ -58,36 +58,53 @@ class IsPrefix p => ShowPrefix (p :: Prefix) where
   --
   type ShowPrefixType p :: ErrorMessage
 
-  -- | TODO
+  -- | Convert a prefix to a readable string
+  --
+  -- @'showsPrefixPrec'@ should satisfy the law :
+  --
+  -- @showsPrefixPrec d x r ++ s  ==  showsPrec d x (r ++ s)@
+  --
   showsPrefixPrec :: Int -> ShowS
   showsPrefixPrec _ = (showPrefix @p ++)
 
-  -- | A string representing a prefix.
+  -- | Convert a prefix to a string representing its type.
+  --
+  -- >>> showPrefix @Kilo
+  -- "Kilo"
+  --
   showPrefix :: String
   showPrefix = showsPrefix @p ""
 
+  -- | Same as @'showsPrefixPrec'@ but for pretty printing.
+  --
+  -- @'prettysPrefixPrec'@ should satisfy the law :
+  --
+  -- @prettysPrefixPrec d x r ++ s  ==  prettysPrec d x (r ++ s)@
+  --
   prettysPrefixPrec :: Int -> ShowS
   prettysPrefixPrec _ = (prettyPrefix @p ++)
 
-  -- | A string representing a prefix.
+  -- | Same as @'showPrefix'@ but for pretty printing
+  --
+  -- >>> prettyPrefix @Kilo
+  -- "k"
   prettyPrefix :: String
   prettyPrefix = prettysPrefix @p ""
 
--- | TODO
+-- | Equivalent to 'showsPrefixPrec' with a precedence of 0.
 showsPrefix :: forall p. ShowPrefix p => ShowS
 showsPrefix = showsPrefixPrec @p 0
 
+-- | Equivalent to 'prettysPrefixPrec' with a precedence of 0.
 prettysPrefix :: forall p. ShowPrefix p => ShowS
 prettysPrefix = prettysPrefixPrec @p 0
-
--- showsPrefixCons :: forall p. ShowPrefix p => ShowS
--- showsPrefixCons = showsPrecPrefix @p 0
 
 
 -- | A prefix that can represent any prefix.
 --
 -- This can be used with the `deriving via` mechanism to derive some of the
 -- prefix instances.
+--
 newtype MetaPrefix (p :: Prefix) (u :: Unit) a = MetaPrefix (p u a)
   deriving Show via (MetaUnit (p u) a)
 
@@ -104,24 +121,28 @@ instance
 instance
   (PrefixFactor p a, ConvertibleUnit u a, NormalizeUnit (p u) ~ NormalizeUnit u)
   => ConvertibleUnit (MetaPrefix p u) a where
-  toNormalUnit (MetaPrefix a) = prefixFrom @p @u a
+  toNormalUnit (MetaPrefix a) = prefixToNormalUnit @p @u a
   {-# INLINE toNormalUnit #-}
-  fromNormalUnit a = MetaPrefix $ prefixTo @p @u a
+  fromNormalUnit a = MetaPrefix $ prefixFromNormalUnit @p @u a
   {-# INLINE fromNormalUnit #-}
 
-prefixFrom :: forall (p :: Prefix) (u :: Unit) a.
+-- | Convert a prefixed unit to the corresponding standard unit.
+--
+prefixToNormalUnit :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, ConvertibleUnit u a, NormalizeUnit (p u) ~ NormalizeUnit u)
   => p u a -> NormalizeUnit u a
-prefixFrom u =
+prefixToNormalUnit u =
     toNormalUnit @u $ quantity @u (prefixFactor @p * unQuantity u)
-{-# INLINE prefixFrom #-}
+{-# INLINE prefixToNormalUnit #-}
 
-prefixTo :: forall (p :: Prefix) (u :: Unit) a.
+-- | Convert a standard unit to the corresponding prefixed unit.
+--
+prefixFromNormalUnit :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, ConvertibleUnit u a
   , NormalizeUnit (p u) a ~ NormalizeUnit u a)
   => NormalizeUnit (p u) a -> p u a
-prefixTo a = quantity  $ unQuantity (fromNormalUnit @u a) / prefixFactor @p
-{-# INLINE prefixTo #-}
+prefixFromNormalUnit a = quantity  $ unQuantity (fromNormalUnit @u a) / prefixFactor @p
+{-# INLINE prefixFromNormalUnit #-}
 
 
 instance ShowPrefix p => ShowPrefix (MetaPrefix p) where
