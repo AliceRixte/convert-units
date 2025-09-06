@@ -36,8 +36,6 @@ sameDimSpec = describe ("Unit " ++ showUnit @u) $ do
   subLeftSpec @u @u @a
   subRightSpec @u @u @a
   subSameSpec @u @u @a
-  mulLeftSpec @u @u @a
-  mulRightSpec @u @u @a
   mulSameSpec @u @u @a
   divSameSpec @u @u @a
   expSpec @u @a

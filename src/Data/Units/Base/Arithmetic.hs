@@ -47,8 +47,6 @@ module Data.Units.Base.Arithmetic
   -- ** Multiplication
   , (*.)
   , (.*.)
-  , (.*~)
-  , (~*.)
   , (~*~)
   -- ** Division
   , (/.)
@@ -201,47 +199,6 @@ u .*. v = quantity $ unQuantity u * unQuantity v
 {-# INLINE (.*.) #-}
 
 infixr 7 .*.
-
--- | Multiply two quantities of the same dimension. The unit of the right
--- will be converted to the unit of the left operand.
---
--- >>> Meter 2 .*~ Kilo (Meter 3)
--- quantity @(Meter .^+ 2) 6000.0
---
--- >>> Kilo (Meter 3) .*~ Meter 2
--- quantity @(Kilo Meter .^+ 2) 6.0e-3
---
--- >>> Meter 2 .*~ Second 5
--- • Cannot convert unit ‘m’ of dimension ‘L’
---       to unit ‘s’ of dimension ‘T’.
---
-(.*~) :: forall u v u2 a.
-  ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
-  , FromTo' v u a
-  )
- => u a -> v a -> u2 a
-u .*~ v = quantity $ unQuantity u * unQuantity (fromTo' v :: u a)
-{-# INLINE (.*~) #-}
-
-infix 7 .*~
-
--- | Same as @'(.*~)'@ but it is the left operand that is converted.
---
--- >>> Milli (Meter 2) ~*. Kilo (Meter 3)
--- quantity @(Kilo Meter .^+ 2) 6.0e-6
---
--- >>> Kilo (Meter 3) ~*. Meter 2
--- quantity @(Meter .^+ 2) 6000.0
---
-(~*.) ::
-  ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
-  , FromTo' u v a
-  )
- => u a -> v a -> v2 a
-(~*.) = flip (.*~)
-{-# INLINE (~*.) #-}
-
-infix 7 ~*.
 
 -- | Multiply two quantities of the same dimension and convert both of them to the corresponding standard unity.
 --

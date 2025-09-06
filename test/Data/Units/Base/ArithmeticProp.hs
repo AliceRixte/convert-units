@@ -202,66 +202,6 @@ subSameSpec = it (showUnit @u ++ " ~-~ " ++ showUnit @v)
 
 -------------------------------- Multiplication --------------------------------
 
-
-mulRight :: forall u v a u2.
-  ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
-  , DimEq u v
-  , FromTo' v u a
-  )
-  => a -> a -> a
-mulRight u v = coerce $ (coerce u :: u a) .*~ (coerce v :: v a)
-
-mulRightProp :: forall u v a u2.
-  ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
-  , DimEq u v
-  , FromTo' v u a
-  , Show a, Epsilon a, Arbitrary a
-  )
-  => Property
-mulRightProp = property (\(a :: a) (b :: a) ->
-  aboutEqual (coerce (fromTo' (coerce a :: u a) :: v a) * b :: a)
-             (mulRight @u @v a b))
-
-mulRightSpec :: forall u v a u2.
-  ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
-  , DimEq u v
-  , FromTo' v u a
-  , ShowUnit u, ShowUnit v
-  , Show a, Epsilon a, Arbitrary a
-  ) => Spec
-mulRightSpec = it (showUnit @u ++ " .*~ " ++ showUnit @v)
-  $ mulRightProp @u @v @a
-
-mulLeft :: forall u v a v2.
-  ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
-  , DimEq v u
-  , FromTo' u v a
-  )
-  => a -> a -> a
-mulLeft u v = coerce $ (coerce u :: u a) ~*. (coerce v :: v a)
-
-mulLeftProp :: forall u v a v2.
-  ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
-  , DimEq v u
-  , FromTo' u v a
-  , Show a, Epsilon a, Arbitrary a
-  )
-  => Property
-mulLeftProp = property (\(a :: a) (b :: a) ->
-  aboutEqual (coerce (fromTo' (coerce a :: u a) :: v a) * b :: a)
-             (mulLeft @u @v a b))
-
-mulLeftSpec :: forall u v a v2.
-  ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
-  , DimEq v u
-  , FromTo' u v a
-  , ShowUnit u, ShowUnit v
-  , Show a, Epsilon a, Arbitrary a
-  ) => Spec
-mulLeftSpec = it (showUnit @u ++ " ~*. " ++ showUnit @v)
-  $ mulLeftProp @u @v @a
-
-
 mulSame :: forall u v a u2 .
   ( u2 ~ NormalizeUnit u .^+ 2, IsUnit u2
   , DimEq u v
@@ -325,29 +265,23 @@ divSameSpec = it (showUnit @u ++ " ~/~ " ++ showUnit @v)
 ------------------ Arithmetic with two different dimensions  -------------------
 
 mulDiffDim :: forall u v a.
-  ( ConversionFactor u a, ConversionFactor v a
-  , IsUnit (NormalizeUnit' (u .*. v))
-  )
+  ( ConversionFactor u a, ConversionFactor v a)
   => a -> a -> a
 mulDiffDim u v = coerce $ (coerce u :: u a) .*. (coerce v :: v a)
 
 mulDiffDimProp :: forall u v a.
   ( ConversionFactor u a, ConversionFactor v a
-  , IsUnit (NormalizeUnit' (u .*. v))
-  , Coercible a (NormalizeUnit (NormalizeUnit' (u .*. v)) a)
-  , ConversionFactor (NormalizeUnit' (u .*. v)) a
+  , ConversionFactor (u .*. v) a
   , Arbitrary a, Show a, Epsilon a
   )
   => Property
 mulDiffDimProp =
   property (\a b -> aboutEqual (a * b) (mulDiffDim @u @v @a a b) )
-  .&&. toFromProp @(NormalizeUnit' (u .*. v)) @a
+  .&&. toFromProp @(u .*. v) @a
 
 mulDiffDimSpec :: forall u v a.
   ( ConversionFactor u a, ConversionFactor v a
-  , IsUnit (NormalizeUnit' (u .*. v))
-  , Coercible a (NormalizeUnit (NormalizeUnit' (u .*. v)) a)
-  , ConversionFactor (NormalizeUnit' (u .*. v)) a
+  , ConversionFactor (u .*. v) a
   , Arbitrary a, Show a, Epsilon a
   , ShowUnit u, ShowUnit v
   )
@@ -356,18 +290,16 @@ mulDiffDimSpec = it (showUnit @u ++ " .*. " ++ showUnit @v)
     $ mulDiffDimProp @u @v @a
 
 divDiffDim :: forall u v a uv .
-  ( uv ~ (u ./. v)
-  , IsUnit u, IsUnit v, IsUnit uv
+  ( IsUnit u, IsUnit v, IsUnit (u ./. v)
   , Fractional a
   )
   => a -> a -> a
 divDiffDim u v = coerce $ (coerce u :: u a) ./. (coerce v :: v a)
 
 divDiffDimProp :: forall u v a uv.
-  ( uv ~ (u ./. v)
-  , IsUnit u, IsUnit v, IsUnit uv
-  , IsUnit (NormalizeUnit (u ./. v))
-  , ConvertibleUnit (u ./. v) a
+  ( IsUnit u, IsUnit v, IsUnit (u ./. v)
+  , ConversionFactor (u ./. v) a
+  , IsUnit (u ./. v)
   , Arbitrary a, Show a, Epsilon a, Eq a, Fractional a
   )
   => Property
@@ -376,10 +308,9 @@ divDiffDimProp =
   .&&. toFromProp @(u ./. v) @a
 
 divDiffDimSpec :: forall u v a uv.
-  ( uv ~ (u ./. v)
-  , IsUnit u, IsUnit v, IsUnit uv
-  , IsUnit (NormalizeUnit (u ./. v))
-  , ConvertibleUnit (u ./. v) a
+  (IsUnit u, IsUnit v, IsUnit (u ./. v)
+  , ConversionFactor (u ./. v) a
+  , IsUnit (u ./. v)
   , Arbitrary a, Show a, Epsilon a, Eq a, Fractional a
   , ShowUnit u, ShowUnit v
   )
