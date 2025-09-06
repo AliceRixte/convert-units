@@ -48,7 +48,7 @@ $(mkUnitFrom "Hertz" "Hz" ''Frequency 1)
 
 type Speed = NormalizeDim (Length ./. Time)
 
-type Acceleration = NormalizeDim (Length ./. (Time .^+ 2))
+type Acceleration = NormalizeDim (Length ./. Time .^+ 2)
 
 type Force = NormalizeDim (Mass .*. Acceleration)
 
@@ -57,19 +57,75 @@ type Force = NormalizeDim (Mass .*. Acceleration)
 $(mkUnitFrom "Newton" "N" ''Force 1)
 
 type Pressure = NormalizeDim (Force ./. (Length .^+ 2))
+type Stress = NormalizeDim (Force ./. (Length .^+ 2))
 
 -- | Pressure in pascals
 --
 $(mkUnitFrom "Pascal" "Pa" ''Pressure 1)
 
+-- | Energy quantity. Corresponds to (Mass .*. Length.^2 ./. Time.^2).
+--
 type Energy = NormalizeDim (Length .*. Force)
+type Work = Energy
+type Heat = Energy
 
 -- | Energy in joules
 --
 $(mkUnitFrom "Joule" "J" ''Energy 1)
 
 type Power = NormalizeDim (Energy ./. Time)
+type RadiantFlux = Power
 
 $(mkUnitFrom "Watt" "W" ''Power 1)
 
+type ElectricCharge = NormalizeDim (Time .*. Current)
+type QuantityOfElectricity = ElectricCharge
+
+$(mkUnitFrom "Coulomb" "C" ''ElectricCharge 1)
+
+type Voltage = NormalizeDim (Power ./. Current)
+type ElectricPotential = Voltage
+type ElectromotiveForce = Voltage
+
+$(mkUnitFrom "Volt" "V" ''Voltage 1)
+
+type Capacitance = NormalizeDim (ElectricCharge ./. Voltage)
+
+$(mkUnitFrom "Farad" "F" ''Capacitance 1)
+
+type Resistance = NormalizeDim (Voltage ./. Current)
+type Impedance = Resistance
+type Reactance = Resistance
+
+$(mkUnitFrom "Ohm" "Ω" ''Resistance 1)
+
+type Conductance = NormalizeDim (Current ./. Voltage)
+
+$(mkUnitFrom "Siemens" "S" ''Conductance 1)
+
+type MagneticFlux = NormalizeDim (Voltage .*. Time)
+
+$(mkUnitFrom "Weber" "Wb" ''MagneticFlux 1)
+
+type MagneticInduction = NormalizeDim (MagneticFlux ./. (Length .^+ 2))
+type MagneticFluxDensity = MagneticInduction
+
+$(mkUnitFrom "Tesla" "T" ''MagneticInduction 1)
+
+type Inductance = NormalizeDim (MagneticFlux ./. Current)
+
+-- | Thermodynamic temperature in Celsius degrees
+--
+$(mkUnitNoFactor "Celsius" "°C" ''Temperature)
+
+instance Fractional a => ConversionFactor Celsius a where
+  factorFrom = 1
+  {-# INLINE factorFrom #-}
+
+instance Fractional a => ConvertibleUnit Celsius a where
+  toNormalUnit (Celsius x) = Kelvin (x + 273.15)
+  {-# INLINE toNormalUnit #-}
+
+  fromNormalUnit (Kelvin x) = Celsius (x - 273.15)
+  {-# INLINE fromNormalUnit #-}
 
