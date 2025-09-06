@@ -35,11 +35,35 @@ import Data.Coerce
 import Data.Units.Base
 import Data.Units.SI.Prefixes
 
+--  +--------------------------------------+-----------------+
+--  | Dimension                            | Id              |
+--  +======================================+=================+
+--  | Reserved                             |   0             |
+--  +======================================+=================+
+--  | @'NoDim'@                            |   1             |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.AngleSI.Angle.Angle'@   | 1000            |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.Mass'@               | 2000            |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.Length'@             | 3000            |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.Time'@               | 4000            |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.ElectricCurrent'@    | 5000            |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.Temperature'@        | 6000            |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.AmountOfSubstance'@  | 7000            |
+--  +--------------------------------------+-----------------+
+--  | @'Data.Units.SI.LuminousIntensity'@  | 8000            |
+--  +--------------------------------------+-----------------+
+
 -- | The mass dimension, denotated @M@ in SI.
 --
 --  This may contain a mass quantity with unspecified unit.
 --
-$(mkDim "Mass" "M" 0x08080402)
+$(mkDim "Mass" "M" 2000)
 
 
 -- | A quantity in grams, denotated @g@ in SI.
@@ -70,7 +94,7 @@ instance IsDim Mass where
 --
 --  This may contain a length quantity with unspecified unit.
 --
-$(mkDim "Length" "L" 0x08080404)
+$(mkDim "Length" "L" 3000)
 
 
 -- | A quantity in meters, denotated @m@ in SI.
@@ -85,7 +109,7 @@ $(mkBaseUnit "Meter" "m" ''Length)
 --
 --  This may contain a length quantity with unspecified unit.
 --
-$(mkDim "Time" "T" 0x08080408)
+$(mkDim "Time" "T" 4000)
 
 
 -- | A quantity in seconds, denotated @s@ in SI.
@@ -98,7 +122,7 @@ $(mkBaseUnit "Second" "s" ''Time)
 --
 --  This may contain an electric current quantity with unspecified unit.
 --
-$(mkDim "Current" "I" 0x08080801)
+$(mkDim "Current" "I" 5000)
 
 
 -- | A quantity in amperes, denotated @A@ in SI.
@@ -112,7 +136,7 @@ $(mkBaseUnit "Ampere" "A" ''Current)
 --
 --  This may contain a temperature quantity with unspecified unit.
 --
-$(mkDim "Temperature" "Θ" 0x08080802)
+$(mkDim "Temperature" "Θ" 6000)
 
 
 
@@ -129,7 +153,7 @@ $(mkBaseUnit "Kelvin" "K" ''Temperature)
 --
 --  This may contain an amount of substance quantity with unspecified unit.
 --
-$(mkDim "AmountOfSubstance" "N" 0x08080804)
+$(mkDim "AmountOfSubstance" "N" 7000)
 
 
 -- | A quantity in moles, denotated @mol@ in SI.
@@ -144,7 +168,7 @@ $(mkBaseUnit "Mole" "mol" ''AmountOfSubstance)
 --
 --  This may contain a luminous intensity quantity with unspecified unit.
 --
-$(mkDim "LuminousIntensity" "J" 0x08080808)
+$(mkDim "LuminousIntensity" "J" 8000)
 
 -- | A quantity in candelas, denotated @cd@ in SI.
 --
