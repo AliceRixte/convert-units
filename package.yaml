@@ -1,18 +1,18 @@
 name:                convert-units
-version:             0.1.0.0
+version:             0
 github:              "AliceRixte/convert-units"
-license:             LGPL-3
+license:             BSD-3-Clause
 author:              "Alice Rixte"
 maintainer:          "alice.rixte@u-bordeaux.fr"
 copyright:           "BSD 3"
+synopsis:            Arithmetic and type checked conversions between units.
+category:            Physics, Data, Numeric, Math
 
 extra-source-files:
 - README.md
-- CHANGELOG.md
 
-# Metadata used when publishing your package
-synopsis:            Arithmetic and type checked conversions between units.
-category:
+extra-doc-files:
+- CHANGELOG.md
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
@@ -22,11 +22,8 @@ description:         Please see the README on GitHub at <https://github.com/Alic
 
 dependencies:
 - base >= 4.18 && < 5
-- hspec
-- QuickCheck
-- data-default
-- convertible
-- newtype
+# - groups ?
+# - data-default ?
 - template-haskell
 
 ghc-options:
@@ -50,11 +47,7 @@ default-extensions:
   - TemplateHaskell
 
 library:
-  ghc-options:
-  - -O2 #TODO change
-
   source-dirs: src
-
 
 tests:
   convert-units-test:
@@ -69,7 +62,6 @@ tests:
     - -O0
     - -rtsopts
     - -with-rtsopts=-N
-
 
 benchmarks:
   convert-units-bench:
