@@ -10,7 +10,6 @@ module Main (main) where
 import Criterion.Main
 
 import Data.Units
-import Data.Units.NonStd.Time
 
 mkBench f n = bench (show n) $ nf f n
 
