@@ -107,6 +107,8 @@ module Data.Units.Base.Convert
   , fromTo
   , from
   , to
+  , ($~)
+  , (~&)
   -- * Conversion using conversion factors
   , ConversionFactor (..)
   , toNormalUnit'
@@ -198,6 +200,7 @@ class (IsUnit u, IsUnit (NormalizeUnit u)) => ConvertibleUnit u a where
   {-# INLINE fromNormalUnit #-}
 
 
+
 -- | A constraint that is satisfied when both units have the same dimension and
 -- are such that @u@ can be converted to @v@.
 --
@@ -239,9 +242,29 @@ to :: forall v u a. FromTo u v a => u a -> v a
 to = fromTo
 {-# INLINE to #-}
 
+-- | A convenient operator for converting a unit before feeding it to a
+-- function.
+--
+-- >>> import Linear
+-- >>> rotation (Radian th) = V2 (V2 (cos th) (- sin th)) (V2 (sin th)  (cos th))
+-- >>> rotation $~ Degree 90
+-- V2 (V2 6.123031769111886e-17 (-1.0)) (V2 1.0 6.123031769111886e-17)
+--
+($~) :: FromTo u v a => (v a -> b) -> u a -> b
+f $~ x = f (fromTo x)
+{-# INLINE ($~) #-}
+
+infixr 0 $~
+
+-- | Same as @'($~)'@ but with arguments flipped.
+--
+(~&) :: FromTo u v a => u a -> (v a -> b) -> b
+(~&) = flip ($~)
+{-# INLINE (~&) #-}
+
+infixl 1 ~&
 
 --------------------------------------------------------------------------------
-
 
 -- | Unit that can be converted to their corresponding standard unit by
 -- multiplication with a conversion factor.
