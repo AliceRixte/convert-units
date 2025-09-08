@@ -121,10 +121,10 @@ instance
 instance
   (PrefixFactor p a, ConvertibleUnit u a, NormalizeUnit (p u) ~ NormalizeUnit u)
   => ConvertibleUnit (MetaPrefix p u) a where
-  toNormalUnit (MetaPrefix a) = prefixToNormalUnit @p @u a
-  {-# INLINE toNormalUnit #-}
-  fromNormalUnit a = MetaPrefix $ prefixFromNormalUnit @p @u a
-  {-# INLINE fromNormalUnit #-}
+  toBaseUnit (MetaPrefix a) = prefixToNormalUnit @p @u a
+  {-# INLINE toBaseUnit #-}
+  fromBaseUnit a = MetaPrefix $ prefixFromBaseUnit @p @u a
+  {-# INLINE fromBaseUnit #-}
 
 -- | Convert a prefixed unit to the corresponding standard unit.
 --
@@ -132,17 +132,17 @@ prefixToNormalUnit :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, ConvertibleUnit u a, NormalizeUnit (p u) ~ NormalizeUnit u)
   => p u a -> NormalizeUnit u a
 prefixToNormalUnit u =
-    toNormalUnit @u $ quantity @u (prefixFactor @p * unQuantity u)
+    toBaseUnit @u $ quantity @u (prefixFactor @p * unQuantity u)
 {-# INLINE prefixToNormalUnit #-}
 
 -- | Convert a standard unit to the corresponding prefixed unit.
 --
-prefixFromNormalUnit :: forall (p :: Prefix) (u :: Unit) a.
+prefixFromBaseUnit :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, ConvertibleUnit u a
   , NormalizeUnit (p u) a ~ NormalizeUnit u a)
   => NormalizeUnit (p u) a -> p u a
-prefixFromNormalUnit a = quantity  $ unQuantity (fromNormalUnit @u a) / prefixFactor @p
-{-# INLINE prefixFromNormalUnit #-}
+prefixFromBaseUnit a = quantity  $ unQuantity (fromBaseUnit @u a) / prefixFactor @p
+{-# INLINE prefixFromBaseUnit #-}
 
 
 instance ShowPrefix p => ShowPrefix (MetaPrefix p) where

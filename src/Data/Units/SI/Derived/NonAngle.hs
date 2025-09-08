@@ -223,11 +223,11 @@ instance Fractional a => ConversionFactor Celsius a where
   {-# INLINE factor #-}
 
 instance Fractional a => ConvertibleUnit Celsius a where
-  toNormalUnit (Celsius x) = Kelvin (x + 273.15)
-  {-# INLINE toNormalUnit #-}
+  toBaseUnit (Celsius x) = Kelvin (x + 273.15)
+  {-# INLINE toBaseUnit #-}
 
-  fromNormalUnit (Kelvin x) = Celsius (x - 273.15)
-  {-# INLINE fromNormalUnit #-}
+  fromBaseUnit (Kelvin x) = Celsius (x - 273.15)
+  {-# INLINE fromBaseUnit #-}
 
 -- | Absorbed dose quantity. Equal to
 --

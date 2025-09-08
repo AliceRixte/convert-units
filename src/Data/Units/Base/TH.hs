@@ -139,19 +139,19 @@ mkDefaultSigConvertibleInstance unitName = [d|
 --
 -- @
 -- instance Fractional a => ConvertibleUnit Meter a where
---    toNormalUnit = coerce
---    {-# INLINE toNormalUnit #-}
---    fromNormalUnit = coerce
---    {-# INLINE fromNormalUnit #-}
+--    toBaseUnit = coerce
+--    {-# INLINE toBaseUnit #-}
+--    fromBaseUnit = coerce
+--    {-# INLINE fromBaseUnit #-}
 -- @
 --
 mkNormalConvertibleInstance :: Quote m => Name -> m [Dec]
 mkNormalConvertibleInstance unitName = [d|
   instance Fractional a => ConvertibleUnit $(conT unitName) a where
-    toNormalUnit = coerce
-    {-# INLINE toNormalUnit #-}
-    fromNormalUnit = coerce
-    {-# INLINE fromNormalUnit #-}
+    toBaseUnit = coerce
+    {-# INLINE toBaseUnit #-}
+    fromBaseUnit = coerce
+    {-# INLINE fromBaseUnit #-}
   |]
 
 
@@ -401,20 +401,20 @@ mkPrefixConvFactorInstance prefixName = [d|
 -- @
 -- instance (ConvertibleUnit u a, Fractional a)
 --   => ConvertibleUnit (Milli u) a where
---   toNormalUnit = prefixToNormalUnit
---   {-# INLINE toNormalUnit #-}
---   fromNormalUnit = prefixFromNormalUnit
---   {-# INLINE fromNormalUnit #-}
+--   toBaseUnit = prefixToNormalUnit
+--   {-# INLINE toBaseUnit #-}
+--   fromBaseUnit = prefixFromBaseUnit
+--   {-# INLINE fromBaseUnit #-}
 -- @
 --
 mkPrefixConvUnitInstance :: Name -> Q [Dec]
 mkPrefixConvUnitInstance prefixName = [d|
   instance (ConvertibleUnit u a, Fractional a)
     => ConvertibleUnit ($(conT prefixName) u) a where
-    toNormalUnit = prefixToNormalUnit
-    {-# INLINE toNormalUnit #-}
-    fromNormalUnit = prefixFromNormalUnit
-    {-# INLINE fromNormalUnit #-}
+    toBaseUnit = prefixToNormalUnit
+    {-# INLINE toBaseUnit #-}
+    fromBaseUnit = prefixFromBaseUnit
+    {-# INLINE fromBaseUnit #-}
   |]
 
 -- | Make a unit prefix.

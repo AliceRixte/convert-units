@@ -105,7 +105,7 @@ infixr 5 ~+.
   , ConversionFactor u a, ConversionFactor v a
   )
  => u a -> v a -> (NormalizeUnit u) a
-u ~+~ v = quantity (unQuantity (toNormalUnit' u) + unQuantity (toNormalUnit' v))
+u ~+~ v = quantity (unQuantity (toBaseUnit' u) + unQuantity (toBaseUnit' v))
 {-# INLINE (~+~) #-}
 
 infixr 5 ~+~
@@ -144,7 +144,7 @@ infixr 5 ~-.
   , ConversionFactor v a, ConversionFactor u a
   )
  => u a -> v a -> (NormalizeUnit u) a
-u ~-~ v = quantity $ unQuantity (toNormalUnit' u) - unQuantity (toNormalUnit' v)
+u ~-~ v = quantity $ unQuantity (toBaseUnit' u) - unQuantity (toBaseUnit' v)
 {-# INLINE (~-~) #-}
 
 infixr 5 ~-~
@@ -243,7 +243,7 @@ infixr 7 ~*.
   , ConversionFactor u a, ConversionFactor v a
   )
  => u a -> v a -> u2 a
-u ~*~ v = quantity $ unQuantity (toNormalUnit' u) * unQuantity (toNormalUnit' v)
+u ~*~ v = quantity $ unQuantity (toBaseUnit' u) * unQuantity (toBaseUnit' v)
 {-# INLINE (~*~) #-}
 
 infix 7 ~*~
@@ -317,7 +317,7 @@ infix 7 ~/.
   , ConversionFactor u a, ConversionFactor v a
   )
   => u a -> v a -> NoUnit a
-u ~/~ v = quantity $ unQuantity (toNormalUnit' u)  / unQuantity (toNormalUnit' v)
+u ~/~ v = quantity $ unQuantity (toBaseUnit' u)  / unQuantity (toBaseUnit' v)
 {-# INLINE (~/~) #-}
 
 infix 6 ~/~
@@ -385,7 +385,7 @@ infix 8 .^~
 (~^~) :: forall (n :: ZZ) proxy u un a.
   (KnownInt n, ConversionFactor u a, un ~ NormalizeUnit u .^. n )
   => u a -> proxy n -> un a
-u ~^~ p = quantity @un $ unQuantity (toNormalUnit' u) ^^ intVal p
+u ~^~ p = quantity @un $ unQuantity (toBaseUnit' u) ^^ intVal p
 {-# INLINE (~^~) #-}
 
 infix 8 ~^~
