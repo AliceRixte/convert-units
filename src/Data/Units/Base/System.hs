@@ -60,7 +60,7 @@ module Data.Units.Base.System
 
 
   -- * Unit normalization
-  , NormalizeUnit
+  , BaseUnitOf
   , NormalizeUnitL
   , NormalizeUnitR
   -- ** Normalization operators
@@ -418,7 +418,7 @@ prettysUnit = prettysUnitPrec @u 0
 --
 prettyUnitInfo :: forall u du nu.
   ( du ~ DimOf u
-  , nu ~ NormalizeUnit u
+  , nu ~ BaseUnitOf u
   , ShowUnit u
   , ShowDim du
   , ShowUnit nu
@@ -443,7 +443,7 @@ prettyUnitInfo =
 --
 putInfoU :: forall u du nu.
   ( du ~ DimOf u
-  , nu ~ NormalizeUnit u
+  , nu ~ BaseUnitOf u
   , ShowUnit u
   , ShowDim du
   , ShowUnit nu
@@ -455,7 +455,7 @@ putInfoU = putStr $ prettyUnitInfo @u
 prettyQuantityInfo :: forall u a.
   ( ShowUnit u
   , ShowDim (DimOf u)
-  , ShowUnit (NormalizeUnit u)
+  , ShowUnit (BaseUnitOf u)
   , Show a
   ) => u a -> String
 prettyQuantityInfo u = prettyUnitInfo @u ++
@@ -474,7 +474,7 @@ prettyQuantityInfo u = prettyUnitInfo @u ++
 putInfoQ :: forall u a.
   ( ShowUnit u
   , ShowDim (DimOf u)
-  , ShowUnit (NormalizeUnit u)
+  , ShowUnit (BaseUnitOf u)
   , Show a
   ) => u a -> IO ()
 putInfoQ u = putStr $ prettyQuantityInfo @u u
@@ -732,23 +732,23 @@ toSuperscript a = a
 
 -- | Normalizes a unit by converting it to a product of  exponentiations of base
 -- units.
-type NormalizeUnit u = DimToUnit (DimOf u)
+type BaseUnitOf u = DimToUnit (DimOf u)
 
 -- | Multiplies two units and normalizes the result.
 --
-type (u :: Unit) ~*~ (v :: Unit) = NormalizeUnit (u .*. v)
+type (u :: Unit) ~*~ (v :: Unit) = BaseUnitOf (u .*. v)
 
 infixr 7 ~*~
 
 -- | Divides two units and normalizes the result.
 --
-type (u :: Unit) ~/~ (v :: Unit) = NormalizeUnit (u ./. v)
+type (u :: Unit) ~/~ (v :: Unit) = BaseUnitOf (u ./. v)
 
 infixr 6 ~/~
 
 -- | Exponentiates a unit and normalizes the result.
 --
-type (u :: Unit) ~^~ (n :: ZZ) = NormalizeUnit (u .^. n)
+type (u :: Unit) ~^~ (n :: ZZ) = BaseUnitOf (u .^. n)
 
 infixr 8 ~^~
 

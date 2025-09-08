@@ -203,7 +203,7 @@ subSameSpec = it (showUnit @u ++ " ~-~ " ++ showUnit @v)
 -------------------------------- Multiplication --------------------------------
 
 mulSame :: forall u v a u2 .
-  ( u2 ~ NormalizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   )
@@ -211,7 +211,7 @@ mulSame :: forall u v a u2 .
 mulSame u v = coerce $ (coerce u :: u a) ~*~ (coerce v :: v a)
 
 mulSameProp :: forall u v a u2 .
-  ( u2 ~ NormalizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   , Show a, Epsilon a, Arbitrary a
@@ -222,7 +222,7 @@ mulSameProp = property (\(a :: a) (b :: a) ->
              (mulSame @u @v a b))
 
 mulSameSpec :: forall u v a u2 .
-  ( u2 ~ NormalizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   , ShowUnit u, ShowUnit v
@@ -233,7 +233,7 @@ mulSameSpec = it (showUnit @u ++ " ~*~ " ++ showUnit @v)
   $ mulSameProp @u @v @a
 
 divSame :: forall u v a u2 .
-  ( u2 ~ NormalizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   )
@@ -241,7 +241,7 @@ divSame :: forall u v a u2 .
 divSame u v = coerce $ (coerce u :: u a) ~/~ (coerce v :: v a)
 
 divSameProp :: forall u v a u2 .
-  ( u2 ~ NormalizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   , Show a, Epsilon a, Eq a, Arbitrary a
@@ -252,7 +252,7 @@ divSameProp = property (\(a :: a) (b :: a) -> b == 0 ||
              (divSame @u @v a b))
 
 divSameSpec :: forall u v a u2 .
-  ( u2 ~ NormalizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   , ShowUnit u, ShowUnit v
@@ -265,7 +265,7 @@ divSameSpec = it (showUnit @u ++ " ~/~ " ++ showUnit @v)
 ------------------ Arithmetic with two different dimensions  -------------------
 
 -- mulRight :: forall u v a u2.
---   ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
+--   ( u2 ~ BaseUnitOf' (u .^+ 2) , IsUnit u2
 --   , DimEq u v
 --   , FromTo' v u a
 --   )
@@ -273,7 +273,7 @@ divSameSpec = it (showUnit @u ++ " ~/~ " ++ showUnit @v)
 -- mulRight u v = coerce $ (coerce u :: u a) .*~ (coerce v :: v a)
 
 -- mulRightProp :: forall u v a u2.
---   ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
+--   ( u2 ~ BaseUnitOf' (u .^+ 2) , IsUnit u2
 --   , DimEq u v
 --   , FromTo' v u a
 --   , Show a, Epsilon a, Arbitrary a
@@ -284,7 +284,7 @@ divSameSpec = it (showUnit @u ++ " ~/~ " ++ showUnit @v)
 --              (mulRight @u @v a b))
 
 -- mulRightSpec :: forall u v a u2.
---   ( u2 ~ NormalizeUnit' (u .^+ 2) , IsUnit u2
+--   ( u2 ~ BaseUnitOf' (u .^+ 2) , IsUnit u2
 --   , DimEq u v
 --   , FromTo' v u a
 --   , ShowUnit u, ShowUnit v
@@ -294,7 +294,7 @@ divSameSpec = it (showUnit @u ++ " ~/~ " ++ showUnit @v)
 --   $ mulRightProp @u @v @a
 
 -- mulLeft :: forall u v a v2.
---   ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
+--   ( v2 ~ BaseUnitOf' (v .^+ 2), IsUnit v2
 --   , DimEq v u
 --   , FromTo' u v a
 --   )
@@ -302,7 +302,7 @@ divSameSpec = it (showUnit @u ++ " ~/~ " ++ showUnit @v)
 -- mulLeft u v = coerce $ (coerce u :: u a) ~*. (coerce v :: v a)
 
 -- mulLeftProp :: forall u v a v2.
---   ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
+--   ( v2 ~ BaseUnitOf' (v .^+ 2), IsUnit v2
 --   , DimEq v u
 --   , FromTo' u v a
 --   , Show a, Epsilon a, Arbitrary a
@@ -313,7 +313,7 @@ divSameSpec = it (showUnit @u ++ " ~/~ " ++ showUnit @v)
 --              (mulLeft @u @v a b))
 
 -- mulLeftSpec :: forall u v a v2.
---   ( v2 ~ NormalizeUnit' (v .^+ 2), IsUnit v2
+--   ( v2 ~ BaseUnitOf' (v .^+ 2), IsUnit v2
 --   , DimEq v u
 --   , FromTo' u v a
 --   , ShowUnit u, ShowUnit v

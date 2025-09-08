@@ -21,8 +21,8 @@ toFrom :: forall u a.
   (ConvertibleUnit u a)
   => a -> a
 toFrom a = coerce
-  (toBaseUnit (fromBaseUnit @u (coerce a :: NormalizeUnit u a) :: u a)
-    :: NormalizeUnit u a)
+  (toBaseUnit (fromBaseUnit @u (coerce a :: BaseUnitOf u a) :: u a)
+    :: BaseUnitOf u a)
 
 toFromProp :: forall u a.
   ( ConvertibleUnit u a

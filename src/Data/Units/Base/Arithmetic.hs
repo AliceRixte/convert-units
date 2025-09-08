@@ -104,7 +104,7 @@ infixr 5 ~+.
   ( DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   )
- => u a -> v a -> (NormalizeUnit u) a
+ => u a -> v a -> (BaseUnitOf u) a
 u ~+~ v = quantity (unQuantity (toBaseUnit' u) + unQuantity (toBaseUnit' v))
 {-# INLINE (~+~) #-}
 
@@ -143,7 +143,7 @@ infixr 5 ~-.
   ( DimEq u v
   , ConversionFactor v a, ConversionFactor u a
   )
- => u a -> v a -> (NormalizeUnit u) a
+ => u a -> v a -> (BaseUnitOf u) a
 u ~-~ v = quantity $ unQuantity (toBaseUnit' u) - unQuantity (toBaseUnit' v)
 {-# INLINE (~-~) #-}
 
@@ -238,7 +238,7 @@ infixr 7 ~*.
 --   Dimension of ‘s’ is: T
 --
 (~*~) ::
-  ( u2 ~ NormalizeUnit u .^+ 2, IsUnit u2
+  ( u2 ~ BaseUnitOf u .^+ 2, IsUnit u2
   , DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   )
@@ -383,7 +383,7 @@ infix 8 .^~
 -- quantity @(Meter .^- 1) 5.0e-4
 --
 (~^~) :: forall (n :: ZZ) proxy u un a.
-  (KnownInt n, ConversionFactor u a, un ~ NormalizeUnit u .^. n )
+  (KnownInt n, ConversionFactor u a, un ~ BaseUnitOf u .^. n )
   => u a -> proxy n -> un a
 u ~^~ p = quantity @un $ unQuantity (toBaseUnit' u) ^^ intVal p
 {-# INLINE (~^~) #-}
