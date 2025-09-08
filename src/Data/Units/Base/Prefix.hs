@@ -15,7 +15,7 @@
 -- Stability   :  unstable
 -- Portability :  non-portable (GHC extensions)
 --
--- Provides way to define prefixes for any system of units.
+-- Provides a way to define prefixes for any system of units.
 --
 --------------------------------------------------------------------------------
 
