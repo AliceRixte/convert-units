@@ -16,9 +16,15 @@
 module Data.Units.SI.NonStd
   ( module Data.Units.NonStd
   , module Data.Units.SI.NonStd.Angle
+  , module Data.Units.SI.Derived
+  , module Data.Units.SI.Prefixes
+  , module Data.Units.SI.System
   )
 where
 
 import Data.Units.NonStd
 import Data.Units.SI.NonStd.Angle
+import Data.Units.SI.Derived
+import Data.Units.SI.Prefixes
+import Data.Units.SI.System
 
