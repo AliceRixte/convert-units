@@ -4,7 +4,7 @@ github:              "AliceRixte/convert-units"
 license:             BSD-3-Clause
 author:              "Alice Rixte"
 maintainer:          "alice.rixte@u-bordeaux.fr"
-copyright:           "BSD 3"
+copyright:           "(c) Alice Rixte 2025"
 synopsis:            Arithmetic and type checked conversions between units.
 category:            Physics, Data, Numeric, Math
 
