@@ -5,7 +5,7 @@ license:             BSD-3-Clause
 author:              "Alice Rixte"
 maintainer:          "alice.rixte@u-bordeaux.fr"
 copyright:           "(c) Alice Rixte 2025"
-synopsis:            Arithmetic and type checked conversions between units.
+synopsis:            Statically typed unit conversions
 category:            Physics, Data, Numeric, Math
 
 extra-source-files:
