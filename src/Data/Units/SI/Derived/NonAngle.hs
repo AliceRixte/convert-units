@@ -79,14 +79,12 @@ type Volume = Length .^+ 3
 
 type Frequency = Time .^- 1
 
--- | Frequency in hertz
---
+-- | Frequency in hertz.
 $(mkUnit "Hertz" "Hz" ''Frequency 1)
 
 type Radioactivity = Time .^- 1
 
--- | Radioactivity in becquerels
---
+-- | Radioactivity in becquerels.
 $(mkUnit "Becquerel" "Bq" ''Radioactivity 1)
 
 -- | Speed quantity. Equal to
@@ -103,8 +101,7 @@ type Acceleration = NormalizeDim (Length ./. Time .^+ 2)
 --
 type Force = NormalizeDim (Mass .*. Acceleration)
 
--- | Force in newtons
---
+-- | Force in newtons.
 $(mkUnit "Newton" "N" ''Force 1)
 
 -- | Pressure quantity. Equal to
@@ -114,8 +111,7 @@ $(mkUnit "Newton" "N" ''Force 1)
 type Pressure = NormalizeDim (Force ./. (Length .^+ 2))
 type Stress = Pressure
 
--- | Pressure in pascals
---
+-- | Pressure in pascals.
 $(mkUnit "Pascal" "Pa" ''Pressure 1)
 
 -- | Energy quantity. Equal to
@@ -126,8 +122,7 @@ type Energy = NormalizeDim (Length .*. Force)
 type Work = Energy
 type Heat = Energy
 
--- | Energy in joules
---
+-- | Energy in joules.
 $(mkUnit "Joule" "J" ''Energy 1)
 
 -- | Power quantity. Equal to
@@ -139,8 +134,7 @@ $(mkUnit "Joule" "J" ''Energy 1)
 type Power = NormalizeDim (Energy ./. Time)
 type RadiantFlux = Power
 
--- | Power in watts
---
+-- | Power in watts.
 $(mkUnit "Watt" "W" ''Power 1)
 
 -- | Electric charge quantity. Equal to
@@ -150,7 +144,7 @@ $(mkUnit "Watt" "W" ''Power 1)
 type ElectricCharge = NormalizeDim (Time .*. Current)
 type QuantityOfElectricity = ElectricCharge
 
-
+-- | Electric charge in coulombs.
 $(mkUnit "Coulomb" "C" ''ElectricCharge 1)
 
 -- | Electric voltage quantity. Equal to
@@ -161,6 +155,7 @@ type Voltage = NormalizeDim (Power ./. Current)
 type ElectricPotential = Voltage
 type ElectromotiveForce = Voltage
 
+-- | Electric potential (voltage) in volts.
 $(mkUnit "Volt" "V" ''Voltage 1)
 
 -- | Electric capacitance quantity. Equal to
@@ -169,6 +164,7 @@ $(mkUnit "Volt" "V" ''Voltage 1)
 --
 type Capacitance = NormalizeDim (ElectricCharge ./. Voltage)
 
+-- | Electric capacitance in farads.
 $(mkUnit "Farad" "F" ''Capacitance 1)
 
 -- | Electric resistance quantity. Equal to
@@ -179,6 +175,7 @@ type Resistance = NormalizeDim (Voltage ./. Current)
 type Impedance = Resistance
 type Reactance = Resistance
 
+-- | Electric resistance in ohms.
 $(mkUnit "Ohm" "Ω" ''Resistance 1)
 
 -- | Electric conductance quantity. Equal to
@@ -187,6 +184,7 @@ $(mkUnit "Ohm" "Ω" ''Resistance 1)
 --
 type Conductance = NormalizeDim (Current ./. Voltage)
 
+-- | Electric conductance in siemens.
 $(mkUnit "Siemens" "S" ''Conductance 1)
 
 -- | Magnetic flux quantity. Equal to
@@ -195,6 +193,7 @@ $(mkUnit "Siemens" "S" ''Conductance 1)
 --
 type MagneticFlux = NormalizeDim (Voltage .*. Time)
 
+-- | Magnetic flux in webers.
 $(mkUnit "Weber" "Wb" ''MagneticFlux 1)
 
 -- | Magnetic induction quantity. Equal to
@@ -204,6 +203,7 @@ $(mkUnit "Weber" "Wb" ''MagneticFlux 1)
 type MagneticInduction = NormalizeDim (MagneticFlux ./. (Length .^+ 2))
 type MagneticFluxDensity = MagneticInduction
 
+-- | Magnetic induction (magnetic flux density) in teslas.
 $(mkUnit "Tesla" "T" ''MagneticInduction 1)
 
 -- | Inductance quantity. Equal to
@@ -212,10 +212,10 @@ $(mkUnit "Tesla" "T" ''MagneticInduction 1)
 
 type Inductance = NormalizeDim (MagneticFlux ./. Current)
 
+-- | Inductance in henrys.
 $(mkUnit "Henry" "H" ''Inductance 1)
 
--- | Thermodynamic temperature in Celsius degrees
---
+-- | Thermodynamic temperature in Celsius degrees.
 $(mkUnitNoFactor "Celsius" "°C" ''Temperature)
 
 instance Fractional a => ConversionFactor Celsius a where
@@ -236,12 +236,10 @@ instance Fractional a => ConvertibleUnit Celsius a where
 type AbsorbedDose = NormalizeDim (Energy ./. Mass)
 type EquivalentDose = AbsorbedDose
 
--- | Absorbed dose in grays
---
+-- | Absorbed dose in grays.
 $(mkUnit "Gray" "Gy" ''AbsorbedDose 1)
 
--- | Dose equivalent in sieverts
---
+-- | Dose equivalent in sieverts.
 $(mkUnit "Sievert" "Sv" ''EquivalentDose 1)
 
 -- | Catalytic activity quantity. Equal to
@@ -250,6 +248,5 @@ $(mkUnit "Sievert" "Sv" ''EquivalentDose 1)
 --
 type CatalyticActivity = NormalizeDim (AmountOfSubstance ./. Time)
 
--- | Catalytic activity in katal
---
+-- | Catalytic activity in katals.
 $(mkUnit "Katal" "kat" ''CatalyticActivity 1)

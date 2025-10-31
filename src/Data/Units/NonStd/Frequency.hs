@@ -9,8 +9,7 @@ import Data.Proxy
 import Data.Units.Base
 import Data.Units.SI.System
 
--- | Frequency in Tone Equal Temperament
---
+-- | Frequency in Tone Equal Temperament.
 newtype Tet (b :: Nat) (offs :: ZZ) a = Tet a
   deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
            , RealFrac, RealFloat)

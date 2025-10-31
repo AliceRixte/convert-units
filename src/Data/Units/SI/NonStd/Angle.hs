@@ -19,19 +19,12 @@ module Data.Units.SI.NonStd.Angle where
 import Data.Units.Base
 
 -- | Angle in degrees.
---
 $(mkUnitNoFactor "Degree" "°" ''NoDim)
 
--- | Angle in complete turns (also called cycles or revolutions)
---
--- See https://en.wikipedia.org/wiki/Turn_(angle)
---
+-- | Angle in complete turns (also called cycles or revolutions).
 $(mkUnitNoFactor "Turn" "tr" ''NoDim)
 
--- | Angle in gradians
---
--- See https://en.wikipedia.org/wiki/Gradian
---
+-- | Angle in gradians.
 $(mkUnitNoFactor "Gradian" "grad" ''NoDim)
 
 instance Floating a => ConvertibleUnit Degree a

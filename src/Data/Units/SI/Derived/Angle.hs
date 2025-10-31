@@ -42,8 +42,7 @@ import Data.Units.SI.Derived.NonAngle
 --
 type Angle = NormalizeDim (Length ./. Length)
 
--- | An angle in radians.
---
+-- | Angle in radians.
 $(mkUnit "Radian" "rad" ''Angle 1)
 
 -- | The solid angle derived dimension in SI. Equal to
@@ -52,8 +51,7 @@ $(mkUnit "Radian" "rad" ''Angle 1)
 --
 type SolidAngle = NormalizeDim (Angle .^+ 2)
 
--- | A solid angle in steradians.
---
+-- | Solid angle in steradians.
 $(mkUnit "Steradian" "sr" ''SolidAngle 1)
 
 -- | Normalize an angle to the range ]-pi, pi]
@@ -69,8 +67,7 @@ normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
 --
 type LuminousFlux = NormalizeDim (LuminousIntensity .*. SolidAngle)
 
--- | Luminous flux in lumens
---
+-- | Luminous flux in lumens.
 $(mkUnit "Lumen" "lm" ''LuminousFlux 1)
 
 -- | Illuminance quantity. Equal to
@@ -79,6 +76,5 @@ $(mkUnit "Lumen" "lm" ''LuminousFlux 1)
 --
 type Illuminance = NormalizeDim (LuminousFlux ./. Area)
 
--- | Illuminance in lux
---
+-- | Illuminance in lux.
 $(mkUnit "Lux" "lx" ''Illuminance 1)

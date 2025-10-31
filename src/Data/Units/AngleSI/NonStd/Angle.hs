@@ -29,19 +29,12 @@ import Data.Units.AngleSI.System
 
 
 -- | Angle in degrees.
---
 $(mkUnitNoFactor "Degree" "°" ''Angle)
 
--- | Angle in complete turns (also called cycles or revolutions)
---
--- See https://en.wikipedia.org/wiki/Turn_(angle)
---
+-- | Angle in complete turns (also called cycles or revolutions).
 $(mkUnitNoFactor "Turn" "tr" ''Angle)
 
--- | Angle in gradians
---
--- See https://en.wikipedia.org/wiki/Gradian
---
+-- | Angle in gradians.
 $(mkUnitNoFactor "Gradian" "grad" ''Angle)
 
 

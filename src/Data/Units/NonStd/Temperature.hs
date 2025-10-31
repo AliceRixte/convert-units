@@ -9,8 +9,7 @@ import Data.Units.SI
 import Data.Units.SI.Derived
 
 
--- | Thermodynamic temperature in Fahrenheit degrees
---
+-- | Thermodynamic temperature in Fahrenheit degrees.
 $(mkUnitNoFactor "Fahrenheit" "°F" ''Temperature)
 
 instance Fractional a => ConversionFactor Fahrenheit a where

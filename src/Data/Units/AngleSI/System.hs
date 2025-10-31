@@ -39,6 +39,8 @@ $(mkDim "Angle" "A" 1000)
 
 -- | An angle in radians.
 --
+-- This is the base unit of the angle dimension.
+--
 $(mkBaseUnit "Radian" "rad" ''Angle)
 
 -- | Normalize an angle to the range ]-pi, pi]

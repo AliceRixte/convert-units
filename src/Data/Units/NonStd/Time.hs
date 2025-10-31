@@ -25,12 +25,10 @@ module Data.Units.NonStd.Time
 import Data.Units.Base.TH
 import Data.Units.SI
 
--- | Time quantity in minutes
---
+-- | Time in minutes.
 $(mkUnit "Minute" "min" ''Time 60)
 
--- | Time quantity in hours
---
+-- | Time in hours.
 $(mkUnit "Hour" "hr" ''Time 3600)
 
 

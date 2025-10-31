@@ -48,8 +48,7 @@ $(mkUnit "Steradian" "sr" ''SolidAngle 1)
 --
 type LuminousFlux = NormalizeDim (LuminousIntensity .*. SolidAngle)
 
--- | Luminous flux in lumens
---
+-- | Luminous flux in lumens.
 $(mkUnit "Lumen" "lm" ''LuminousFlux 1)
 
 -- | Illuminance quantity. Equal to
@@ -58,6 +57,5 @@ $(mkUnit "Lumen" "lm" ''LuminousFlux 1)
 --
 type Illuminance = NormalizeDim (LuminousFlux ./. Area)
 
--- | Illuminance in lux
---
+-- | Illuminance in lux.
 $(mkUnit "Lux" "lx" ''Illuminance 1)
