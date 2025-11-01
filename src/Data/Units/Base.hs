@@ -10,7 +10,6 @@ module Data.Units.Base
   , coerce
   -- ** Type level integers
   , module Data.Type.Int
-  , module Data.Type.Int.Proxy
   -- ** Re-exported from GHC.TypeError
   , ErrorMessage (..)
   ) where
@@ -24,4 +23,3 @@ import Data.Units.Base.Arithmetic
 import Data.Units.Base.Prefix
 import Data.Units.Base.TH
 import Data.Type.Int
-import Data.Type.Int.Proxy

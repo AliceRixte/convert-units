@@ -1,5 +1,7 @@
 {-# LANGUAGE NoStarIsType #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE GADTs#-}
+{-# LANGUAGE RankNTypes #-}
 
 --------------------------------------------------------------------------------
 -- |
@@ -139,4 +141,90 @@ instance KnownNat n => KnownInt (Pos n) where
 instance KnownNat n => KnownInt (Neg n) where
   intVal _  = -natVal (Proxy :: Proxy n)
 
+-- | Singleton type for type-level integers.
+data SZZ (z :: ZZ) where
+  SPos :: KnownNat n => SNat n -> SZZ ('Pos n)
+  SNeg :: KnownNat n => SNat n -> SZZ ('Neg n)
+  SZero :: SZZ 'Zero
 
+-- | Singleton for zero.
+zero :: SZZ 'Zero
+zero = SZero
+
+-- | Singleton for positive integers.
+--
+-- >>> :t pos @3
+--  pos @3 :: KnownNat 3 => SZZ ('Pos 3)
+--
+pos :: KnownNat n => SZZ ('Pos n)
+pos = SPos SNat
+
+-- | Integer singleton for 1.
+pos1 :: SZZ ('Pos 1)
+pos1 = pos @1
+
+-- | Integer singleton for 2.
+pos2 :: SZZ ('Pos 2)
+pos2 = pos @2
+
+-- | Integer singleton for 3.
+pos3 :: SZZ ('Pos 3)
+pos3 = pos @3
+
+-- | Integer singleton for 4.
+pos4 :: SZZ ('Pos 4)
+pos4 = pos @4
+
+-- | Singleton for negative integers.
+--
+-- >>> :t neg @3
+-- neg @3 :: KnownNat 3 => SZZ ('Neg 3)
+--
+neg :: KnownNat n => SZZ ('Neg n)
+neg = SNeg SNat
+
+-- | Integer singleton for -1.
+neg1 :: SZZ ('Neg 1)
+neg1 = neg @1
+
+-- | Integer singleton for -2.
+neg2 :: SZZ ('Neg 2)
+neg2 = neg @2
+
+-- | Integer singleton for -3.
+neg3 :: SZZ ('Neg 3)
+neg3 = neg @3
+
+-- | Integer singleton for -4.
+neg4 :: SZZ ('Neg 4)
+neg4 = neg @4
+
+
+-- | Return the 'Integer' corresponding to @n@ in an @SZZ n@ value.
+fromSZZ :: SZZ n -> Integer
+fromSZZ SZero      = 0
+fromSZZ (SPos sn)  = natVal sn
+fromSZZ (SNeg sn)  = -natVal sn
+
+-- | Convert an 'Integer' into an 'SZZ n' value, where 'n' is a fresh type-level
+-- symbol.
+withSomeSZZ :: Integer -> (forall (n :: ZZ). SZZ n -> r) -> r
+withSomeSZZ 0 f = f SZero
+withSomeSZZ i f
+  | i == 0    = f SZero
+  | i > 0     = withSomeSNat i (fpos f)
+  | otherwise = withSomeSNat (negate i) (fneg f)
+  where
+    fpos f' (Just (SNat :: SNat n)) = f' (SPos (SNat @n))
+    fpos _ Nothing = error "withSomeSZZ: This should never happen.\
+      \ A bug report would be appreciated."
+
+    fneg f' (Just (SNat :: SNat n)) = f' (SNeg (SNat @n))
+    fneg _ Nothing = error "withSomeSZZ: This should never happen.\
+      \ A bug report would be appreciated."
+
+-- | Convert an explicit `SZZ n` value into an implicit `KnownInt n` constraint.
+withKnownInt :: SZZ n -> (KnownInt n => r) -> r
+withKnownInt SZero      r = r
+withKnownInt (SPos sn)  r = withKnownNat sn r
+withKnownInt (SNeg sn)  r = withKnownNat sn r
