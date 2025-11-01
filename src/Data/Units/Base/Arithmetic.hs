@@ -326,10 +326,8 @@ infix 6 ~/~
 
 -- | Raise a quantity to a power.
 --
--- This is meant to be used with @'Data.Type.Int.Proxy'@
---
 -- >>> Meter 2 .^. pos2
--- quantity @(Meter.^+2) 4.
+-- quantity @(Meter.^+2) 4.0
 --
 -- Usage is not recommended, as this will result non standard units.
 --
@@ -348,8 +346,14 @@ infix 8 .^.
 -- | Raise a quantity to a power and tries to normalize the resulting unit,
 -- without converting to base units.
 --
+-- This is meant to be used with @'SZZ'@ singletons, like 'pos', 'neg'
+-- or 'zero', and there other flavors like 'pos2', 'neg3', etc.
+--
 -- >>> Meter 2 ~^. pos2
 -- quantity @(Meter.^+2) 4.0
+--
+-- >>> Meter 2 ~^. pos @10
+-- quantity @(Meter.^+10) 1024.0
 --
 -- >>> (Meter 2 .*. Centi (Meter 30)) ~^. pos2
 -- quantity @(Centi Meter.^+4) 3.6e7

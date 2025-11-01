@@ -206,8 +206,8 @@ fromSZZ SZero      = 0
 fromSZZ (SPos sn)  = natVal sn
 fromSZZ (SNeg sn)  = -natVal sn
 
--- | Convert an 'Integer' into an 'SZZ n' value, where 'n' is a fresh type-level
--- symbol.
+-- | Convert an 'Integer' into an @'SZZ' n@ value, where @n@ is a fresh
+-- type-level symbol.
 withSomeSZZ :: Integer -> (forall (n :: ZZ). SZZ n -> r) -> r
 withSomeSZZ 0 f = f SZero
 withSomeSZZ i f
@@ -223,7 +223,8 @@ withSomeSZZ i f
     fneg _ Nothing = error "withSomeSZZ: This should never happen.\
       \ A bug report would be appreciated."
 
--- | Convert an explicit `SZZ n` value into an implicit `KnownInt n` constraint.
+-- | Convert an explicit @'SZZ' n@ value into an implicit @'KnownInt' n@
+-- constraint.
 withKnownInt :: SZZ n -> (KnownInt n => r) -> r
 withKnownInt SZero      r = r
 withKnownInt (SPos sn)  r = withKnownNat sn r
