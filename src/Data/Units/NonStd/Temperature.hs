@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 module Data.Units.NonStd.Temperature
   ( Data.Units.SI.Derived.Celsius (..)
   , Fahrenheit(..)

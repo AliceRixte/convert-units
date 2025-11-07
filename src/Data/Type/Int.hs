@@ -1,8 +1,3 @@
-{-# LANGUAGE NoStarIsType #-}
-{-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE GADTs#-}
-{-# LANGUAGE RankNTypes #-}
-
 --------------------------------------------------------------------------------
 -- |
 --

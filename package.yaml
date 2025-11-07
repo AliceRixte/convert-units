@@ -31,19 +31,13 @@ ghc-options:
 - -threaded
 
 default-extensions:
-  - TypeApplications
-  - StandaloneDeriving
-  - DerivingVia
-  - GeneralizedNewtypeDeriving
-  - TypeOperators
-  - PolyKinds
-  - ScopedTypeVariables
-  - DataKinds
+  - GHC2024
+  - NoStarIsType
+  - FunctionalDependencies
   - TypeFamilies
-  - FlexibleInstances
   - UndecidableInstances
-  - MultiParamTypeClasses
-  - FlexibleContexts
+  - DerivingVia
+  - UndecidableInstances
   - TemplateHaskell
 
 library:
