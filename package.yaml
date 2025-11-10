@@ -30,8 +30,9 @@ ghc-options:
 - -Wall
 - -threaded
 
+language: GHC2024
+
 default-extensions:
-  - GHC2024
   - NoStarIsType
   - FunctionalDependencies
   - TypeFamilies
@@ -50,7 +51,7 @@ tests:
     dependencies:
     - hspec >= 2.11
     - QuickCheck >= 2.14
-    - linear
+    - ieee754 <= 0.8.0
     - convert-units
     ghc-options:
     - -rtsopts

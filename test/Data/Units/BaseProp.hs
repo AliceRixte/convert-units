@@ -15,13 +15,13 @@ import Data.Units.Base.ConvertProp
 import Test.QuickCheck
 import Test.Hspec
 
-import Data.Epsilon
+import Data.AEq
 
 import Data.Units
 
 sameDimSpec :: forall u a.
    (IsUnit u, Floating (u a), ShowUnit u
-  , Show a, Epsilon a, Floating a, Eq a, Arbitrary a
+  , Show a, AEq a, Floating a, Eq a, Arbitrary a
   , FromTo' u u a
   , DimEq u u
   , IsUnit (NormalizeUnitL (u .^+ 2))
