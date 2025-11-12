@@ -2,7 +2,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.AngleSI.NonStd.Angle
+-- Module      :  Data.Units.AngleSI.NonSI.Angle
 -- Description :  Non standard angle units with a dimension A
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------
 
 
-module Data.Units.AngleSI.NonStd.Angle
+module Data.Units.AngleSI.NonSI.Angle
   ( Degree (..)
   , Turn (..)
   , Gradian (..)

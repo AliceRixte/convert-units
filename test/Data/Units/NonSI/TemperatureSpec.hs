@@ -1,8 +1,8 @@
-module Data.Units.NonStd.TemperatureSpec where
+module Data.Units.NonSI.TemperatureSpec where
 
 import Test.Hspec
 
-import Data.Units.NonStd.Temperature
+import Data.Units.NonSI.Temperature
 import Data.Units.SI
 
 import Data.Units.Base.ConvertProp

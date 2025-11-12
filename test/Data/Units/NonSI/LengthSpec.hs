@@ -1,8 +1,8 @@
-module Data.Units.NonStd.LengthSpec where
+module Data.Units.NonSI.LengthSpec where
 
 import Test.Hspec
 
-import Data.Units.NonStd.Length
+import Data.Units.NonSI.Length
 import Data.Units.SI
 
 import Data.Units.Base.ConvertProp

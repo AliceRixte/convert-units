@@ -1,9 +1,9 @@
-module Data.Units.NonStd.FrequencySpec where
+module Data.Units.NonSI.FrequencySpec where
 
 import Test.Hspec
 
 import Data.Units.SI
-import Data.Units.NonStd.Frequency
+import Data.Units.NonSI.Frequency
 
 import Data.Units.Base.ConvertProp
 

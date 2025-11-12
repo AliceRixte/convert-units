@@ -1,8 +1,8 @@
-module Data.Units.NonStd.TimeSpec where
+module Data.Units.NonSI.TimeSpec where
 
 import Test.Hspec
 
-import Data.Units.NonStd.Time
+import Data.Units.NonSI.Time
 import Data.Units.Base.ConvertProp
 
 spec :: Spec

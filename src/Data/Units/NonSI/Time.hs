@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.NonStd.Time
+-- Module      :  Data.Units.NonSI.Time
 -- Description :  Non standard time units
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -14,8 +14,8 @@
 --------------------------------------------------------------------------------
 
 
-module Data.Units.NonStd.Time
-  ( module Data.Units.NonStd.Time
+module Data.Units.NonSI.Time
+  ( module Data.Units.NonSI.Time
   ) where
 
 import Data.Units.Base.TH

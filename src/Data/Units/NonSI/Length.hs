@@ -1,4 +1,4 @@
-module Data.Units.NonStd.Length
+module Data.Units.NonSI.Length
   ( module Data.Units.UsCustomary.Length
   , module Data.Units.Imperial.Length
   ) where

@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.SI.NonStd.Angle
+-- Module      :  Data.Units.SI.NonSI.Angle
 -- Description :  Dimensionless non standard angle units
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -14,7 +14,7 @@
 --------------------------------------------------------------------------------
 
 
-module Data.Units.SI.NonStd.Angle where
+module Data.Units.SI.NonSI.Angle where
 
 import Data.Units.Base
 

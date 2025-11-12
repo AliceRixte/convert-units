@@ -1,11 +1,11 @@
-module Data.Units.NonStd.AngleSpec where
+module Data.Units.NonSI.AngleSpec where
 
 import Test.Hspec
 
 import qualified Data.Units.SI.Derived.Angle as SI
-import qualified Data.Units.SI.NonStd.Angle as SI
+import qualified Data.Units.SI.NonSI.Angle as SI
 import qualified Data.Units.AngleSI.System as A
-import qualified Data.Units.AngleSI.NonStd.Angle as A
+import qualified Data.Units.AngleSI.NonSI.Angle as A
 
 import Data.Units.Base.ConvertProp
 

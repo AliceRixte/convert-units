@@ -1,4 +1,4 @@
-module Data.Units.NonStd.Area
+module Data.Units.NonSI.Area
   ( module Data.Units.Imperial.Area
   , module Data.Units.UsCustomary.Area
   ) where

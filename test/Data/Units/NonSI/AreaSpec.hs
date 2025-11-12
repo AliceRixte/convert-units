@@ -1,4 +1,4 @@
-module Data.Units.NonStd.AreaSpec where
+module Data.Units.NonSI.AreaSpec where
 
 import Test.Hspec
 

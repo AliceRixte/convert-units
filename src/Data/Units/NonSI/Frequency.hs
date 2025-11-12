@@ -1,4 +1,4 @@
-module Data.Units.NonStd.Frequency where
+module Data.Units.NonSI.Frequency where
 
 import Control.Exception
 import Data.Word

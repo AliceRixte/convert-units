@@ -1,4 +1,4 @@
-module Data.Units.NonStd.Temperature
+module Data.Units.NonSI.Temperature
   ( Data.Units.SI.Derived.Celsius (..)
   , Fahrenheit(..)
   ) where
