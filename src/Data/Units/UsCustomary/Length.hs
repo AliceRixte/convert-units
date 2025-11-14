@@ -16,7 +16,7 @@ module Data.Units.UsCustomary.Length
   , Data.Units.Imperial.Length.NauticalMile
   ) where
 
-import Data.Units.Base
+import Data.Units.Core
 import Data.Units.SI
 import Data.Units.Imperial.Length
 

@@ -2,15 +2,15 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Data.Units.BaseProp
-  ( module Data.Units.Base.ArithmeticProp
-  , module Data.Units.Base.ConvertProp
-  , module Data.Units.BaseProp
+module Data.Units.CoreProp
+  ( module Data.Units.Core.ArithmeticProp
+  , module Data.Units.Core.ConvertProp
+  , module Data.Units.CoreProp
   )
   where
 
-import Data.Units.Base.ArithmeticProp
-import Data.Units.Base.ConvertProp
+import Data.Units.Core.ArithmeticProp
+import Data.Units.Core.ConvertProp
 
 import Test.QuickCheck
 import Test.Hspec

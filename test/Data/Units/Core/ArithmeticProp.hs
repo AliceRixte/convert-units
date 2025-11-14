@@ -2,7 +2,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Data.Units.Base.ArithmeticProp where
+module Data.Units.Core.ArithmeticProp where
 
 import Data.Coerce
 
@@ -13,7 +13,7 @@ import Data.AEq
 
 import Data.Units
 
-import Data.Units.Base.ConvertProp
+import Data.Units.Core.ConvertProp
 
 
 ------------------------- Num and fractional instances -------------------------

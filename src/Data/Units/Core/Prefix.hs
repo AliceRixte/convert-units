@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.Base.Prefix
+-- Module      :  Data.Units.Core.Prefix
 -- Description :  Unit prefix for a system of units
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -17,12 +17,12 @@
 --------------------------------------------------------------------------------
 
 
-module Data.Units.Base.Prefix where
+module Data.Units.Core.Prefix where
 
 import GHC.TypeError
 
-import Data.Units.Base.System
-import Data.Units.Base.Convert
+import Data.Units.Core.System
+import Data.Units.Core.Convert
 
 -- | A unit prefix, like Kilo, Milli, etc.
 type Prefix = Unit -> Unit

@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.Base.System
+-- Module      :  Data.Units.Core.System
 -- Description :  System of units
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -16,7 +16,7 @@
 --
 --------------------------------------------------------------------------------
 
-module Data.Units.Base.System
+module Data.Units.Core.System
   (
   -- * Dimensions
     Dim

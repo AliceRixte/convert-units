@@ -22,7 +22,7 @@ module Data.Units.AngleSI.NonSI.Angle
   )
 where
 
-import Data.Units.Base
+import Data.Units.Core
 
 import Data.Units.AngleSI.System
 

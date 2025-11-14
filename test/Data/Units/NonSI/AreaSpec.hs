@@ -2,8 +2,8 @@ module Data.Units.NonSI.AreaSpec where
 
 import Test.Hspec
 
-import Data.Units.Base.ConvertProp
-import Data.Units.Base.System
+import Data.Units.Core.ConvertProp
+import Data.Units.Core.System
 import Data.Units.Imperial.Area
 import Data.Units.SI
 

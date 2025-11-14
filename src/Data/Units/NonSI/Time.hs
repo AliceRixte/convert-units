@@ -18,7 +18,7 @@ module Data.Units.NonSI.Time
   ( module Data.Units.NonSI.Time
   ) where
 
-import Data.Units.Base.TH
+import Data.Units.Core
 import Data.Units.SI
 
 -- | Time in minutes.

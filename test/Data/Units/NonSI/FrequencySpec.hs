@@ -5,7 +5,7 @@ import Test.Hspec
 import Data.Units.SI
 import Data.Units.NonSI.Frequency
 
-import Data.Units.Base.ConvertProp
+import Data.Units.Core.ConvertProp
 
 spec :: Spec
 spec = do

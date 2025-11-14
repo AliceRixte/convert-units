@@ -3,7 +3,7 @@ module Data.Units.NonSI.Temperature
   , Fahrenheit(..)
   ) where
 
-import Data.Units.Base
+import Data.Units.Core
 import Data.Units.SI
 import Data.Units.SI.Derived
 

@@ -2,7 +2,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.Base.TH
+-- Module      :  Data.Units.Core.TH
 -- Description :  Template Haskell quasi quoter for unit declaration
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -13,7 +13,7 @@
 --------------------------------------------------------------------------------
 
 
-module Data.Units.Base.TH
+module Data.Units.Core.TH
   ( -- * Units
     mkUnit
   , mkUnitNoFactor
@@ -30,9 +30,9 @@ import GHC.TypeError
 import Language.Haskell.TH
 
 import Data.Type.Int
-import Data.Units.Base.System
-import Data.Units.Base.Convert
-import Data.Units.Base.Prefix
+import Data.Units.Core.System
+import Data.Units.Core.Convert
+import Data.Units.Core.Prefix
 
 ------------------------------------ Units -------------------------------------
 

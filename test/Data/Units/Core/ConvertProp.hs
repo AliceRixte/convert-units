@@ -3,7 +3,7 @@
 -- {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Data.Units.Base.ConvertProp where
+module Data.Units.Core.ConvertProp where
 
 
 import Data.Coerce

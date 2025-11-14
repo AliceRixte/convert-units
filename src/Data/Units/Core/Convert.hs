@@ -5,7 +5,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.Base.Convert
+-- Module      :  Data.Units.Core.Convert
 -- Description :  Conversion between units
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -97,7 +97,7 @@
 --
 --------------------------------------------------------------------------------
 
-module Data.Units.Base.Convert
+module Data.Units.Core.Convert
   ( DimEq
   -- * Generic conversion between units
   , ConvertibleUnit (..)
@@ -126,7 +126,7 @@ import GHC.TypeError
 
 import Data.Type.Int
 
-import Data.Units.Base.System
+import Data.Units.Core.System
 
 -- | A constraint to test whether two units have
 type family DimEq (u :: Unit) (v :: Unit) :: Constraint where

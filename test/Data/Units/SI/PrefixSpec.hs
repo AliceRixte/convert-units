@@ -4,7 +4,7 @@ import Test.Hspec
 
 import Data.Units
 
-import Data.Units.BaseProp
+import Data.Units.CoreProp
 
 spec :: Spec
 spec = do

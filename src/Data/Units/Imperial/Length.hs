@@ -18,7 +18,7 @@ module Data.Units.Imperial.Length
   , Rod(..)
   ) where
 
-import Data.Units.Base
+import Data.Units.Core
 import Data.Units.SI
 
 

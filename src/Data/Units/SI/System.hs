@@ -32,7 +32,7 @@ module Data.Units.SI.System
   ) where
 
 import Data.Coerce
-import Data.Units.Base
+import Data.Units.Core
 import Data.Units.SI.Prefixes
 
 --  +--------------------------------------+-----------------+

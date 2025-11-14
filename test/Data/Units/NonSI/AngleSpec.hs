@@ -7,7 +7,7 @@ import qualified Data.Units.SI.NonSI.Angle as SI
 import qualified Data.Units.AngleSI.System as A
 import qualified Data.Units.AngleSI.NonSI.Angle as A
 
-import Data.Units.Base.ConvertProp
+import Data.Units.Core.ConvertProp
 
 spec :: Spec
 spec = do

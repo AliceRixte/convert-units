@@ -6,7 +6,7 @@ import Data.Fixed
 import GHC.TypeLits
 import Data.Proxy
 
-import Data.Units.Base
+import Data.Units.Core
 import Data.Units.SI.System
 
 -- | Frequency in Tone Equal Temperament.

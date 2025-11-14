@@ -29,7 +29,7 @@ module Data.Units.AngleSI.System
 import Data.Fixed
 import Data.Coerce
 
-import Data.Units.Base
+import Data.Units.Core
 import Data.Units.SI.System
 
 -- | The angle dimension, denotated @A@.

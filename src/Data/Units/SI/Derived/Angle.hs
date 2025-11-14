@@ -32,7 +32,7 @@ module Data.Units.SI.Derived.Angle
 import Data.Fixed
 import Data.Coerce
 
-import Data.Units.Base
+import Data.Units.Core
 import Data.Units.SI.System
 import Data.Units.SI.Derived.NonAngle
 

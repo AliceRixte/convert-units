@@ -16,7 +16,7 @@
 
 module Data.Units.SI.NonSI.Angle where
 
-import Data.Units.Base
+import Data.Units.Core
 
 -- | Angle in degrees.
 $(mkUnitNoFactor "Degree" "°" ''NoDim)

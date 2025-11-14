@@ -71,7 +71,7 @@ module Data.Units.SI.Derived.NonAngle
   )
   where
 
-import Data.Units.Base
+import Data.Units.Core
 import Data.Units.SI.System
 
 type Area = Length .^+ 2

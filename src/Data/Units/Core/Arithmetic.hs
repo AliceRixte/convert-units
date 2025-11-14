@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- |
 --
--- Module      :  Data.Units.Base.Arithmetic
+-- Module      :  Data.Units.Core.Arithmetic
 -- Description :  Addition, multiplication and exponentiation of quantities
 -- Copyright   :  (c) Alice Rixte 2025
 -- License     :  BSD 3
@@ -34,7 +34,7 @@
 --
 --------------------------------------------------------------------------------
 
-module Data.Units.Base.Arithmetic
+module Data.Units.Core.Arithmetic
   (
   -- ** Addition
     (.+~)
@@ -63,8 +63,8 @@ module Data.Units.Base.Arithmetic
 
 import Data.Type.Int
 
-import Data.Units.Base.System
-import Data.Units.Base.Convert
+import Data.Units.Core.System
+import Data.Units.Core.Convert
 
 ----------------------------------- Addition -----------------------------------
 

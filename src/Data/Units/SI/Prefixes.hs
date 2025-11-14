@@ -43,7 +43,7 @@ module Data.Units.SI.Prefixes
   , Quecca (..)
   ) where
 
-import Data.Units.Base
+import Data.Units.Core
 
 -- | SI prefix for 10⁻³⁰
 --

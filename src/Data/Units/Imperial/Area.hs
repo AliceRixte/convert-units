@@ -4,7 +4,7 @@ module Data.Units.Imperial.Area
   , Rood(..)
   ) where
 
-import Data.Units.Base
+import Data.Units.Core
 import Data.Units.SI
 
 -- | Area in acres.
