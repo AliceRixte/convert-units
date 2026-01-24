@@ -10,7 +10,7 @@ and this project adheres to the
 
 ### Added
 
-- #4 : Imperial and UsCustomary units for Area and Length  (thanks to Aster89)
+- [#4](https://github.com/AliceRixte/convert-units/pull/4) : Imperial and UsCustomary units for Area and Length  (thanks to Aster89)
 - Use integer singletons for exponentiating units:
 
 ``` haskell
