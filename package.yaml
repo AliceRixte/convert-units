@@ -1,5 +1,5 @@
 name:                convert-units
-version:             0
+version:             0.1
 github:              "AliceRixte/convert-units"
 license:             BSD-3-Clause
 author:              "Alice Rixte"
@@ -24,7 +24,7 @@ dependencies:
 - base >= 4.18 && < 5
 # - groups ?
 # - data-default ?
-- template-haskell >= 2.21.0
+- template-haskell >= 2.21.0 && < 2.24
 
 ghc-options:
 - -Wall
