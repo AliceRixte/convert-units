@@ -176,8 +176,8 @@ class (IsUnit u, IsUnit (BaseUnitOf u)) => ConvertibleUnit u a where
   -- quantity @(Meter .*. Second .^- 1) 10.0
   -- >>> toBaseUnit (Celsius 0)
   -- Kelvin 273.15
-  toBaseUnit :: u a -> BaseUnitOf u a
-  default toBaseUnit :: ConversionFactor u a => u a -> BaseUnitOf u a
+  toBaseUnit :: Qty u a -> Qty (BaseUnitOf u) a
+  default toBaseUnit :: ConversionFactor u a => Qty u a -> Qty (BaseUnitOf u) a
   toBaseUnit = toBaseUnit'
   {-# INLINE toBaseUnit #-}
 
@@ -192,8 +192,8 @@ class (IsUnit u, IsUnit (BaseUnitOf u)) => ConvertibleUnit u a where
   -- >>> fromBaseUnit @Celsius 0
   -- Celsius (-273.15)
   --
-  fromBaseUnit :: BaseUnitOf u a -> u a
-  default fromBaseUnit :: ConversionFactor u a => BaseUnitOf u a -> u a
+  fromBaseUnit :: Qty (BaseUnitOf u) a -> Qty u a
+  default fromBaseUnit :: ConversionFactor u a => Qty (BaseUnitOf u) a -> Qty u a
   fromBaseUnit = fromBaseUnit'
   {-# INLINE fromBaseUnit #-}
 
@@ -217,7 +217,7 @@ type FromTo u v a = (DimEq u v, ConvertibleUnit u a, ConvertibleUnit v a)
 -- >>> fromTo @(Kilo Meter ./. Hour) @(Milli Meter ./. Milli Second) 36
 -- quantity @(Milli Meter .*. Milli Second .^- 1) 10.0
 --
-fromTo :: FromTo u v a => u a -> v a
+fromTo :: FromTo u v a => Qty u a -> Qty v a
 fromTo = fromBaseUnit . toBaseUnit
 {-# INLINE fromTo #-}
 
@@ -227,7 +227,7 @@ fromTo = fromBaseUnit . toBaseUnit
 -- >>> from @Celsius 0 :: Kelvin Double
 -- Kelvin 273.15
 --
-from :: FromTo u v a => u a -> v a
+from :: FromTo u v a => Qty u a -> Qty v a
 from = fromTo
 {-# INLINE from #-}
 
@@ -236,7 +236,7 @@ from = fromTo
 -- >>> to @Kelvin (Celsius 0)
 -- Kelvin 273.15
 --
-to :: forall v u a. FromTo u v a => u a -> v a
+to :: forall v u a. FromTo u v a => Qty u a -> Qty v a
 to = fromTo
 {-# INLINE to #-}
 
@@ -248,7 +248,7 @@ to = fromTo
 -- >>> rotation $~ Degree 90
 -- V2 (V2 6.123031769111886e-17 (-1.0)) (V2 1.0 6.123031769111886e-17)
 --
-($~) :: FromTo u v a => (v a -> b) -> u a -> b
+($~) :: FromTo u v a => (Qty v a -> b) -> Qty u a -> b
 f $~ x = f (fromTo x)
 {-# INLINE ($~) #-}
 
@@ -256,7 +256,7 @@ infixr 0 $~
 
 -- | Same as @'($~)'@ but with arguments flipped.
 --
-(~&) :: FromTo u v a => u a -> (v a -> b) -> b
+(~&) :: FromTo u v a => Qty u a -> (Qty v a -> b) -> b
 (~&) = flip ($~)
 {-# INLINE (~&) #-}
 
@@ -321,7 +321,7 @@ instance (ConversionFactor u a, IsUnit (BaseUnitOf (u .^. n)),  KnownInt n)
 -- Kelvin 0.0
 --
 toBaseUnit' :: forall u a. ConversionFactor u a
-  => u a -> BaseUnitOf u a
+  => Qty u a -> Qty (BaseUnitOf u) a
 toBaseUnit' q = quantity (unQuantity q * factor @u)
 {-# INLINE toBaseUnit' #-}
 
@@ -338,7 +338,7 @@ toBaseUnit' q = quantity (unQuantity q * factor @u)
 -- Celsius 0.0
 --
 fromBaseUnit' :: forall u a. ConversionFactor u a
-  => BaseUnitOf u a -> u a
+  => Qty (BaseUnitOf u) a -> Qty u a
 fromBaseUnit' q = quantity (unQuantity q / factor @u)
 {-# INLINE fromBaseUnit' #-}
 
@@ -363,7 +363,7 @@ type FromTo' u v a = (DimEq u v, ConversionFactor u a, ConversionFactor v a)
 --
 fromTo' :: forall u v a.
   FromTo' u v a
-  => u a -> v a
+  => Qty u a -> Qty v a
 fromTo' q = quantity (unQuantity q * (factor @u / factor @v))
 {-# INLINE fromTo' #-}
 
@@ -375,7 +375,7 @@ fromTo' q = quantity (unQuantity q * (factor @u / factor @v))
 -- >>> from' @Celsius 0 :: Kelvin Double
 -- Kelvin 0.0
 --
-from' :: FromTo' u v a => u a -> v a
+from' :: FromTo' u v a => Qty u a -> Qty v a
 from' = fromTo'
 {-# INLINE from' #-}
 
@@ -384,8 +384,6 @@ from' = fromTo'
 -- >>> to' @Kelvin (Celsius 0)
 -- Kelvin 0.0
 --
-to' :: forall v u a. FromTo' u v a => u a -> v a
+to' :: forall v u a. FromTo' u v a => Qty u a -> Qty v a
 to' = fromTo'
 {-# INLINE to' #-}
-
-

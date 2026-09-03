@@ -44,9 +44,8 @@ $(mkDim "Angle" "A" 1000)
 $(mkBaseUnit "Radian" "rad" ''Angle)
 
 -- | Normalize an angle to the range ]-pi, pi]
-normalizeRadians :: (RealFrac a, Floating a) => Radian a -> Radian a
+normalizeRadians :: (RealFrac a, Floating a) => Qty Radian a -> Qty Radian a
 normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
   where
     twoPi = 2 * pi
     xmod = x `mod'` twoPi
-

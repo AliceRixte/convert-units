@@ -76,6 +76,14 @@ mkUnitNewtype l unitName =
       [bangType (bang noSourceUnpackedness noSourceStrictness) a])
     [ derivClause Nothing (conT <$> l)]
 
+-- | Make a type of the form
+-- @
+-- data Minute
+-- @
+--
+mkUnitType :: Quote m => Name -> m Dec
+mkUnitType unitName = pure $ DataD [] unitName [] Nothing [] []
+
 -- | Make instance of the form
 --
 -- @
@@ -163,7 +171,7 @@ mkNormalConvertibleInstance unitName = [d|
 mkUnit :: String -> String -> Name -> Rational -> Q [Dec]
 mkUnit unitStr prettyStr dimName fctr = do
   let unitName = mkName unitStr
-  newtypeDec <- mkUnitNewtype deriveListUnit unitName
+  newtypeDec <- mkUnitType unitName
   isUnitDec <- mkIsUnitInstance unitName dimName
   showUnitDec <- mkShowUnitInstance unitName unitStr prettyStr
   convFactorDec <- mkConvFactorInstance unitName fctr
@@ -188,7 +196,7 @@ mkUnit unitStr prettyStr dimName fctr = do
 mkUnitNoFactor :: String -> String -> Name -> Q [Dec]
 mkUnitNoFactor unitStr prettyStr dimName = do
   let unitName = mkName unitStr
-  newtypeDec  <- mkUnitNewtype deriveListUnit unitName
+  newtypeDec  <- mkUnitType unitName
   isUnitDec  <- mkIsUnitInstance unitName dimName
   showUnitDec  <- mkShowUnitInstance unitName unitStr prettyStr
   return $ [newtypeDec] ++  isUnitDec ++ showUnitDec
@@ -222,6 +230,10 @@ deriveListDim = deriveListUnit
 mkDimNewtype :: Quote m
   => [Name] -> Name -> m Dec
 mkDimNewtype = mkUnitNewtype
+
+mkDimType :: Quote m
+  => Name -> m Dec
+mkDimType = mkUnitType
 
 -- | Make an instance of the form
 --
@@ -276,7 +288,7 @@ mkShowDimInstance dimName dimStr prettyStr = [d|
 mkDim :: String -> String -> Integer -> Q [Dec]
 mkDim dimStr prettyStr n = do
   let dimName = mkName dimStr
-  newtypeDec <- mkDimNewtype deriveListDim dimName
+  newtypeDec <- mkDimType dimName
   -- isDimDec <- mkIsDimInstance dimName unitName
   dimIdDec <- mkDimIdTypeInstance dimName n
   showDimDec <- mkShowDimInstance dimName dimStr prettyStr
@@ -336,6 +348,23 @@ mkPrefixNewtype l prefixName = pure $
         , VarT (mkName "u")
         ]
 
+mkPrefixType :: Quote m => Name -> m Dec
+mkPrefixType prefixName =
+  pure $ DataD  []
+                prefixName
+                [KindedTV (mkName "u") BndrReq (ConT ''Unit)]
+                Nothing
+                []
+                [ DerivClause
+                    (Just (ViaStrategy viaTypeNoA))
+                    [ConT ''ShowUnit]
+                ]
+  where
+    viaTypeNoA =
+      foldl AppT (ConT ''MetaPrefix)
+        [ ConT prefixName
+        , VarT (mkName "u")
+        ]
 -- | Make a deriving instance of the form
 --
 -- @
@@ -425,7 +454,7 @@ mkPrefixConvUnitInstance prefixName = [d|
 mkPrefix :: String -> String -> Rational -> Q [Dec]
 mkPrefix prefixStr prettyStr fctr = do
   let prefixName = mkName prefixStr
-  newtypeDec <- mkPrefixNewtype deriveList prefixName
+  newtypeDec <- mkPrefixType prefixName
   isUnitDec <- mkPrefixIsUnitInstance prefixName
   showPrefixDec <- mkShowPrefixInstance prefixName prefixStr prettyStr
   factorDec <- mkPrefixFactorInstance prefixName fctr
@@ -433,6 +462,3 @@ mkPrefix prefixStr prettyStr fctr = do
   convUnitDec <- mkPrefixConvUnitInstance prefixName
   return $ [newtypeDec] ++ isUnitDec ++ showPrefixDec
         ++ factorDec ++ convFactorDec ++ convUnitDec
-
-
-

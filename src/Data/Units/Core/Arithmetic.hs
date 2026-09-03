@@ -78,8 +78,8 @@ import Data.Units.Core.Convert
 --  • Cannot convert unit ‘s’ of dimension ‘T’
 --    to unit ‘m’ of dimension ‘L’.
 --
-(.+~) :: forall u v a. FromTo' v u a => u a -> v a -> u a
-u .+~ v = quantity (unQuantity u + unQuantity (fromTo' v :: u a))
+(.+~) :: forall u v a. FromTo' v u a => Qty u a -> Qty v a -> Qty u a
+u .+~ v = quantity (unQuantity u + unQuantity (fromTo' v :: Qty u a))
 {-# INLINE (.+~) #-}
 
 infixr 5 .+~
@@ -89,7 +89,7 @@ infixr 5 .+~
 -- >>> Kilo (Meter 5) ~+. Meter 80
 -- quantity @(Kilo Meter) 5080.0
 --
-(~+.) :: FromTo' u v a => u a -> v a -> v a
+(~+.) :: FromTo' u v a => Qty u a -> Qty v a -> Qty v a
 (~+.) = flip (.+~)
 {-# INLINE (~+.) #-}
 
@@ -104,7 +104,7 @@ infixr 5 ~+.
   ( DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   )
- => u a -> v a -> (BaseUnitOf u) a
+ => Qty u a -> Qty v a -> Qty (BaseUnitOf u) a
 u ~+~ v = quantity (unQuantity (toBaseUnit' u) + unQuantity (toBaseUnit' v))
 {-# INLINE (~+~) #-}
 
@@ -117,8 +117,8 @@ infixr 5 ~+~
 -- >>> Kilo (Meter 5) .-~ Meter 80
 -- quantity @(Kilo Meter) 4.92
 --
-(.-~) :: forall u v a. FromTo' v u a => u a -> v a -> u a
-u .-~ v = quantity (unQuantity u - unQuantity (fromTo' v :: u a))
+(.-~) :: forall u v a. FromTo' v u a => Qty u a -> Qty v a -> Qty u a
+u .-~ v = quantity (unQuantity u - unQuantity (fromTo' v :: Qty u a))
 {-# INLINE (.-~) #-}
 
 infixr 5 .-~
@@ -128,8 +128,8 @@ infixr 5 .-~
 -- >>> Kilo (Meter 5) ~-. Meter 80
 -- Meter 4920.0
 --
-(~-.) :: forall u v a. FromTo' u v a => u a -> v a -> v a
-u ~-. v = quantity (unQuantity (fromTo' u :: v a) - unQuantity v)
+(~-.) :: forall u v a. FromTo' u v a => Qty u a -> Qty v a -> Qty v a
+u ~-. v = quantity (unQuantity (fromTo' u :: Qty v a) - unQuantity v)
 -- {-# INLINE (~-.) #-}
 
 infixr 5 ~-.
@@ -143,7 +143,7 @@ infixr 5 ~-.
   ( DimEq u v
   , ConversionFactor v a, ConversionFactor u a
   )
- => u a -> v a -> (BaseUnitOf u) a
+ => Qty u a -> Qty v a -> Qty (BaseUnitOf u) a
 u ~-~ v = quantity $ unQuantity (toBaseUnit' u) - unQuantity (toBaseUnit' v)
 {-# INLINE (~-~) #-}
 
@@ -166,7 +166,7 @@ infixr 5 ~-~
   ( IsUnit u, IsUnit v
   , Num a
   )
- => u a -> v a -> (u .*. v) a
+ => Qty u a -> Qty v a -> Qty (u .*. v) a
 u .*. v = quantity $ unQuantity u * unQuantity v
 {-# INLINE (.*.) #-}
 
@@ -201,7 +201,7 @@ infixr 7 .*.
   , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
-  => u a -> v a -> uv a
+  => Qty u a -> Qty v a -> Qty uv a
 u .*~ v = to' @uv (u .*. v)
 {-# INLINE (.*~) #-}
 
@@ -221,7 +221,7 @@ infixr 7 .*~
   , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
-  => u a -> v a -> uv a
+  => Qty u a -> Qty v a -> Qty uv a
 u ~*. v = to' @uv (u .*. v)
 {-# INLINE (~*.) #-}
 
@@ -242,7 +242,7 @@ infixr 7 ~*.
   , DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   )
- => u a -> v a -> u2 a
+ => Qty u a -> Qty v a -> Qty u2 a
 u ~*~ v = quantity $ unQuantity (toBaseUnit' u) * unQuantity (toBaseUnit' v)
 {-# INLINE (~*~) #-}
 
@@ -264,7 +264,7 @@ infix 7 ~*~
   ( IsUnit u, IsUnit v, IsUnit (u ./. v)
   , Fractional a
   )
-  => u a -> v a -> (u ./. v) a
+  => Qty u a -> Qty v a -> Qty (u ./. v) a
 u ./. v = quantity (unQuantity u / unQuantity v)
 {-# INLINE (./.) #-}
 
@@ -281,7 +281,7 @@ infix 7 ./.
   , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
-  => u a -> v a -> uv a
+  => Qty u a -> Qty v a -> Qty uv a
 u ./~ v = to' @uv (u ./. v)
 {-# INLINE (./~) #-}
 
@@ -298,7 +298,7 @@ infix 7 ./~
   , IsUnit u, IsUnit v, IsUnit uv
   , Num a
   )
-  => u a -> v a -> uv a
+  => Qty u a -> Qty v a -> Qty uv a
 u ~/. v = to' @uv (u ./. v)
 {-# INLINE (~/.) #-}
 
@@ -316,7 +316,7 @@ infix 7 ~/.
   ( DimEq u v
   , ConversionFactor u a, ConversionFactor v a
   )
-  => u a -> v a -> NoUnit a
+  => Qty u a -> Qty v a -> Qty NoUnit a
 u ~/~ v = quantity $ unQuantity (toBaseUnit' u)  / unQuantity (toBaseUnit' v)
 {-# INLINE (~/~) #-}
 
@@ -337,7 +337,7 @@ infix 6 ~/~
 -- quantity @((Meter .*. Centi Meter).^+2) 3600.0
 --
 (.^.) :: forall (n :: ZZ) proxy u a. (IsUnit u, KnownInt n, Fractional a)
-  => u a -> proxy n -> (u .^. n) a
+  => Qty u a -> proxy n -> Qty (u .^. n) a
 u .^. p = quantity $ unQuantity u ^^ intVal p
 {-# INLINE (.^.) #-}
 
@@ -359,7 +359,7 @@ infix 8 .^.
 -- quantity @(Centi Meter.^+4) 3.6e7
 (~^.) :: forall (n :: ZZ) proxy u a un.
   (un ~ u ~^. n, FromTo' (u .^. n) un a, IsUnit u, KnownInt n, Fractional a)
-  => u a -> proxy n -> un a
+  => Qty u a -> proxy n -> Qty un a
 u ~^. p = to' @un (u .^. p)
 {-# INLINE (~^.) #-}
 
@@ -375,7 +375,7 @@ infix 8 ~^.
 --
 (.^~ ) :: forall (n :: ZZ) proxy u a un.
   (un ~ u .^~  n, FromTo' (u .^. n) un a, IsUnit u, KnownInt n, Fractional a)
-  => u a -> proxy n -> un a
+  => Qty u a -> proxy n -> Qty un a
 u .^~  p = to' @un (u .^. p)
 {-# INLINE (.^~ ) #-}
 
@@ -388,10 +388,8 @@ infix 8 .^~
 --
 (~^~) :: forall (n :: ZZ) proxy u un a.
   (KnownInt n, ConversionFactor u a, un ~ BaseUnitOf u .^. n )
-  => u a -> proxy n -> un a
+  => Qty u a -> proxy n -> Qty un a
 u ~^~ p = quantity @un $ unQuantity (toBaseUnit' u) ^^ intVal p
 {-# INLINE (~^~) #-}
 
 infix 8 ~^~
-
-

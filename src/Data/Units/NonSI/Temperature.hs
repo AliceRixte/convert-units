@@ -16,8 +16,8 @@ instance Fractional a => ConversionFactor Fahrenheit a where
   {-# INLINE factor #-}
 
 instance Fractional a => ConvertibleUnit Fahrenheit a where
-  toBaseUnit (Fahrenheit x) = Kelvin ((x + 459.67) * 5 / 9)
+  toBaseUnit (Qty x) = Qty ((x + 459.67) * 5 / 9)
   {-# INLINE toBaseUnit #-}
 
-  fromBaseUnit (Kelvin x) = Fahrenheit (x * 9 / 5 - 459.67)
+  fromBaseUnit (Qty x) = Qty (x * 9 / 5 - 459.67)
   {-# INLINE fromBaseUnit #-}

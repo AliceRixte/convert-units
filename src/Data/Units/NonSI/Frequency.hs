@@ -10,17 +10,15 @@ import Data.Units.Core
 import Data.Units.SI.System
 
 -- | Frequency in Tone Equal Temperament.
-newtype Tet (b :: Nat) (offs :: ZZ) a = Tet a
-  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat)
+data Tet (b :: Nat) (offs :: ZZ)
 
 instance (Floating a, KnownNat b, KnownInt offs)
   => ConvertibleUnit (Tet b offs) a where
-  toBaseUnit (Tet a) = quantity $ 440 * 2 ** ((a + offs) / b)
+  toBaseUnit (Qty a) = quantity $ 440 * 2 ** ((a + offs) / b)
     where
      b = fromIntegral $ natVal (Proxy :: Proxy b)
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100
-  fromBaseUnit a = Tet $ b * logBase 2 (unQuantity a/ 440) - offs
+  fromBaseUnit a = Qty $ b * logBase 2 (unQuantity a/ 440) - offs
     where
      b = fromIntegral $ natVal (Proxy :: Proxy b)
      offs = fromIntegral (intVal (Proxy :: Proxy offs)) / 100
@@ -52,17 +50,16 @@ instance Show PitchException where
   show OutOfMidiRange = "A linear pitch is either negative or higher than 127,\
   \ and therefore cannot be converted to MIDI"
 
-safeDecomposePitchCents :: Real a => Tet b offs a -> Maybe (Word8, a)
+safeDecomposePitchCents :: Real a => Qty (Tet b offs) a -> Maybe (Word8, a)
 safeDecomposePitchCents n =
   if n >= 128 || n < 0 then
     Nothing
   else
     Just (divMod' (unQuantity n) 1)
 
-decomposePitchCents :: Real a => Tet b offs a-> (Word8, a)
+decomposePitchCents :: Real a => Qty (Tet b offs) a-> (Word8, a)
 decomposePitchCents n =
   if n >= 128 || n < 0 then
     throw OutOfMidiRange
   else
     divMod' (unQuantity n) 1
-

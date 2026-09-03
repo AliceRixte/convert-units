@@ -32,6 +32,7 @@ module Data.Units.Core.System
 
   -- * Units
   , Unit
+  , Qty (..)
   , ShowUnit (..)
   , prettysUnit
   , showsUnit
@@ -50,7 +51,7 @@ module Data.Units.Core.System
   -- * Unit and dimension constructors
   , NoDim (..)
   , NoUnit (..)
-  , MetaUnit (..)
+  -- , MetaUnit (..)
   , type (.*.) (..)
   , type (.^.) (..)
   , type (.^+)
@@ -98,9 +99,9 @@ import Data.Type.Int
 --
 -- >>> type Speed = Length -/- Time
 --
-type Dim = Type -> Type
+type Dim = Type
 
-class (IsUnit (DimToUnit d), forall a. Coercible (d a) a)
+class (IsUnit (DimToUnit d))
   => IsDim (d :: Dim) where
   type DimToUnit d :: Unit
 
@@ -205,13 +206,13 @@ prettysDim = prettysDimPrec @d 0
 -- >>>  showDimOf (quantity @(Kilo Meter ./. Second) 1)
 -- "Length .*. Time.^-1"
 --
-showDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> String
+showDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => Qty u a -> String
 showDimOf _ = showDim @(DimOf u)
 
 -- | Same as 'showDimOf' but for pretty printing.
 -- >>> putStrLn $ prettyDimOf (quantity @(Kilo Meter ./. Second) 1)
 -- L.T⁻¹
-prettyDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> String
+prettyDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => Qty u a -> String
 prettyDimOf _ = prettyDim @(DimOf u)
 
 -- | Print the dimension of a quantity.
@@ -219,16 +220,14 @@ prettyDimOf _ = prettyDim @(DimOf u)
 -- >>> putDimOf (quantity @(Kilo Meter ./. Second) 1)
 -- L.T⁻¹
 --
-putDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => u a -> IO ()
+putDimOf :: forall u a. (IsUnit u, ShowDim (DimOf u)) => Qty u a -> IO ()
 putDimOf = putStrLn . prettyDimOf
 
 
 
 -- | The dimension of non dimensional quantities
 --
-newtype NoDim a = NoDim a
-  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+data NoDim = NoDim
 
 
 type instance DimId NoDim = Pos 1
@@ -335,12 +334,19 @@ type family NormalizeExpDim u where
 -- | A unit is represented by a newtype constructor. A quantity of some unit
 -- @u@ is of type @u a@.
 --
-type Unit = Type -> Type
+type Unit = Type
+
+newtype Qty (u :: Unit) a = Qty a
+ deriving (Eq, Ord, Num, Fractional, Floating, Real, RealFrac, RealFloat)
+
+instance (Show a, ShowUnit u)=> Show (Qty u a) where
+  showsPrec = showsQuantityPrec
+
 
 -- | Any unit must have a dimension. Additionally, a unit is a newtype
 -- constructor : a quantity @u a@ can always be coerced to its magnitude @a@.
 --
-class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where
+class IsUnit (u :: Unit) where
   type DimOf u :: Dim
 
 -- | Make a quantity out of any numerical value (called the /magnitude/ of that
@@ -348,7 +354,7 @@ class (forall a. Coercible (u a) a) => IsUnit (u :: Unit) where
 --
 -- >>> quantity @(Meter ./. Second) 1
 -- quantity @(Meter .*. Second .^- 1) 1
-quantity :: forall u a. IsUnit u => a -> u a
+quantity :: IsUnit u => a -> Qty u a
 quantity = coerce
 {-# INLINE quantity #-}
 
@@ -356,7 +362,7 @@ quantity = coerce
 --
 --  @unQuantity (quantity @u a) === a @
 --
-unQuantity :: IsUnit u => u a -> a
+unQuantity :: Qty u a -> a
 unQuantity = coerce
 {-# INLINE unQuantity #-}
 
@@ -455,7 +461,7 @@ prettyQuantityInfo :: forall u a.
   , ShowDim (DimOf u)
   , ShowUnit (BaseUnitOf u)
   , Show a
-  ) => u a -> String
+  ) => Qty u a -> String
 prettyQuantityInfo u = prettyUnitInfo @u ++
   "Magnitude:  " ++ show (unQuantity u) ++ "\n"
 
@@ -474,20 +480,20 @@ putInfoQ :: forall u a.
   , ShowDim (DimOf u)
   , ShowUnit (BaseUnitOf u)
   , Show a
-  ) => u a -> IO ()
+  ) => Qty u a -> IO ()
 putInfoQ u = putStr $ prettyQuantityInfo @u u
 
 
 -- | Same as 'showsUnitPrec' but for quantities.
 --
-showsQuantityPrec :: forall u a. (ShowUnit u, Show a) => Int -> u a -> ShowS
+showsQuantityPrec :: forall u a. (ShowUnit u, Show a) => Int -> Qty u a -> ShowS
 showsQuantityPrec d u = showParen (d > 10) $
     showString "quantity @" . showsUnitPrec @u 11 . showString " " .
       showsPrec 11 (unQuantity u)
 
 -- | Equivalent to 'showsQuantityPrec' with a precedence of 0.
 --
-showsQuantity :: (ShowUnit u, Show a) => u a -> ShowS
+showsQuantity :: (ShowUnit u, Show a) => Qty u a -> ShowS
 showsQuantity  = showsQuantityPrec 0
 
 -- | Same as 'showUnit' but for quantities
@@ -495,7 +501,7 @@ showsQuantity  = showsQuantityPrec 0
 -- >>> showQuantity (quantity @(Kilo Meter ./. Second) 1)
 -- "quantity @(Kilo Meter .*. Second.^-1) 1.0"
 --
-showQuantity :: (ShowUnit u, Show a) => u a -> String
+showQuantity :: (ShowUnit u, Show a) => Qty u a -> String
 showQuantity u = showsQuantity u ""
 
 -- | Same as 'prettyUnit' but for quantities
@@ -503,39 +509,40 @@ showQuantity u = showsQuantity u ""
 -- >>> putStrLn $ prettyQuantity (quantity @(Kilo Meter ./. Second) 1)
 -- 1 km.s⁻¹
 --
-prettyQuantity :: forall u a. (ShowUnit u, Show a) => u a -> String
+prettyQuantity :: forall u a. (ShowUnit u, Show a) => Qty u a -> String
 prettyQuantity u  = show (unQuantity u) ++ " " ++  prettyUnit @u
 
 -- | Pretty print a quantity.
 --
 -- >>> putQuantity (quantity @(Kilo Meter ./. Second) 1)
 -- 1 km.s⁻¹
-putQuantity :: (Show a, ShowUnit u) => u a -> IO ()
+putQuantity :: (Show a, ShowUnit u) => Qty u a -> IO ()
 putQuantity = putStrLn . prettyQuantity
+
 
 
 --------------------------------------------------------------------------------
 
 
--- | A unit that can represent any unit.
---
--- This can be used with the `deriving via` mechanism to derive some of the
--- unit instances.
---
-newtype MetaUnit (u :: Unit) a = MetaUnit a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
+-- -- | A unit that can represent any unit.
+-- --
+-- -- This can be used with the `deriving via` mechanism to derive some of the
+-- -- unit instances.
+-- --
+-- newtype MetaUnit (u :: Unit) a = MetaUnit a
+--   deriving ( Eq, Ord, Num, Fractional, Floating, Real
+--            , RealFrac, RealFloat, Bounded, Enum, Semigroup, Monoid, Functor)
 
-instance ShowUnit u => ShowUnit (MetaUnit u) where
-  type ShowUnitType (MetaUnit u) = ShowUnitType u
-  prettysUnitPrec = prettysUnitPrec @u
-  showsUnitPrec = showsUnitPrec @u
+-- instance ShowUnit u => ShowUnit (MetaUnit u) where
+--   type ShowUnitType (MetaUnit u) = ShowUnitType u
+--   prettysUnitPrec = prettysUnitPrec @u
+--   showsUnitPrec = showsUnitPrec @u
 
-instance (Show a, ShowUnit u) => Show (MetaUnit u a) where
-  showsPrec = showsQuantityPrec
+-- instance (Show a, ShowUnit u) => Show (MetaUnit u a) where
+--   showsPrec = showsQuantityPrec
 
-instance IsUnit u => IsUnit (MetaUnit u) where
-  type DimOf (MetaUnit u) = DimOf u
+-- instance IsUnit u => IsUnit (MetaUnit u) where
+--   type DimOf (MetaUnit u) = DimOf u
 
 --------------------------------------------------------------------------------
 
@@ -545,9 +552,7 @@ instance IsUnit u => IsUnit (MetaUnit u) where
 -- type MyHertz = NoUnit ./. Second
 -- @
 --
-newtype NoUnit a = NoUnit a
-  deriving ( Show, Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
+data NoUnit
 
 instance IsUnit NoUnit where
   type DimOf NoUnit = NoDim
@@ -562,10 +567,7 @@ instance IsDim NoDim where
 -- type MyForceMoment = Newton .*. Meter
 -- @
 --
-newtype ((u :: Unit) .*. (v :: Unit)) a = MulUnit a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit (u .*. v) a
+data ((u :: Unit) .*. (v :: Unit)) = MulUnit
 
 infixr 7 .*.
 
@@ -628,10 +630,7 @@ infix 6 ./.
 -- type Acceleration = Meter .*. Second .^. Neg 2
 -- @
 --
-newtype ((u :: Unit) .^. (n :: ZZ)) a = PowUnit a
-  deriving ( Eq, Ord, Num, Fractional, Floating, Real
-           , RealFrac, RealFloat, Functor)
-  deriving Show via MetaUnit (u .^. n) a
+data ((u :: Unit) .^. (n :: ZZ)) = PowUnit
 infix 8 .^.
 
 -- | Positive exponentiation of a unit

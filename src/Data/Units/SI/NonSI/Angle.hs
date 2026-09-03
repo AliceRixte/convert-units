@@ -44,4 +44,3 @@ instance Floating a => ConvertibleUnit Gradian a
 instance Floating a => ConversionFactor Gradian a where
   factor = pi / 200
   {-# INLINE factor #-}
-

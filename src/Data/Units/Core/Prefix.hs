@@ -102,8 +102,8 @@ prettysPrefix = prettysPrefixPrec @p 0
 -- This can be used with the `deriving via` mechanism to derive some of the
 -- prefix instances.
 --
-newtype MetaPrefix (p :: Prefix) (u :: Unit) a = MetaPrefix (p u a)
-  deriving Show via (MetaUnit (p u) a)
+data MetaPrefix (p :: Prefix) (u :: Unit) = MetaPrefix
+  -- deriving Show via (MetaUnit (p u) a)
 
 instance PrefixFactor p a => PrefixFactor (MetaPrefix p) a where
   prefixFactor = prefixFactor @p
@@ -118,16 +118,16 @@ instance
 instance
   (PrefixFactor p a, ConvertibleUnit u a, BaseUnitOf (p u) ~ BaseUnitOf u)
   => ConvertibleUnit (MetaPrefix p u) a where
-  toBaseUnit (MetaPrefix a) = prefixToBaseUnit @p @u a
+  toBaseUnit (Qty a) = prefixToBaseUnit @p @u (Qty a)
   {-# INLINE toBaseUnit #-}
-  fromBaseUnit a = MetaPrefix $ prefixFromBaseUnit @p @u a
+  fromBaseUnit a = prefixFromBaseUnit @(MetaPrefix p) @u a
   {-# INLINE fromBaseUnit #-}
 
 -- | Convert a prefixed unit to the corresponding standard unit.
 --
 prefixToBaseUnit :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, ConvertibleUnit u a, BaseUnitOf (p u) ~ BaseUnitOf u)
-  => p u a -> BaseUnitOf u a
+  => Qty (p u) a -> Qty (BaseUnitOf u) a
 prefixToBaseUnit u =
     toBaseUnit @u $ quantity @u (prefixFactor @p * unQuantity u)
 {-# INLINE prefixToBaseUnit #-}
@@ -136,8 +136,8 @@ prefixToBaseUnit u =
 --
 prefixFromBaseUnit :: forall (p :: Prefix) (u :: Unit) a.
   (PrefixFactor p a, ConvertibleUnit u a
-  , BaseUnitOf (p u) a ~ BaseUnitOf u a)
-  => BaseUnitOf (p u) a -> p u a
+  , BaseUnitOf (p u) ~ BaseUnitOf u)
+  => Qty (BaseUnitOf (p u)) a -> Qty (p u) a
 prefixFromBaseUnit a = quantity  $ unQuantity (fromBaseUnit @u a) / prefixFactor @p
 {-# INLINE prefixFromBaseUnit #-}
 
@@ -160,4 +160,3 @@ instance (ShowPrefix p, ShowUnit u)
     showsPrefix @p . showString " " .  showsUnitPrec @u 11
   prettysUnitPrec d = showParen (d > 10) $
     prettysPrefix @p  . prettysUnit @u
-

@@ -55,7 +55,7 @@ type SolidAngle = NormalizeDim (Angle .^+ 2)
 $(mkUnit "Steradian" "sr" ''SolidAngle 1)
 
 -- | Normalize an angle to the range ]-pi, pi]
-normalizeRadians :: (RealFrac a, Floating a) => Radian a -> Radian a
+normalizeRadians :: (RealFrac a, Floating a) => Qty Radian a -> Qty Radian a
 normalizeRadians x = if xmod > pi then xmod - twoPi else xmod
   where
     twoPi = 2 * pi
